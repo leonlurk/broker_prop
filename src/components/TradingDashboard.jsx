@@ -121,7 +121,7 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
         <div className="lg:col-span-2 p-4 md:p-6 bg-gradient-to-br from-[#232323] to-[#434242] border border-[#333] rounded-xl">
           <h2 className="text-xl md:text-3xl font-bold mb-4">Balance</h2>
           <div className="flex items-center mb-6">
-            <span className="text-2xl md:text-4xl font-bold mr-3">$5.000,00</span>
+            <span className="text-2xl md:text-4xl font-bold mr-3">$124.700,00</span>
             <span className="bg-green-800 bg-opacity-30 text-green-400 px-2 py-1 rounded text-sm">+24.7%</span>
           </div>
           
@@ -169,12 +169,11 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
           <div className="p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl">
             <h2 className="text-xl font-bold mb-2">Profit/Loss</h2>
             <div className="flex items-center mb-1">
-              <span className="text-2xl font-bold mr-3">$1.000,00</span>
-              <span className="bg-green-800 bg-opacity-30 text-green-400 px-2 py-1 rounded text-sm">+21.7%</span>
+              <span className="text-2xl font-bold mr-3">$24.700,00</span>
+              <span className="bg-green-800 bg-opacity-30 text-green-400 px-2 py-1 rounded text-sm">+24.7%</span>
             </div>
             <p className="text-sm text-gray-400">Lun, 13 Enero</p>
-          </div>
-
+          </div> 
           <div className="p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl">
             <h2 className="text-xl font-bold mb-2">Drawdown</h2>
             <div className="text-2xl font-bold">25%</div>
