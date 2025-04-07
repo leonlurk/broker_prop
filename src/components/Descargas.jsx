@@ -10,8 +10,7 @@ const Descargas = () => {
       image: '/mt5.png',
       downloads: [
         { os: 'Windows', icon: '/windows.png', link: '#' },
-        { os: 'Mac', icon: '/apple.png', link: '#' },
-        { os: 'Linux', icon: '/linux.png', link: '#' }
+        { os: 'Mac', icon: '/apple.png', link: '#' }
       ]
     },
   ];

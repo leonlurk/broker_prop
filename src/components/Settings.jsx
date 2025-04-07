@@ -1,14 +1,46 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import KYCVerification from './KYCVerification';
 import ChangePasswordModal from './ChangePasswordModal';
 import UpdateEmailModal from './UpdateEmailModal';
+import { auth, db } from '../firebase/config';
+import { doc, getDoc } from 'firebase/firestore';
 
 const Settings = ({ onBack }) => {
   const [expandedSection, setExpandedSection] = useState(null);
   const [showKYC, setShowKYC] = useState(false);
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [showUpdateEmailModal, setShowUpdateEmailModal] = useState(false);
+  const [userHasApprovedAccount, setUserHasApprovedAccount] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [userKycStatus, setUserKycStatus] = useState(null);
+
+  useEffect(() => {
+    const checkUserAccountStatus = async () => {
+      setIsLoading(true);
+      try {
+        const user = auth.currentUser;
+        if (user) {
+          const userDocRef = doc(db, "users", user.uid);
+          const userDoc = await getDoc(userDocRef);
+          
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            setUserHasApprovedAccount(userData.approved === true);
+            setUserKycStatus(userData.kyc_status || null);
+          } else {
+            setUserHasApprovedAccount(false);
+          }
+        }
+      } catch (error) {
+        console.error("Error:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    checkUserAccountStatus();
+  }, []);
 
   const toggleSection = (section) => {
     if (expandedSection === section) {
@@ -20,6 +52,15 @@ const Settings = ({ onBack }) => {
 
   if (showKYC) {
     return <KYCVerification onBack={() => setShowKYC(false)} />;
+  }
+
+  if (isLoading) {
+    return (
+      <div className="p-4 md:p-6 bg-gradient-to-br from-[#232323] to-[#262626] text-white flex flex-col items-center justify-center">
+        <div className="w-12 h-12 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p>Cargando...</p>
+      </div>
+    );
   }
 
   return (
@@ -62,12 +103,27 @@ const Settings = ({ onBack }) => {
           >
             <div className="px-4 pb-4 border-t border-[#333] pt-4">
               <div className="space-y-4">
-                <div className="p-3 rounded-full bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] cursor-pointer" onClick={() => setShowKYC(true)}>
-                  <div className="flex justify-between items-center">
+              <div 
+                className={`p-3 rounded-full bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] ${userHasApprovedAccount ? 'cursor-pointer' : 'opacity-60 cursor-not-allowed'}`} 
+                onClick={() => userHasApprovedAccount && setShowKYC(true)}
+              >
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center">
                     <span>Verificacion KYC</span>
-                    <ChevronRight className="h-5 w-5 text-gray-400" />
+                    {!userHasApprovedAccount && (
+                      <span className="ml-2 text-xs bg-gray-700 text-gray-300 px-2 py-1 rounded-full">
+                        Requiere cuenta aprobada
+                      </span>
+                    )}
+                    {userHasApprovedAccount && userKycStatus === 'pending_approval' && (
+                      <span className="ml-2 text-xs bg-yellow-900/60 text-yellow-300 px-2 py-1 rounded-full">
+                        Aprobación pendiente
+                      </span>
+                    )}
                   </div>
+                  <ChevronRight className="h-5 w-5 text-gray-400" />
                 </div>
+              </div>
                 <div className="p-3 rounded-full bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] cursor-pointer" onClick={() => setShowChangePasswordModal(true)}>
                   <div className="flex justify-between items-center">
                     <span>Cambiar Contraseña</span>

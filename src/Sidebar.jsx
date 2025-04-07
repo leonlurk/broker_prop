@@ -119,7 +119,7 @@ const Sidebar = ({ selectedOption, setSelectedOption, onLogout }) => {
 
             <div 
                 className={`${isMobile ? 'fixed left-0 top-0 z-50' : 'relative'} h-screen ${isMobile ? (isMobileMenuOpen ? 'w-[80%] max-w-[300px]' : 'w-0') : 'w-[300px]'} 
-                bg-[#232323] text-white border-r border-blue-800 border-opacity-20 flex flex-col
+                bg-[#232323] text-white  border-opacity-20 flex flex-col
                 transition-all duration-300 ease-in-out overflow-hidden`}
             >
                 {/* Logo section - fixed */}

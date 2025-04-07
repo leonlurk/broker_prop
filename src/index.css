@@ -56,7 +56,7 @@ button {
   transition: border-color 0.25s;
 }
 button:hover {
-  border-color: #646cff;
+  border-color: #06b6d4;
 }
 button:focus,
 button:focus-visible {
@@ -74,4 +74,22 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+}
+
+.fading-borders::before,
+.fading-borders::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 1px;
+  height: 100%;
+  background: linear-gradient(to bottom, rgba(6, 182, 212, 1) 0%, rgba(6, 182, 212, 0) 100%);
+}
+
+.fading-borders::before {
+  left: 0;
+}
+
+.fading-borders::after {
+  right: 0;
 }

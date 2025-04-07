@@ -15,13 +15,13 @@ const TradingAccounts = ({ setSelectedOption, setSelectedAccount }) => {
   const getStatusBadgeClass = (status) => {
     switch (status) {
       case 'Activa':
-        return 'bg-cyan-500/30 text-cyan-500';
+        return 'bg-gradient-to-br from-cyan-500 to-[#2b2b2b]';
       case 'Aprobada':
-        return 'bg-green-900/30 text-green-600';
+        return 'bg-gradient-to-br from-[#3a5311] to-[#2b2b2b]';
       case 'Perdida':
-        return 'bg-red-900/30 text-red-500';
+        return 'bg-gradient-to-br from-red-500/40 to-[#2b2b2b]';
       default:
-        return 'bg-gray-800 text-gray-400';
+        return 'bg-gray-800';
     }
   };
   
@@ -44,16 +44,18 @@ const TradingAccounts = ({ setSelectedOption, setSelectedAccount }) => {
         ))}
       </div>
       
-      {/* Account List */}
+      {/* Acco
+      unt List */}
       <div className="space-y-4">
         {accounts.map((account) => (
           <div 
             key={account.id} 
-            className="p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] rounded-xl border border-[#333] flex items-center justify-between"
+            className="p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] rounded-xl border border-[#333] flex items-center"
           >
-            <div className="flex items-center">
+            {/* Columna 1: Información de la cuenta (izquierda) */}
+            <div className="flex items-center flex-1">
               <div className="w-14 h-14 mr-4 flex items-center justify-center">
-              <img src="/userchart.png"/>
+                <img src="/userchart.png"/>
               </div>
               <div>
                 <div className="font-medium text-lg">{account.type}</div>
@@ -65,19 +67,24 @@ const TradingAccounts = ({ setSelectedOption, setSelectedAccount }) => {
               </div>
             </div>
             
-            <div className="flex items-center space-x-4">
-              <span className={`px-4 py-1 rounded-full text-sm ${getStatusBadgeClass(account.status)}`}>
+            {/* Columna 2: Estado (centro) */}
+            <div className="flex-1 text-center">
+              <span className={`inline-block px-6 py-3 rounded-full text-sm text-white ${getStatusBadgeClass(account.status)}`}>
                 {account.status}
               </span>
+            </div>
+            
+            {/* Columna 3: Botón (derecha) */}
+            <div className="flex-1 flex justify-end">
               <button 
-              className="px-4 py-2 rounded-full bg-[#232323] border border-[#333] hover:bg-[#2a2a2a] transition focus:outline-none"
-              onClick={() => {
-                setSelectedAccount && setSelectedAccount(account.id);
-                setSelectedOption && setSelectedOption("Dashboard");
-                  }}
-                >
-                  Ver Detalles
-                </button>
+                className="px-4 py-2 rounded-full bg-[#232323] border border-[#333] hover:bg-[#2a2a2a] transition focus:outline-none"
+                onClick={() => {
+                  setSelectedAccount && setSelectedAccount(account.id);
+                  setSelectedOption && setSelectedOption("Dashboard");
+                }}
+              >
+                Ver Detalles
+              </button>
             </div>
           </div>
         ))}

@@ -100,7 +100,7 @@ const Home = ({ onViewDetails, onSettingsClick, setSelectedOption }) => {
     </button>
     
     {showLanguageMenu && (
-      <div className="absolute top-full right-0 mt-2 bg-transparent rounded-md overflow-hidden z-20 min-w-32">
+      <div className="absolute top-full right-0 mt-2 bg-black bg-opacity-20 border-t border-cyan-500 rounded-md overflow-hidden z-20 min-w-[90px] fading-borders">
         <button 
           className="focus:outline-none flex items-center space-x-2 px-4 py-2 w-full text-left bg-transparent hover:ring-1 hover:border-cyan-400 transition-all duration-200"
           onClick={() => changeLanguage('ES')}
@@ -123,7 +123,7 @@ const Home = ({ onViewDetails, onSettingsClick, setSelectedOption }) => {
 
       {/* Tarjeta principal con fondo de imagen */}
       <div 
-        className="mb-4 md:mb-6 p-4 md:p-6 rounded-2xl relative h-auto md:h-80 flex flex-col justify-center border border-cyan-500 border-opacity-30 shadow-lg shadow-cyan-900/20"
+        className="mb-4 md:mb-6 p-4 md:p-6 rounded-2xl relative h-auto md:h-[430px] flex flex-col justify-center border border-cyan-500 border-opacity-30 shadow-lg shadow-cyan-900/20"
       >
         <div 
           className="absolute inset-0 rounded-md"
@@ -136,8 +136,8 @@ const Home = ({ onViewDetails, onSettingsClick, setSelectedOption }) => {
           }}
         ></div>
         <div className="max-w-lg relative z-10 py-8 md:py-0">
-          <h2 className="text-xl md:text-3xl font-bold mb-3 md:mb-4">Impulsa tu trading con AGM Prop Firm</h2>
-          <p className="text-base md:text-xl mb-4 md:mb-6">¡Obtén hasta un 90% de profit split y gestiona cuentas de hasta $200,000</p>
+          <h2 className="text-xl md:text-5xl font-base mb-3 md:mb-4">Impulsa tu trading con AGM Prop Firm</h2>
+          <p className="text-regular md:text-2xl mb-4 md:mb-6">Obtén hasta un 90% de profit split y gestiona cuentas de hasta $200,000</p>
           <button 
           className="bg-gradient-to-r from-[#0F7490] to-[#0A5A72] text-white py-2 px-4 md:px-6 rounded-md hover:opacity-90 transition"
           style={{ outline: 'none' }}
@@ -163,9 +163,9 @@ const Home = ({ onViewDetails, onSettingsClick, setSelectedOption }) => {
         {/* Tarjetas de cuentas */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 flex-grow">
           {[1, 2, 3].map((accountId) => (
-            <div key={accountId} className="bg-gradient-to-br from-[#232323] to-[#2d2d2d] p-3 md:p-4 rounded-3xl border border-[#333] flex flex-col h-48 md:h-72">
+            <div key={accountId} className="bg-gradient-to-br from-[#232323] to-[#2d2d2d] p-3 md:p-4 rounded-3xl border border-[#333] flex flex-col h-48 md:h-[250px] max-w-lg ">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2">
-                <h3 className="font-medium text-lg md:text-2xl lg:text-4xl mb-1 sm:mb-0">ONE STEP CHALLENGE 100K</h3>
+                <h3 className="font-medium text-lg md:text-2xl lg:text-3xl mb-1 sm:mb-0">ONE STEP CHALLENGE 100K</h3>
                 <span className="text-gray-400 text-base md:text-xl">#{657230 + accountId}</span>
               </div>
               <div className="flex justify-center mt-auto pt-4">

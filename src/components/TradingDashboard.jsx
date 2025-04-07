@@ -51,70 +51,114 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
           {getBackText()}
         </button>
       </div>
-      
-      {/* Header con saludo y detalles */}
-      <div className="p-4 md:p-6 rounded-2xl relative bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] mb-4 md:mb-6">
-        <div className="flex justify-between items-start mb-6">
-          <div>
-            <div className="flex items-center mb-3">
-              <div className="w-16 h-16 bg-[#333] rounded-full flex items-center justify-center text-2xl mr-4">
-                <img src="/IconoPerfil.png" alt="Avatar" />
-              </div>
-              <div>
-                <h1 className="text-xl md:text-2xl font-semibold">Hola, Isaac</h1>
-                <p className="text-sm md:text-base text-gray-400">
-                  Cuenta #{657230 + accountId} - Challenge de 100k
-                </p>
-              </div>
+{/* Header con saludo y detalles */}
+<div className="p-4 md:p-6 rounded-2xl relative bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] mb-4 md:mb-6">
+  <div className="flex flex-col md:flex-row justify-between w-full">
+    <div className="flex items-start mb-4 md:mb-0 md:w-1/2">
+      <div className="w-16 h-16 bg-[#333] rounded-full flex items-center justify-center text-2xl mr-4">
+        <img src="/IconoPerfil.png" alt="Avatar" />
+      </div>
+      <div className="w-full">
+        <h1 className="text-xl md:text-2xl font-semibold">Hola, Santiago</h1>
+        <p className="text-sm md:text-base text-gray-400">
+          Actualmente, tienes una cuenta de 100k
+        </p>
+        
+        <div className="space-y-2 mt-4">
+          <div className="flex items-center">
+            <div className="mr-3">
+              <img src="/lightning_ring.png" alt="Lightning" className="w-6 h-6" onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23333'/%3E%3Cpath d='M12 6L9 13H12V18L15 11H12V6Z' fill='white'/%3E%3C/svg%3E";
+              }} />
             </div>
-            
-            <div className="space-y-2 mt-4">
-              <div className="flex items-center">
-                <div className="mr-3">
-                  <img src="/lightning_ring.png" alt="Lightning" className="w-6 h-6" onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23333'/%3E%3Cpath d='M12 6L9 13H12V18L15 11H12V6Z' fill='white'/%3E%3C/svg%3E";
-                  }} />
-                </div>
-                <div className="flex gap-2">
-                  <span className="text-gray-400">Balance Inicial:</span>
-                  <span className="font-medium">$100.000</span>
-                </div>
-              </div>
-              
-              <div className="flex items-center">
-                <div className="mr-3">
-                  <img src="/lightning_ring.png" alt="Lightning" className="w-6 h-6" onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23333'/%3E%3Cpath d='M12 6L9 13H12V18L15 11H12V6Z' fill='white'/%3E%3C/svg%3E";
-                  }} />
-                </div>
-                <div className="flex gap-2">
-                  <span className="text-gray-400">Tipo de plan:</span>
-                  <span className="font-medium">100k Challenge</span>
-                </div>
-              </div>
-              
-              <div className="flex items-center">
-                <div className="mr-3">
-                  <img src="/lightning_ring.png" alt="Lightning" className="w-6 h-6" onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23333'/%3E%3Cpath d='M12 6L9 13H12V18L15 11H12V6Z' fill='white'/%3E%3C/svg%3E";
-                  }} />
-                </div>
-                <div className="flex gap-2">
-                  <span className="text-gray-400">Tipo de cuenta:</span>
-                  <span className="font-medium">Swipe</span>
-                </div>
-              </div>
-            </div>
+            <span className="text-gray-400 mr-2">Balance Inicial:</span>
+            <span className="font-medium">$100.000</span>
           </div>
           
-          <div className="bg-teal-800 rounded-full py-1 px-4 text-white">
-            Activa
+          <div className="flex items-center">
+            <div className="mr-3">
+              <img src="/lightning_ring.png" alt="Lightning" className="w-6 h-6" onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23333'/%3E%3Cpath d='M12 6L9 13H12V18L15 11H12V6Z' fill='white'/%3E%3C/svg%3E";
+              }} />
+            </div>
+            <span className="text-gray-400 mr-2">Tipo de plan:</span>
+            <span className="font-medium">100k Challenge</span>
           </div>
-        </div>        
+          
+          <div className="flex items-center">
+            <div className="mr-3">
+              <img src="/lightning_ring.png" alt="Lightning" className="w-6 h-6" onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23333'/%3E%3Cpath d='M12 6L9 13H12V18L15 11H12V6Z' fill='white'/%3E%3C/svg%3E";
+              }} />
+            </div>
+            <span className="text-gray-400 mr-2">Tipo de cuenta:</span>
+            <span className="font-medium">Swipe</span>
+          </div>
+        </div>
       </div>
+    </div>
+    
+    <div className="flex flex-col md:w-1/2 md:border-l md:border-gray-700 md:pl-6">
+      <div className="flex items-center mb-4">
+        <div className="mr-3">
+          <img src="/Chield_check.png" alt="Shield" className="w-6 h-6" onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath d='M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z' fill='%23555'/%3E%3C/svg%3E";
+          }} />
+        </div>
+        <h3 className="text-xl font-medium mr-3">Detalles de cuenta</h3>
+        <div className="bg-gradient-to-br from-cyan-500 to-cyan-800/30 ml-auto rounded-full py-2 px-6 text-sm text-white">
+          Activa
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-2 gap-4 w-full">
+        <div className="border border-gray-700 rounded p-2">
+          <div className="flex items-center justify-between">
+            <span className="text-s text-gray-400">Log In</span>
+            <div className="flex items-center">
+              <span className="text-s mr-2">462777</span>
+              <img src="/Copy.png" alt="Shield" className="w-4 h-4" onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath d='M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z' fill='%23555'/%3E%3C/svg%3E";
+          }} />
+            </div>
+          </div>
+        </div>
+        
+        <div className="border border-gray-700 rounded p-2">
+          <div className="flex items-center justify-between">
+            <span className="text-s text-gray-400">Investor Pass</span>
+            <span className="text-s text-gray-300 underline">Set Password</span>
+          </div>
+        </div>
+        
+        <div className="border border-gray-700 rounded p-2">
+          <div className="flex items-center justify-between">
+            <span className="text-s text-gray-400">Master pass.</span>
+            <div className="flex items-center">
+              <span className="text-s mr-2">********</span>
+              <img src="/Visibilidad.png" alt="Shield" className="w-4 h-4" onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath d='M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z' fill='%23555'/%3E%3C/svg%3E";
+          }} />
+            </div>
+          </div>
+        </div>
+        
+        <div className="border border-gray-700 rounded p-2">
+          <div className="flex items-center justify-between">
+            <span className="text-s text-gray-400">MT5 Server</span>
+            <span className="text-s">APE server</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
       {/* Sección de balance y métricas */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">

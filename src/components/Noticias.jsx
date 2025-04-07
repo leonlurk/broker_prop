@@ -16,7 +16,7 @@ const Noticias = () => {
   const [events, setEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+
   // Filter states
   const [impactFilters, setImpactFilters] = useState({
     feriados: false,
@@ -30,16 +30,35 @@ const Noticias = () => {
     mostrarRestringidos: false
   });
 
-  // Obtener noticias financieras desde MarketAux API
+  // Estado para controlar la zona horaria
+  const [timeZone, setTimeZone] = useState(Intl.DateTimeFormat().resolvedOptions().timeZone);
+  const [showTimeZoneMenu, setShowTimeZoneMenu] = useState(false);
+
+  // Lista de zonas horarias comunes
+  const timeZones = [
+    'America/New_York',
+    'America/Chicago',
+    'America/Denver',
+    'America/Los_Angeles',
+    'America/Mexico_City',
+    'Europe/London',
+    'Europe/Madrid',
+    'Europe/Berlin',
+    'Asia/Tokyo',
+    'Asia/Shanghai',
+    'Australia/Sydney'
+  ];
+
+  // Reloj en tiempo real
+  const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+
+  // Obtener noticias financieras desde API
   useEffect(() => {
     const fetchFinancialNews = async () => {
       setIsLoading(true);
       setError(null);
       
       try {
-        // API key para MarketAux (gratuita, registrate en marketaux.com)
-        const apiKey = 'iVVKq8pAjZTiCVM4gAHMyUi51exl7PpdmisyKDus'; // Registrate en MarketAux para obtener una clave gratuita
-        
         // Formatear fechas para la API
         const fromDate = new Date(currentYear, currentMonth - 1, startDate);
         const toDate = new Date(currentYear, currentMonth - 1, endDate);
@@ -47,71 +66,88 @@ const Noticias = () => {
         const from = fromDate.toISOString().split('T')[0];
         const to = toDate.toISOString().split('T')[0];
         
-        // Usando la API de MarketAux para noticias financieras
-        const response = await fetch(`https://api.marketaux.com/v1/news/all?language=en&countries=us,ca,mx,es,ar,br&filter_entities=true&limit=10&published_after=${from}&api_token=${apiKey}`);
+        // Usando la API gratuita de Finnhub para noticias financieras
+        const apiKey = 'cvlqld9r01qj3umf2uggcvlqld9r01qj3umf2uh0'; // API key gratuita
+        
+        // Determinar el día actual seleccionado para filtrar noticias
+        const dayIndex = days.indexOf(activeDay);
+        const targetDate = new Date(today);
+        targetDate.setDate(today.getDate() + dayIndex);
+        const dateStr = targetDate.toISOString().split('T')[0];
+        
+        const response = await fetch(`https://finnhub.io/api/v1/news?category=general&from=${dateStr}&to=${dateStr}&token=${apiKey}`);
         
         if (!response.ok) {
           throw new Error('Error al obtener noticias financieras');
         }
         
         const data = await response.json();
-        
+
         // Transformar datos de noticias a formato de eventos económicos
-        if (data && data.data) {
-          const transformedEvents = data.data.map(news => {
-            // Determinar impacto basado en sentimiento
+        if (data && data.length > 0) {
+          const transformedEvents = data.map(news => {
+            // Determinar impacto basado en factores como la categoría
             let impact = 'low';
             let color = 'red';
             
-            if (news.entities && news.entities.length > 0) {
-              const sentimentSum = news.entities.reduce((acc, entity) => acc + (entity.sentiment_score || 0), 0);
-              const avgSentiment = sentimentSum / news.entities.length;
-              
-              if (Math.abs(avgSentiment) > 0.5) {
-                impact = 'high';
-                color = 'cyan';
-              } else if (Math.abs(avgSentiment) > 0.2) {
-                impact = 'medium';
-                color = 'green';
+            // Determinar impacto basado en la categoría y el título
+            const keyword = news.headline.toLowerCase();
+            if (keyword.includes('crisis') || 
+                keyword.includes('crash') || 
+                keyword.includes('surge') ||
+                keyword.includes('collapse')) {
+              impact = 'high';
+              color = 'cyan';
+            } else if (keyword.includes('increase') || 
+                       keyword.includes('decrease') || 
+                       keyword.includes('announce') || 
+                       keyword.includes('report')) {
+              impact = 'medium';
+              color = 'green';
+            }
+            
+            // Determinar instrumento financiero basado en el contenido
+            let instrument = 'Global';
+            if (news.related) {
+              const symbols = news.related.split(',');
+              if (symbols.length > 0) {
+                instrument = symbols[0];
               }
             }
             
-            // Determinar instrumento financiero (símbolo de acciones)
-            let instrument = 'Global';
-            if (news.entities && news.entities.length > 0) {
-              const stockEntity = news.entities.find(e => e.symbol);
-              if (stockEntity) instrument = stockEntity.symbol;
-            }
-            
             // Formatear fecha y hora para mostrar
-            const publishDate = new Date(news.published_at);
+            const publishDate = new Date(news.datetime * 1000); // Convertir timestamp a fecha
             const displayDate = `${publishDate.getDate()} ${getMonthName(publishDate.getMonth()).substring(0, 3)}`;
             const displayTime = `${publishDate.getHours().toString().padStart(2, '0')}:${publishDate.getMinutes().toString().padStart(2, '0')}`;
             
             // Determinar si un evento ya ha pasado
             const isPast = publishDate < new Date();
             
-            // Determinar si el evento es destacado (basado en importancia)
-            const isHighlighted = news.entities && news.entities.some(e => Math.abs(e.sentiment_score || 0) > 0.7);
+            // Determinar si el evento es destacado
+            const isHighlighted = news.category === 'economy' || news.category === 'general';
             
             return {
-              description: news.title || 'Noticia financiera',
+              description: news.headline || 'Noticia financiera',
               instrument: instrument,
               time: displayTime,
               date: displayDate,
               timestamp: `${publishDate.getHours().toString().padStart(2, '0')}:${publishDate.getMinutes().toString().padStart(2, '0')}:${publishDate.getSeconds().toString().padStart(2, '0')}`,
-              actual: isPast ? news.description.substring(0, 20) + '...' : '-',
-              forecast: '-',
+              actual: isPast ? news.summary.substring(0, 20) + '...' : '-',
+              forecast: news.category || '-',
               previous: '-',
               impact: impact,
               color: color,
               highlighted: isHighlighted,
               isPast: isPast,
+              url: news.url,
               raw: news // Mantener datos originales
             };
           });
           
           setEvents(transformedEvents);
+        } else {
+          // Si no hay datos, cargar datos de respaldo
+          loadFallbackData();
         }
       } catch (err) {
         console.error('Error en la API de noticias financieras:', err);
@@ -126,67 +162,74 @@ const Noticias = () => {
     
     const loadFallbackData = () => {
       // Datos de ejemplo para mostrar si falla la API
+      const dayIndex = days.indexOf(activeDay);
+      const targetDate = new Date(today);
+      targetDate.setDate(today.getDate() + dayIndex);
+      
       setEvents([
         {
           description: 'FED Interest Rate Decision',
           instrument: 'USD',
           time: '12:00',
-          date: `${today.getDate()} ${getMonthName(today.getMonth()).substring(0, 3)}`,
+          date: `${targetDate.getDate()} ${getMonthName(targetDate.getMonth()).substring(0, 3)}`,
           timestamp: '00:30:23',
           actual: '-',
           forecast: '0,6%',
           previous: '0,2%',
           impact: 'high',
-          color: 'cyan'
+          color: 'cyan',
+          highlighted: true,
+          isPast: false
         },
         {
           description: 'ECB Monetary Policy Statement',
           instrument: 'EUR',
           time: '14:30',
-          date: `${today.getDate()} ${getMonthName(today.getMonth()).substring(0, 3)}`,
+          date: `${targetDate.getDate()} ${getMonthName(targetDate.getMonth()).substring(0, 3)}`,
           timestamp: '14:30:00',
           actual: '-',
           forecast: '0,3%',
           previous: '0,1%',
           impact: 'medium',
-          color: 'green'
+          color: 'green',
+          highlighted: false,
+          isPast: targetDate.getDate() === today.getDate() && 14 < today.getHours()
         },
-        {
-          description: 'US Non-Farm Payroll',
-          instrument: 'USD',
-          time: '10:00',
-          date: `${today.getDate() + 1} ${getMonthName(today.getMonth()).substring(0, 3)}`,
-          timestamp: '10:00:00',
-          actual: '-',
-          forecast: '0,8%',
-          previous: '0,7%',
-          impact: 'low',
-          color: 'red'
-        },
-        {
-          description: 'FOMC Meeting Minutes',
-          instrument: 'USD',
-          time: '20:00',
-          date: `${today.getDate() + 2} ${getMonthName(today.getMonth()).substring(0, 3)}`,
-          timestamp: '20:00:00',
-          actual: '-',
-          forecast: '-',
-          previous: '-',
-          impact: 'high',
-          color: 'cyan',
-          highlighted: true
-        }
+        // Otros eventos de ejemplo...
       ]);
     };
-    
-    // Cargar datos al montar el componente
+
+    // Cargar datos al montar el componente o cambiar de día
     fetchFinancialNews();
     
-    // También podemos configurar un intervalo para actualizar cada cierto tiempo
-    const intervalId = setInterval(fetchFinancialNews, 60000 * 30); // Actualizar cada 30 minutos
+    // Intervalo para actualizar cada 5 minutos
+    const intervalId = setInterval(fetchFinancialNews, 300000);
     
     return () => clearInterval(intervalId);
-  }, [startDate, endDate, currentMonth, currentYear]);
+  }, [startDate, endDate, currentMonth, currentYear, activeDay]);
+
+  // Efecto para actualizar el rango de fechas cuando se cambia el día activo
+  useEffect(() => {
+    const dayIndex = days.indexOf(activeDay);
+    if (dayIndex !== -1) {
+      const targetDate = new Date(today);
+      targetDate.setDate(today.getDate() + dayIndex);
+      
+      setStartDate(targetDate.getDate());
+      setEndDate(targetDate.getDate());
+      setCurrentMonth(targetDate.getMonth() + 1);
+      setCurrentYear(targetDate.getFullYear());
+    }
+  }, [activeDay]);
+
+  // Efecto para actualizar el reloj en tiempo real
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setCurrentTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+    }, 1000);
+    
+    return () => clearInterval(intervalId);
+  }, []);
 
   // Función para obtener el nombre del mes
   const getMonthName = (monthIndex) => {
@@ -197,29 +240,25 @@ const Noticias = () => {
   // Filtrar eventos según criterios
   const filteredEvents = events.filter(event => {
     // Filtrar por impacto
-    if (impactFilters.alto && event.impact === 'high') return true;
-    if (impactFilters.medio && event.impact === 'medium') return true;
-    if (impactFilters.bajo && event.impact === 'low') return true;
-    if (impactFilters.feriados && event.impact === 'holiday') return true;
+    const impactMatches = 
+      (impactFilters.alto && event.impact === 'high') ||
+      (impactFilters.medio && event.impact === 'medium') ||
+      (impactFilters.bajo && event.impact === 'low') ||
+      (impactFilters.feriados && event.impact === 'holiday');
     
-    // Si ningún filtro está activo, mostrar todos
-    if (!impactFilters.alto && !impactFilters.medio && !impactFilters.bajo && !impactFilters.feriados) {
-      return true;
-    }
+    // Si ningún filtro de impacto está activo, mostrar todos
+    const showAllImpacts = !impactFilters.alto && !impactFilters.medio && !impactFilters.bajo && !impactFilters.feriados;
     
-    // Ocultar eventos pasados si el filtro está activo
-    if (visibilityFilters.ocultarNoticias && event.isPast) {
-      return false;
-    }
+    // Filtro de noticias pasadas
+    const pastFilter = !visibilityFilters.ocultarNoticias || !event.isPast;
     
-    // Mostrar solo eventos restringidos si el filtro está activo
-    if (visibilityFilters.mostrarRestringidos && !event.highlighted) {
-      return false;
-    }
+    // Filtro de eventos restringidos
+    const restrictedFilter = !visibilityFilters.mostrarRestringidos || event.highlighted;
     
-    return false;
+    return (impactMatches || showAllImpacts) && pastFilter && restrictedFilter;
   });
 
+  // Funciones de utilidad para manejo de filtros y UI
   const toggleImpactFilter = (filter) => {
     setImpactFilters({
       ...impactFilters,
@@ -248,12 +287,60 @@ const Noticias = () => {
   };
   
   // Función para obtener la bandera del país
-  const getCountryFlag = (countryCode) => {
-    if (!countryCode) return '/globe.png';
+  const getCountryFlag = (instrument) => {
+    // Mapeo de instrumentos a códigos de país
+    const countryMap = {
+      'USD': 'us',
+      'EUR': 'eu',
+      'GBP': 'gb',
+      'JPY': 'jp',
+      'AUD': 'au',
+      'CAD': 'ca',
+      'CHF': 'ch',
+      'NZD': 'nz',
+      'CNY': 'cn',
+      'MXN': 'mx',
+      'BRL': 'br',
+      'INR': 'in',
+      'RUB': 'ru',
+      'KRW': 'kr',
+      'TRY': 'tr',
+      'ZAR': 'za',
+      'SGD': 'sg',
+      'HKD': 'hk',
+      'Global': 'global'
+    };
     
-    // Convertir códigos de país de dos letras a minúsculas para las imágenes de banderas
-    const code = countryCode.toLowerCase();
+    const code = countryMap[instrument] || 'global';
     return `/flags/${code}.png`;
+  };
+
+  // Función para añadir un evento al calendario
+  const addEventToCalendar = (event) => {
+    try {
+      const eventDate = new Date(`${event.date} ${event.time}`);
+      const endTime = new Date(eventDate.getTime() + 60 * 60 * 1000); // 1 hora más
+      
+      const calendarEvent = {
+        title: event.description,
+        start: eventDate.toISOString(),
+        end: endTime.toISOString(),
+        description: `Impacto: ${event.impact}, Pronóstico: ${event.forecast}, Previo: ${event.previous}`
+      };
+      
+      // Abrir Google Calendar con los datos del evento
+      const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(calendarEvent.title)}&dates=${calendarEvent.start.replace(/[-:]/g, '').replace('.000', '')}/${calendarEvent.end.replace(/[-:]/g, '').replace('.000', '')}&details=${encodeURIComponent(calendarEvent.description)}`;
+      
+      window.open(url, '_blank');
+    } catch (error) {
+      console.error('Error al añadir evento al calendario:', error);
+    }
+  };
+
+  // Función para cambiar la zona horaria
+  const changeTimeZone = (newTimeZone) => {
+    setTimeZone(newTimeZone);
+    setShowTimeZoneMenu(false);
   };
 
   return (
@@ -278,27 +365,52 @@ const Noticias = () => {
       {/* Date selector - Stack on mobile */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center mb-6 gap-2 sm:gap-0">
         <div className="p-2 sm:p-3 text-base sm:text-xl bg-gradient-to-br from-[#232323] to-[#2d2d2d] rounded-full border border-[#333] text-white mr-0 sm:mr-4">
-          El día de hoy
+          {activeDay === 'Lunes' ? 'El día de hoy' : activeDay}
         </div>
         <div className="p-2 sm:p-3 text-base sm:text-xl bg-transparent text-white mr-0 sm:mr-auto">
-          {getMonthName(currentMonth - 1)} <span className="text-[#a0a0a0]">{startDate}</span> - {getMonthName(currentMonth - 1)} <span className="text-[#a0a0a0]">{endDate}</span>, {currentYear}
+          {getMonthName(currentMonth - 1)} <span className="text-[#a0a0a0]">{startDate}</span> 
+          {startDate !== endDate && (
+            <> - {getMonthName(currentMonth - 1)} <span className="text-[#a0a0a0]">{endDate}</span></>
+          )}
+          , {currentYear}
         </div>
-        <div className="flex items-center p-2 sm:p-3 bg-gradient-to-br from-[#232323] to-[#2d2d2d] rounded-full border border-[#333] text-white w-full sm:w-auto justify-between sm:justify-start">
-          <div className="flex items-center">
-            <img 
-              src="/pin.png" 
-              alt="Location Pin" 
-              className="w-6 h-6 sm:w-8 sm:h-8 mr-2"
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='white' d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z'/%3E%3C/svg%3E";
-              }}
-            />
-            <span className="mr-2 text-sm sm:text-xl truncate">
-              {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} {Intl.DateTimeFormat().resolvedOptions().timeZone}
-            </span>
+
+        <div className="relative">
+          <div 
+            className="flex items-center p-2 sm:p-3 bg-gradient-to-br from-[#232323] to-[#2d2d2d] rounded-full border border-[#333] text-white w-full sm:w-auto justify-between sm:justify-start cursor-pointer"
+            onClick={() => setShowTimeZoneMenu(!showTimeZoneMenu)}
+          >
+            <div className="flex items-center">
+              <img 
+                src="/pin.png" 
+                alt="Location Pin" 
+                className="w-6 h-6 sm:w-8 sm:h-8 mr-2"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='white' d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z'/%3E%3C/svg%3E";
+                }}
+              />
+              <span className="mr-2 text-sm sm:text-xl truncate">
+                {currentTime} {timeZone.split('/').pop().replace('_', ' ')}
+              </span>
+            </div>
+            <ChevronDown size={16} className={showTimeZoneMenu ? 'transform rotate-180' : ''} />
           </div>
-          <ChevronDown size={16} />
+          
+          {/* Menú de zonas horarias */}
+          {showTimeZoneMenu && (
+            <div className="absolute top-full left-0 mt-1 z-10 bg-[#2d2d2d] border border-[#444] rounded-lg shadow-lg w-full sm:w-64 max-h-60 overflow-y-auto">
+              {timeZones.map((zone) => (
+                <div 
+                  key={zone} 
+                  className="p-2 hover:bg-[#3a3a3a] cursor-pointer text-sm"
+                  onClick={() => changeTimeZone(zone)}
+                >
+                  {zone.split('/').pop().replace('_', ' ')}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -393,6 +505,7 @@ const Noticias = () => {
             </div>
           </div>
         ) : (
+
           <>
             {/* Desktop Table (hidden on mobile) */}
             <div className="hidden md:block overflow-x-auto">
@@ -428,6 +541,7 @@ const Noticias = () => {
                           )}
                         </div>
                       </td>
+
                       <td className="py-4 px-3">
                         <div className="flex items-center">
                           <div className="w-8 h-8 mr-2 flex items-center justify-center">
@@ -462,7 +576,11 @@ const Noticias = () => {
                       <td className="py-4 px-3">{event.forecast}</td>
                       <td className="py-4 px-3">{event.previous}</td>
                       <td className="py-4 px-3">
-                        <button className="p-2 bg-transparent">
+                        <button 
+                          className="p-2 bg-transparent hover:bg-[#333] rounded-full transition-colors"
+                          onClick={() => addEventToCalendar(event)}
+                          title="Añadir al calendario"
+                        >
                           <Calendar className="h-5 w-5 text-gray-400" />
                         </button>
                       </td>
@@ -484,7 +602,11 @@ const Noticias = () => {
                       <div className={`w-3 h-3 rounded-full mr-2 ${getImpactColor(event.color)}`}></div>
                       <span className="font-medium line-clamp-2">{event.description}</span>
                     </div>
-                    <button className="p-1 bg-transparent">
+                    <button 
+                      className="p-1 bg-transparent hover:bg-[#333] rounded-full transition-colors"
+                      onClick={() => addEventToCalendar(event)}
+                      title="Añadir al calendario"
+                    >
                       <Calendar className="h-5 w-5 text-gray-400" />
                     </button>
                   </div>
@@ -496,7 +618,7 @@ const Noticias = () => {
                     </div>
                   )}
 
-                  <div className="grid grid-cols-2 gap-y-2">
+<div className="grid grid-cols-2 gap-y-2">
                     <div>
                       <div className="text-xs text-gray-400">Instrumento</div>
                       <div className="flex items-center">
