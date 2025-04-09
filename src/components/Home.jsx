@@ -1,16 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Settings from './Settings';
 import UserInformationContent from './UserInformationContent';
 import NotificationsModal from './NotificationsModal';
 import { ChevronDown, Calendar, ArrowLeft } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext'; // Importar el contexto de autenticación
 
 const fondoTarjetaUrl = "/fondoTarjeta.png";
+
 
 const Home = ({ onViewDetails, onSettingsClick, setSelectedOption }) => {
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState('ES');
   const [showUserInfo, setShowUserInfo] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const { currentUser } = useAuth();
+
+  const getUserName = () => {
+    if (currentUser && currentUser.displayName) {
+      return currentUser.displayName.split(' ')[0]; // Obtener solo el primer nombre
+    } else if (currentUser && currentUser.email) {
+      // Si no hay displayName, usar la primera parte del email
+      return currentUser.email.split('@')[0];
+    }
+    return 'Usuario'; // Valor por defecto
+  };
 
   const toggleLanguageMenu = () => {
     setShowLanguageMenu(!showLanguageMenu);
@@ -42,15 +55,15 @@ const Home = ({ onViewDetails, onSettingsClick, setSelectedOption }) => {
   }
 
   return (
-    <div className="p-4 md:p-6 bg-[#232323] text-white min-h-screen flex flex-col">
+    <div className="p-4 md:p-6 bg-[#232323] border border-[#333] rounded-3xl text-white min-h-screen flex flex-col">
       {/* Header con saludo y fecha */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 md:mb-6 p-3 md:p-4 bg-gradient-to-br from-[#232323] to-[#202020] border border-[#333] rounded-xl relative">
-        <div className="absolute inset-0 border-solid border-t border-l border-r border-cyan-500 border-opacity-50 rounded-xl"></div>
+        <div className="absolute inset-0 border-solid border-t-4 border-l border-r border-cyan-500 border-opacity-50 rounded-xl"></div>
 
         <div className="mb-3 sm:mb-0">
-          <h1 className="text-xl md:text-2xl font-semibold">Hola, Isaac</h1>
-          <p className="text-sm md:text-base text-gray-400">Miércoles, 8 de diciembre 2025</p>
-        </div>
+        <h1 className="text-xl md:text-2xl font-semibold">Hola, {getUserName()}</h1>
+        <p className="text-sm md:text-base text-gray-400">Miércoles, 8 de diciembre 2025</p>
+      </div>
         <div className="flex items-center space-x-3 md:space-x-4 w-full sm:w-auto justify-end">
   <button 
     className="relative rounded-full bg-transparent focus:outline-none p-2 hover:ring-1 hover:ring-cyan-400 transition-all duration-200"
@@ -123,7 +136,7 @@ const Home = ({ onViewDetails, onSettingsClick, setSelectedOption }) => {
 
       {/* Tarjeta principal con fondo de imagen */}
       <div 
-        className="mb-4 md:mb-6 p-4 md:p-6 rounded-2xl relative h-auto md:h-[430px] flex flex-col justify-center border border-cyan-500 border-opacity-30 shadow-lg shadow-cyan-900/20"
+        className="mb-4 md:mb-6 p-4 md:p-6 rounded-2xl relative h-auto md:h-[430px] flex flex-col justify-center border-solid border-t-4 border-l border-r border-cyan-500 border-opacity-50"
       >
         <div 
           className="absolute inset-0 rounded-md"

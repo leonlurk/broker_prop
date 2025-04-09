@@ -4,6 +4,7 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  darkMode: 'class',
   theme: {
     extend: {},
   },
@@ -16,6 +17,7 @@ export default {
     'opacity-0',
     'group-hover:opacity-100',
     'transition-opacity',
-    'group'
+    'group',
+    'dark'
   ]
 }

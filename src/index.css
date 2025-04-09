@@ -93,3 +93,18 @@ button:focus-visible {
 .fading-borders::after {
   right: 0;
 }
+
+:root {
+  color-scheme: dark !important;
+}
+
+/* Estilos forzados para modo oscuro */
+.dark {
+  color: rgba(255, 255, 255, 0.87) !important;
+  background-color: #242424 !important;
+}
+
+/* Asegúrate de que los botones mantengan su estilo oscuro */
+.dark button {
+  background-color: #232323 !important;
+}

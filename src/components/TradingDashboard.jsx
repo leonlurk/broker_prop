@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AreaChart, Area, ResponsiveContainer, XAxis, YAxis } from 'recharts';
+import { useAuth } from '../contexts/AuthContext'; // Importar el contexto de autenticación
 
 const TradingDashboard = ({ accountId, onBack, previousSection }) => {
+  // Obtener información del usuario desde Firebase
+  const { currentUser } = useAuth();
   // Datos para el gráfico de balance
   const balanceData = [
     { name: 'Ene', value: 50000 },
@@ -14,6 +17,17 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
     { name: 'Ago', value: 180000 },
     { name: 'Sep', value: 220000 },
   ];
+
+  // Función para obtener el nombre del usuario
+const getUserName = () => {
+  if (currentUser && currentUser.displayName) {
+    return currentUser.displayName.split(' ')[0]; // Obtener solo el primer nombre
+  } else if (currentUser && currentUser.email) {
+    // Si no hay displayName, usar la primera parte del email
+    return currentUser.email.split('@')[0];
+  }
+  return 'Usuario'; // Valor por defecto
+};
 
   const getBackText = () => {
     if (previousSection === "Cuentas") {
@@ -59,7 +73,7 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
         <img src="/IconoPerfil.png" alt="Avatar" />
       </div>
       <div className="w-full">
-        <h1 className="text-xl md:text-2xl font-semibold">Hola, Santiago</h1>
+        <h1 className="text-xl md:text-2xl font-semibold">Hola, {getUserName()}</h1>
         <p className="text-sm md:text-base text-gray-400">
           Actualmente, tienes una cuenta de 100k
         </p>

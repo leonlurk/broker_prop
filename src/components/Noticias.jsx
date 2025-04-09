@@ -12,6 +12,7 @@ const Noticias = () => {
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
   const [currentMonth, setCurrentMonth] = useState(today.getMonth() + 1); // Mes en número (1-12)
   
+  
   // Estado para eventos económicos
   const [events, setEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -46,11 +47,25 @@ const Noticias = () => {
     'Europe/Berlin',
     'Asia/Tokyo',
     'Asia/Shanghai',
+    'Asia/Dubai',
     'Australia/Sydney'
   ];
 
+  const formatTimeForZone = (zone) => {
+    try {
+      return new Date().toLocaleTimeString([], { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        timeZone: zone
+      });
+    } catch (error) {
+      console.error(`Error formateando hora para zona ${zone}:`, error);
+      return "--:--";
+    }
+  };
+
   // Reloj en tiempo real
-  const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+  const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone }));
 
   // Obtener noticias financieras desde API
   useEffect(() => {
@@ -222,14 +237,18 @@ const Noticias = () => {
     }
   }, [activeDay]);
 
-  // Efecto para actualizar el reloj en tiempo real
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      setCurrentTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
-    }, 1000);
-    
-    return () => clearInterval(intervalId);
-  }, []);
+// Efecto para actualizar el reloj en tiempo real
+useEffect(() => {
+  const updateClock = () => {
+    setCurrentTime(formatTimeForZone(timeZone));
+  };
+  
+  // Actualizar inmediatamente y luego cada segundo
+  updateClock();
+  const intervalId = setInterval(updateClock, 1000);
+  
+  return () => clearInterval(intervalId);
+}, [timeZone]);
 
   // Función para obtener el nombre del mes
   const getMonthName = (monthIndex) => {
@@ -340,11 +359,12 @@ const Noticias = () => {
   // Función para cambiar la zona horaria
   const changeTimeZone = (newTimeZone) => {
     setTimeZone(newTimeZone);
+    setCurrentTime(formatTimeForZone(newTimeZone)); // Actualizar inmediatamente la hora mostrada
     setShowTimeZoneMenu(false);
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#232323] text-white p-2 sm:p-4">
+    <div className="flex flex-col border border-[#333] rounded-3xl min-h-screen bg-[#232323] text-white p-2 sm:p-4">
       {/* Days of the week tabs - Scrollable on mobile */}
       <div className="flex space-x-2 mb-4 overflow-x-auto pb-2 scrollbar-thin">
         {days.map((day) => (
@@ -397,20 +417,21 @@ const Noticias = () => {
             <ChevronDown size={16} className={showTimeZoneMenu ? 'transform rotate-180' : ''} />
           </div>
           
-          {/* Menú de zonas horarias */}
-          {showTimeZoneMenu && (
-            <div className="absolute top-full left-0 mt-1 z-10 bg-[#2d2d2d] border border-[#444] rounded-lg shadow-lg w-full sm:w-64 max-h-60 overflow-y-auto">
-              {timeZones.map((zone) => (
-                <div 
-                  key={zone} 
-                  className="p-2 hover:bg-[#3a3a3a] cursor-pointer text-sm"
-                  onClick={() => changeTimeZone(zone)}
-                >
-                  {zone.split('/').pop().replace('_', ' ')}
-                </div>
-              ))}
-            </div>
-          )}
+            {/* Menú de zonas horarias */}
+            {showTimeZoneMenu && (
+              <div className="absolute top-full left-0 mt-1 z-10 bg-[#2d2d2d] border border-[#444] rounded-lg shadow-lg w-full sm:w-64 max-h-60 overflow-y-auto">
+                {timeZones.map((zone) => (
+                  <div 
+                    key={zone} 
+                    className="p-2 hover:bg-[#3a3a3a] cursor-pointer text-sm flex justify-between items-center"
+                    onClick={() => changeTimeZone(zone)}
+                  >
+                    <span>{zone.split('/').pop().replace('_', ' ')}</span>
+                    <span className="text-gray-400">{formatTimeForZone(zone)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
         </div>
       </div>
 

@@ -80,18 +80,18 @@ const Sidebar = ({ selectedOption, setSelectedOption, onLogout }) => {
     };
 
     const menuItems = [
-        { name: "Dashboard", icon: <RiDashboardLine className="w-8 h-8" /> },
-        { name: "Cuentas", icon: <img src="./Flag.png" className="w-8 h-8" alt="Cuentas" /> },
-        { name: "Afiliados", icon: <img src="./Afiliados.png" className="w-8 h-8" alt="Afiliados" /> },
+        { name: "Dashboard", icon: <img src="./darhboard_alt.svg" className="w-8 h-8" alt="Cuentas" /> },
+        { name: "Cuentas", icon: <img src="./Flag.svg" className="w-8 h-8" alt="Cuentas" /> },
+        { name: "Afiliados", icon: <img src="./Group_light.svg" className="w-8 h-8" alt="Afiliados" /> },
         { 
             name: "Herramientas", 
-            icon: <img src="./Tools.png" className="w-8 h-8" alt="Herramientas" />,
+            icon: <img src="./Setting_sidebar.svg" className="w-8 h-8" alt="Herramientas" />,
             subOptions: ["Calculadora", "Descargas", "Noticias"]
         },
-        { name: "Certificados", icon: <img src="./Certs.png" className="w-8 h-8" alt="Certificados" /> },
-        { name: "Competicion", icon: <img src="./elements.png" className="w-5 h-7" alt="Competicion" /> },
-        { name: "Leaderboard", icon: <img src="./leader.png" className="w-7 h-7" alt="Leaderboard" /> },
-        { name: "Pagos", icon: <img src="./Money.png" className="w-8 h-8" alt="Pagos" /> },
+        { name: "Certificados", icon: <img src="./notebook.svg" className="w-8 h-8" alt="Certificados" /> },
+        { name: "Competicion", icon: <img src="./elements.svg" className="w-5 h-7" alt="Competicion" /> },
+        { name: "Leaderboard", icon: <img src="./elements-2.svg" className="w-7 h-7" alt="Leaderboard" /> },
+        { name: "Pagos", icon: <img src="./Money.svg" className="w-8 h-8" alt="Pagos" /> },
     ];
 
     return (
@@ -145,7 +145,7 @@ const Sidebar = ({ selectedOption, setSelectedOption, onLogout }) => {
                         style={{ outline: 'none' }}
                     >
                         <div className="flex items-center">
-                            <img src="./Widget.png" className="w-8 h-8 mr-3" alt="Widget" />
+                            <img src="./Widget.svg" className="w-8 h-8 mr-3" alt="Widget" />
                             <span className="font-regular">Plataformas</span>
                         </div>
                         <RiArrowRightSLine 
@@ -282,7 +282,7 @@ const Sidebar = ({ selectedOption, setSelectedOption, onLogout }) => {
                     <button onClick={handleLogout} 
                         className="w-full bg-transparent flex items-center space-x-3 py-3 px-6 text-gray-300 hover:bg-gray-700 mb-6 md:mb-2 style={{ outline: 'none' }}"
                         >
-                        <img src="./logout.png" className="w-8 h-8" alt="Logout" />
+                        <img src="./Sign-out.svg" className="w-8 h-8" alt="Logout" />
                         <span className="text-lg">Cerrar Sesion</span>
                     </button>
                 </div>

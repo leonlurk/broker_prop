@@ -19,6 +19,7 @@ const OperationsHistory = () => {
   ];
 
   const [operaciones, setOperaciones] = useState(allOperaciones);
+  const [showSnackbar, setShowSnackbar] = useState(false);
   
   // Estados para los filtros
   const [searchQuery, setSearchQuery] = useState('');
@@ -457,7 +458,10 @@ const renderCalendar = (isStartDate) => {
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text)
       .then(() => {
-        alert('Texto copiado al portapapeles');
+        setShowSnackbar(true);
+        setTimeout(() => {
+          setShowSnackbar(false);
+        }, 3000); // Ocultar después de 3 segundos
       })
       .catch(err => {
         console.error('Error al copiar: ', err);
@@ -869,14 +873,17 @@ const renderCalendar = (isStartDate) => {
       {/* Tabla de operaciones - Contenedor separado */}
       <div className="bg-gradient-to-br from-[#232323] to-[#2d2d2d] rounded-xl border border-[#333] p-4 md:p-6 mb-6">
         {/* Cabecera de la tabla */}
-        <div className="hidden md:grid grid-cols-6 text-left text-gray-400 border-b border-gray-700 py-2 mb-2 gap-2">
-          <div className="font-medium px-2">Estado</div>
-          <div className="font-medium px-2">Fecha</div>
-          <div className="font-medium px-2">N° de orden</div>
-          <div className="font-medium px-2">Tipo de producto</div>
-          <div className="font-medium px-2">Método de pago</div>
-          <div className="font-medium px-2">Cantidad</div>
-        </div>
+<div className="hidden md:grid grid-cols-6 items-center text-left text-gray-400 border-b border-gray-700 py-2 mb-2 gap-2">
+  <div className="font-medium px-2">Estado</div>
+  <div className="font-medium px-2">Fecha</div>
+  <div className="font-medium px-2 flex justify-between items-center">
+    <span>N° de orden</span>
+    <div className="w-6"></div>
+  </div>
+  <div className="font-medium px-2">Tipo de producto</div>
+  <div className="font-medium px-2">Método de pago</div>
+  <div className="font-medium px-2">Cantidad</div>
+</div>
         
         {/* Tabla de operaciones - con mensaje si no hay resultados */}
         <div className="overflow-x-auto">
@@ -896,13 +903,17 @@ const renderCalendar = (isStartDate) => {
                   <div className="text-gray-400">Fecha:</div>
                   <div>{op.fecha}</div>
                   
-                  <div className="text-gray-400">N° de orden:</div>
-                  <div className="flex items-center space-x-1">
-                    <span>{op.numOrden.substring(0, 10)}...</span>
-                    <button onClick={() => copyToClipboard(op.numOrden)}>
-                      <Copy size={12} className="text-gray-500" />
-                    </button>
-                  </div>
+                    <div className="text-gray-400">N° de orden:</div>
+                    <div className="flex items-center justify-between">
+                      <span>{op.numOrden.substring(0, 10)}...</span>
+                      <button 
+                        className="!bg-transparent !p-0 !border-0 !shadow-none focus:!outline-none focus:!ring-0 focus:!bg-transparent hover:!bg-transparent flex items-center justify-center w-6 h-6" 
+                        onClick={() => copyToClipboard(op.numOrden)}
+                        style={{background: 'transparent'}}
+                      >
+                        <Copy size={12} className="text-gray-500" />
+                      </button>
+                    </div>
                   
                   <div className="text-gray-400">Tipo:</div>
                   <div>{op.tipo}</div>
@@ -921,12 +932,16 @@ const renderCalendar = (isStartDate) => {
                   </div>
                 </div>
                 <div className="hidden md:block px-2">{op.fecha}</div>
-                <div className="hidden md:flex items-center px-2">
-                  <span className="truncate">{op.numOrden}</span>
-                  <button className="ml-1" onClick={() => copyToClipboard(op.numOrden)}>
-                    <Copy size={12} className="text-gray-500" />
-                  </button>
-                </div>
+                    <div className="hidden md:flex items-center px-8 justify-between">
+                      <span className="truncate">{op.numOrden}</span>
+                      <button 
+                        className="!bg-transparent !p-0 !border-0 !shadow-none focus:!outline-none focus:!ring-0 focus:!bg-transparent hover:!bg-transparent flex items-center justify-center w-6 h-6" 
+                        onClick={() => copyToClipboard(op.numOrden)}
+                        style={{background: 'transparent'}}
+                      >
+                        <Copy size={12} className="text-gray-500" />
+                      </button>
+                    </div>
                 <div className="hidden md:block px-2">{op.tipo}</div>
                 <div className="hidden md:block px-2">{op.metodo}</div>
                 <div className="hidden md:block px-2 font-medium">{op.cantidad}</div>
@@ -990,6 +1005,11 @@ const renderCalendar = (isStartDate) => {
           </div>
         )}
       </div>
+      {showSnackbar && (
+  <div className="fixed bottom-4 right-4 bg-green-500/90 text-white px-4 py-2 rounded-lg shadow-lg flex items-center animate-fade-in-out">
+    <span>Texto copiado al portapapeles</span>
+  </div>
+)}
     </div>
   );
 };

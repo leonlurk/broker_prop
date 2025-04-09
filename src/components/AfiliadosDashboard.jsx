@@ -326,7 +326,7 @@ const AfiliadosDashboard = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#232323] text-white p-4 md:p-6">
+    <div className="flex flex-col min-h-screen border border-[#333] rounded-3xl bg-[#232323] text-white p-4 md:p-6">
       {/* Tabs */}
       <div className="flex space-x-2 mb-6">
         <button

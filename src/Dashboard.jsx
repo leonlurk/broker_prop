@@ -17,7 +17,6 @@ import Settings from "./components/Settings";
 const Dashboard = ({ onLogout }) => {
   const [selectedOption, setSelectedOption] = useState("Dashboard");
   const [isMobile, setIsMobile] = useState(false);
-  const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
   const [previousSection, setPreviousSection] = useState("Dashboard");
@@ -35,11 +34,6 @@ const Dashboard = ({ onLogout }) => {
       window.removeEventListener('resize', checkIfMobile);
     };
   }, []);
-
-  // Crear una función para abrir el modal que podemos pasar a cualquier componente
-  const openLeaderboardModal = () => {
-    setIsLeaderboardOpen(true);
-  };
 
   // Función para renderizar el contenido según la opción seleccionada
   const renderContent = () => {
@@ -76,7 +70,9 @@ const Dashboard = ({ onLogout }) => {
       case "Calculadora":
         return <PipCalculator />;
       case "Competicion":
-        return <CompetitionCards onShowLeaderboard={openLeaderboardModal} />;
+        return <CompetitionCards />;
+      case "Leaderboard":
+        return <LeaderboardModal />;
       case "Descargas":
         return <Descargas />;
       case "Afiliados":
@@ -116,27 +112,14 @@ const Dashboard = ({ onLogout }) => {
     <div className="flex h-screen w-full bg-[#232323] overflow-hidden">
       <Sidebar 
         selectedOption={selectedOption} 
-        setSelectedOption={(option) => {
-          // Si selecciona "Leaderboard", solo abrimos el modal sin cambiar la sección actual
-          if (option === "Leaderboard") {
-            openLeaderboardModal();
-          } else {
-            setSelectedOption(option);
-          }
-        }} 
+        setSelectedOption={setSelectedOption}
         onLogout={onLogout}
       />
       <main className={`flex-1 overflow-y-auto w-full p-4 ${isMobile ? 'ml-0' : ''} transition-all duration-300`}>
-        <div className="border border-[#333] rounded-3xl">
+        <div>
           {renderContent()}
         </div>
       </main>
-
-      {/* Modal del Leaderboard */}
-      <LeaderboardModal 
-        isOpen={isLeaderboardOpen} 
-        onClose={() => setIsLeaderboardOpen(false)} 
-      />
     </div>
   );
 };

@@ -26,7 +26,7 @@ const TradingAccounts = ({ setSelectedOption, setSelectedAccount }) => {
   };
   
   return (
-    <div className="flex flex-col p-4 bg-[#232323] text-white min-h-screen">
+    <div className="flex flex-col p-4 border border-[#333] rounded-3xl bg-[#232323] text-white min-h-screen">
       {/* Tab Navigation */}
       <div className="flex space-x-2 mb-6">
         {['Fase 1', 'Fase 2', 'Cuenta Real'].map((tab) => (

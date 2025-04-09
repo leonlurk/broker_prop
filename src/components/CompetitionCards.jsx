@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 
 const CompetitionCards = ({ onShowLeaderboard }) => {
-  const [activeTab, setActiveTab] = useState('Gratuitas');
+const [activeTab, setActiveTab] = useState('Gratuitas');
+
   
   const competitions = [
     {
@@ -51,7 +52,7 @@ const CompetitionCards = ({ onShowLeaderboard }) => {
   };
   
   return (
-    <div className="flex flex-col p-4 bg-[#232323] text-white min-h-screen">
+    <div className="flex flex-col p-4 border border-[#333] rounded-3xl bg-[#232323] text-white min-h-screen">
       {/* Tab Navigation */}
       <div className="flex justify-between items-center mb-6">
         <div className="flex space-x-2">
@@ -75,7 +76,7 @@ const CompetitionCards = ({ onShowLeaderboard }) => {
             onClick={() => setActiveTab('APE')}
           >
             <img src="/cup_icon.png" alt="Cup" className="w-5 h-5" />
-            <span>APE Funded Cup</span>
+            <span>AGM Funded Cup</span>
           </button>
         </div>
         

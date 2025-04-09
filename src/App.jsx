@@ -12,6 +12,13 @@ function App() {
   const { currentUser, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   
+  // Asegurar modo oscuro
+  useEffect(() => {
+    // Garantizar que el modo oscuro esté siempre activado
+    document.documentElement.classList.add('dark');
+    document.documentElement.style.colorScheme = 'dark';
+  }, []);
+  
   // Redirect to dashboard if already authenticated
   useEffect(() => {
     if (isAuthenticated && window.location.pathname === '/login') {
@@ -30,7 +37,7 @@ function App() {
  
   // Common background wrapper for auth pages
   const AuthPageWrapper = ({ children }) => (
-    <div className="min-h-screen w-full flex items-center justify-end bg-black bg-no-repeat bg-cover bg-center"
+    <div className="min-h-screen w-full flex items-center justify-end bg-black bg-no-repeat bg-cover bg-center dark"
       style={{ backgroundImage: 'url(/fondo.png)', width: '100vw', height: '100vh' }}>
       <div className="mr-6 md:mr-6 sm:mx-auto">
         {children}
@@ -39,64 +46,66 @@ function App() {
   );
 
   return (
-    <Routes>
-      <Route 
-        path="/login" 
-        element={
-          <AuthPageWrapper>
-            <Login 
-              onRegisterClick={() => navigate('/register')} 
-              onForgotClick={() => navigate('/forgot-password')}
-              onLoginSuccess={() => navigate('/dashboard')} 
-            />
-          </AuthPageWrapper>
-        } 
-      />
-      
-      <Route 
-        path="/register" 
-        element={
-          <AuthPageWrapper>
-            <Register onLoginClick={() => navigate('/login')} />
-          </AuthPageWrapper>
-        } 
-      />
-      
-      <Route 
-        path="/forgot-password" 
-        element={
-          <AuthPageWrapper>
-            <ForgotPassword 
-              onContinue={() => navigate('/verification')} 
-              onLoginClick={() => navigate('/login')} 
-            />
-          </AuthPageWrapper>
-        } 
-      />
-      
-      <Route 
-        path="/verification" 
-        element={
-          <AuthPageWrapper>
-            <VerificationCode onContinue={() => navigate('/login')} />
-          </AuthPageWrapper>
-        } 
-      />
-      
-      <Route 
-        path="/dashboard/*" 
-        element={
-          isAuthenticated ? (
-            <Dashboard onLogout={handleLogout} user={currentUser} />
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        } 
-      />
-      
-      {/* Redirect all other routes to login */}
-      <Route path="*" element={<Navigate to="/login" replace />} />
-    </Routes>
+    <div className="dark">
+      <Routes>
+        <Route 
+          path="/login" 
+          element={
+            <AuthPageWrapper>
+              <Login 
+                onRegisterClick={() => navigate('/register')} 
+                onForgotClick={() => navigate('/forgot-password')}
+                onLoginSuccess={() => navigate('/dashboard')} 
+              />
+            </AuthPageWrapper>
+          } 
+        />
+        
+        <Route 
+          path="/register" 
+          element={
+            <AuthPageWrapper>
+              <Register onLoginClick={() => navigate('/login')} />
+            </AuthPageWrapper>
+          } 
+        />
+        
+        <Route 
+          path="/forgot-password" 
+          element={
+            <AuthPageWrapper>
+              <ForgotPassword 
+                onContinue={() => navigate('/verification')} 
+                onLoginClick={() => navigate('/login')} 
+              />
+            </AuthPageWrapper>
+          } 
+        />
+        
+        <Route 
+          path="/verification" 
+          element={
+            <AuthPageWrapper>
+              <VerificationCode onContinue={() => navigate('/login')} />
+            </AuthPageWrapper>
+          } 
+        />
+        
+        <Route 
+          path="/dashboard/*" 
+          element={
+            isAuthenticated ? (
+              <Dashboard onLogout={handleLogout} user={currentUser} />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          } 
+        />
+        
+        {/* Redirect all other routes to login */}
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    </div>
   );
 }
 
