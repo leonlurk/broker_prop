@@ -2,16 +2,32 @@ import React, { useState, useEffect } from 'react';
 import { ChevronDown, Calendar, Clock, AlertTriangle, Loader } from 'lucide-react';
 
 const Noticias = () => {
-  const [activeDay, setActiveDay] = useState('Lunes');
-  const days = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes'];
-  
-  // Fecha actual y rango
+    // Fecha actual y rango
   const today = new Date();
+  console.log("Fecha actual:", today.toISOString());
+  
+  const days = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes'];
+
+  // Obtener el día actual
+  const getDayName = () => {
+    const dayIndex = today.getDay();
+    const daysMap = {1: 'Lunes', 2: 'Martes', 3: 'Miercoles', 4: 'Jueves', 5: 'Viernes'};
+    return daysMap[dayIndex] || 'Lunes';
+  };
+  
+  const [activeDay, setActiveDay] = useState(getDayName());
+  
   const [startDate, setStartDate] = useState(today.getDate());
   const [endDate, setEndDate] = useState(new Date(today.getTime() + 4 * 24 * 60 * 60 * 1000).getDate());
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
   const [currentMonth, setCurrentMonth] = useState(today.getMonth() + 1); // Mes en número (1-12)
   
+  console.log("Estado inicial de fechas:", {
+    startDate,
+    endDate,
+    currentYear,
+    currentMonth
+  });
   
   // Estado para eventos económicos
   const [events, setEvents] = useState([]);
@@ -33,6 +49,8 @@ const Noticias = () => {
 
   // Estado para controlar la zona horaria
   const [timeZone, setTimeZone] = useState(Intl.DateTimeFormat().resolvedOptions().timeZone);
+  console.log("Zona horaria actual:", timeZone);
+  
   const [showTimeZoneMenu, setShowTimeZoneMenu] = useState(false);
 
   // Lista de zonas horarias comunes
@@ -70,6 +88,8 @@ const Noticias = () => {
   // Obtener noticias financieras desde API
   useEffect(() => {
     const fetchFinancialNews = async () => {
+      console.log("===== INICIANDO FETCH DE NOTICIAS =====");
+      console.log("Día activo:", activeDay);
       setIsLoading(true);
       setError(null);
       
@@ -81,25 +101,46 @@ const Noticias = () => {
         const from = fromDate.toISOString().split('T')[0];
         const to = toDate.toISOString().split('T')[0];
         
-        // Usando la API gratuita de Finnhub para noticias financieras
-        const apiKey = 'cvs569hr01qvc2murvngcvs569hr01qvc2murvo0'; // API key gratuita
+        console.log("Rango de fechas:", { from, to });
         
-        // Determinar el día actual seleccionado para filtrar noticias
-        const dayIndex = days.indexOf(activeDay);
-        const targetDate = new Date(today);
-        targetDate.setDate(today.getDate() + dayIndex);
-        const dateStr = targetDate.toISOString().split('T')[0];
+        // Usando la API de Finnhub para noticias financieras
+        const apiKey = 'cvs569hr01qvc2murvngcvs569hr01qvc2murvo0'; // Actualizada con tu API key
+        console.log("API Key:", apiKey);
         
-        const response = await fetch(`https://finnhub.io/api/v1/news?category=general&from=${dateStr}&to=${dateStr}&token=${apiKey}`);
+// Determinar el día actual seleccionado para filtrar noticias
+const dayIndex = days.indexOf(activeDay);
+const startDate2 = new Date(today);
+startDate2.setDate(today.getDate() + dayIndex);
+const fromDateStr = startDate2.toISOString().split('T')[0];
+
+// Calcular fecha final (una semana después)
+const endDate2 = new Date(startDate2);
+endDate2.setDate(startDate2.getDate() + 6); // 7 días en total
+const toDateStr = endDate2.toISOString().split('T')[0];
+
+console.log("Rango de fechas para API:", fromDateStr, "a", toDateStr);
+
+const apiUrl = `https://finnhub.io/api/v1/news?category=general&from=${fromDateStr}&to=${toDateStr}&token=${apiKey}`;
+        
+        console.log("URL de la API:", apiUrl);
+        
+        console.log("Iniciando fetch...");
+        const response = await fetch(apiUrl);
+        console.log("Respuesta de la API recibida:", response.status, response.statusText);
         
         if (!response.ok) {
-          throw new Error('Error al obtener noticias financieras');
+          console.error("Error en la respuesta de la API:", response.status, response.statusText);
+          throw new Error(`Error al obtener noticias: ${response.status} ${response.statusText}`);
         }
         
+        console.log("Parseando respuesta JSON...");
         const data = await response.json();
+        console.log("Datos recibidos:", data);
+        console.log("Cantidad de noticias:", data ? data.length : 0);
 
         // Transformar datos de noticias a formato de eventos económicos
         if (data && data.length > 0) {
+          console.log("Transformando noticias a eventos...");
           const transformedEvents = data.map(news => {
             // Determinar impacto basado en factores como la categoría
             let impact = 'low';
@@ -159,29 +200,37 @@ const Noticias = () => {
             };
           });
           
+          console.log("Eventos transformados:", transformedEvents.length);
           setEvents(transformedEvents);
+          console.log("Estado de eventos actualizado");
         } else {
+          console.log("No hay datos de la API, cargando datos de respaldo");
           // Si no hay datos, cargar datos de respaldo
           loadFallbackData();
         }
       } catch (err) {
         console.error('Error en la API de noticias financieras:', err);
-        setError('No se pudieron cargar las noticias financieras');
+        console.error('Detalles:', err.message);
+        console.error('Stack:', err.stack);
+        setError('No se pudieron cargar las noticias financieras: ' + err.message);
         
+        console.log("Cargando datos de respaldo debido al error");
         // Cargar datos de ejemplo si falla la API
         loadFallbackData();
       } finally {
         setIsLoading(false);
+        console.log("Carga finalizada, isLoading=false");
       }
     };
     
     const loadFallbackData = () => {
+      console.log("CARGANDO DATOS DE RESPALDO (FALLBACK)");
       // Datos de ejemplo para mostrar si falla la API
       const dayIndex = days.indexOf(activeDay);
       const targetDate = new Date(today);
       targetDate.setDate(today.getDate() + dayIndex);
       
-      setEvents([
+      const fallbackEvents = [
         {
           description: 'FED Interest Rate Decision',
           instrument: 'USD',
@@ -211,24 +260,37 @@ const Noticias = () => {
           isPast: targetDate.getDate() === today.getDate() && 14 < today.getHours()
         },
         // Otros eventos de ejemplo...
-      ]);
+      ];
+      
+      console.log("Estableciendo eventos de respaldo:", fallbackEvents.length);
+      setEvents(fallbackEvents);
     };
 
     // Cargar datos al montar el componente o cambiar de día
     fetchFinancialNews();
+    console.log("Inicializando intervalo para actualizaciones periódicas");
     
     // Intervalo para actualizar cada 5 minutos
-    const intervalId = setInterval(fetchFinancialNews, 300000);
+    const intervalId = setInterval(() => {
+      console.log("Ejecutando actualización periódica");
+      fetchFinancialNews();
+    }, 300000);
     
-    return () => clearInterval(intervalId);
+    return () => {
+      console.log("Limpiando intervalo");
+      clearInterval(intervalId);
+    };
   }, [startDate, endDate, currentMonth, currentYear, activeDay]);
 
   // Efecto para actualizar el rango de fechas cuando se cambia el día activo
   useEffect(() => {
+    console.log("Actualizando rango de fechas por cambio de día activo:", activeDay);
     const dayIndex = days.indexOf(activeDay);
     if (dayIndex !== -1) {
       const targetDate = new Date(today);
       targetDate.setDate(today.getDate() + dayIndex);
+      
+      console.log("Nueva fecha objetivo:", targetDate.toISOString());
       
       setStartDate(targetDate.getDate());
       setEndDate(targetDate.getDate());
@@ -237,18 +299,19 @@ const Noticias = () => {
     }
   }, [activeDay]);
 
-// Efecto para actualizar el reloj en tiempo real
-useEffect(() => {
-  const updateClock = () => {
-    setCurrentTime(formatTimeForZone(timeZone));
-  };
-  
-  // Actualizar inmediatamente y luego cada segundo
-  updateClock();
-  const intervalId = setInterval(updateClock, 1000);
-  
-  return () => clearInterval(intervalId);
-}, [timeZone]);
+  // Efecto para actualizar el reloj en tiempo real
+  useEffect(() => {
+    console.log("Configurando reloj en tiempo real para zona:", timeZone);
+    const updateClock = () => {
+      setCurrentTime(formatTimeForZone(timeZone));
+    };
+    
+    // Actualizar inmediatamente y luego cada segundo
+    updateClock();
+    const intervalId = setInterval(updateClock, 1000);
+    
+    return () => clearInterval(intervalId);
+  }, [timeZone]);
 
   // Función para obtener el nombre del mes
   const getMonthName = (monthIndex) => {
@@ -277,8 +340,11 @@ useEffect(() => {
     return (impactMatches || showAllImpacts) && pastFilter && restrictedFilter;
   });
 
+  console.log("Eventos filtrados:", filteredEvents.length);
+
   // Funciones de utilidad para manejo de filtros y UI
   const toggleImpactFilter = (filter) => {
+    console.log("Toggling filtro de impacto:", filter);
     setImpactFilters({
       ...impactFilters,
       [filter]: !impactFilters[filter]
@@ -286,6 +352,7 @@ useEffect(() => {
   };
 
   const toggleVisibilityFilter = (filter) => {
+    console.log("Toggling filtro de visibilidad:", filter);
     setVisibilityFilters({
       ...visibilityFilters,
       [filter]: !visibilityFilters[filter]
@@ -337,6 +404,7 @@ useEffect(() => {
   // Función para añadir un evento al calendario
   const addEventToCalendar = (event) => {
     try {
+      console.log("Añadiendo evento al calendario:", event);
       const eventDate = new Date(`${event.date} ${event.time}`);
       const endTime = new Date(eventDate.getTime() + 60 * 60 * 1000); // 1 hora más
       
@@ -350,6 +418,7 @@ useEffect(() => {
       // Abrir Google Calendar con los datos del evento
       const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(calendarEvent.title)}&dates=${calendarEvent.start.replace(/[-:]/g, '').replace('.000', '')}/${calendarEvent.end.replace(/[-:]/g, '').replace('.000', '')}&details=${encodeURIComponent(calendarEvent.description)}`;
       
+      console.log("Abriendo URL de Calendar:", url);
       window.open(url, '_blank');
     } catch (error) {
       console.error('Error al añadir evento al calendario:', error);
@@ -358,10 +427,13 @@ useEffect(() => {
 
   // Función para cambiar la zona horaria
   const changeTimeZone = (newTimeZone) => {
+    console.log("Cambiando zona horaria a:", newTimeZone);
     setTimeZone(newTimeZone);
     setCurrentTime(formatTimeForZone(newTimeZone)); // Actualizar inmediatamente la hora mostrada
     setShowTimeZoneMenu(false);
   };
+
+  console.log("Render del componente Noticias");
 
   return (
     <div className="flex flex-col border border-[#333] rounded-3xl min-h-screen bg-[#232323] text-white p-2 sm:p-4">
@@ -639,7 +711,7 @@ useEffect(() => {
                     </div>
                   )}
 
-<div className="grid grid-cols-2 gap-y-2">
+                  <div className="grid grid-cols-2 gap-y-2">
                     <div>
                       <div className="text-xs text-gray-400">Instrumento</div>
                       <div className="flex items-center">

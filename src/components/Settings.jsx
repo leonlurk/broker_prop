@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight, Copy, Save, AlertTriangle, Loader } from 'lucide-react';
 import KYCVerification from './KYCVerification';
 import ChangePasswordModal from './ChangePasswordModal';
 import UpdateEmailModal from './UpdateEmailModal';
 import { auth, db } from '../firebase/config';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 const Settings = ({ onBack }) => {
   const [expandedSection, setExpandedSection] = useState(null);
@@ -14,6 +14,15 @@ const Settings = ({ onBack }) => {
   const [userHasApprovedAccount, setUserHasApprovedAccount] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [userKycStatus, setUserKycStatus] = useState(null);
+  
+  // Estados para la wallet
+  const [walletAddress, setWalletAddress] = useState('');
+  const [isEditingWallet, setIsEditingWallet] = useState(false);
+  const [editWalletAddress, setEditWalletAddress] = useState('');
+  const [isSavingWallet, setIsSavingWallet] = useState(false);
+  const [walletError, setWalletError] = useState('');
+  const [walletSuccessMessage, setWalletSuccessMessage] = useState('');
+  const [showSnackbar, setShowSnackbar] = useState(false);
 
   useEffect(() => {
     const checkUserAccountStatus = async () => {
@@ -28,12 +37,19 @@ const Settings = ({ onBack }) => {
             const userData = userDoc.data();
             setUserHasApprovedAccount(userData.approved === true);
             setUserKycStatus(userData.kyc_status || null);
+            
+            // Cargar la dirección de la wallet
+            if (userData.withdrawals_wallet) {
+              setWalletAddress(userData.withdrawals_wallet);
+              setEditWalletAddress(userData.withdrawals_wallet);
+            }
           } else {
             setUserHasApprovedAccount(false);
           }
         }
       } catch (error) {
         console.error("Error:", error);
+        setWalletError('Error al cargar los datos. Intente de nuevo más tarde.');
       } finally {
         setIsLoading(false);
       }
@@ -48,6 +64,66 @@ const Settings = ({ onBack }) => {
     } else {
       setExpandedSection(section);
     }
+  };
+  
+  // Funciones para la gestión de la wallet
+  const toggleWalletEditMode = () => {
+    setIsEditingWallet(!isEditingWallet);
+    setEditWalletAddress(walletAddress);
+    setWalletError('');
+    setWalletSuccessMessage('');
+  };
+  
+  const saveWalletAddress = async () => {
+    // Validación básica
+    if (!editWalletAddress.trim()) {
+      setWalletError('Por favor, introduzca una dirección de wallet válida.');
+      return;
+    }
+    
+    setIsSavingWallet(true);
+    setWalletError('');
+    
+    try {
+      const user = auth.currentUser;
+      if (user) {
+        const userDocRef = doc(db, 'users', user.uid);
+        
+        // Actualizar sólo el campo withdrawals_wallet
+        await setDoc(userDocRef, { withdrawals_wallet: editWalletAddress.trim() }, { merge: true });
+        
+        setWalletAddress(editWalletAddress.trim());
+        setWalletSuccessMessage('Dirección de wallet actualizada correctamente');
+        
+        // Ocultar mensaje de éxito después de 3 segundos
+        setTimeout(() => {
+          setWalletSuccessMessage('');
+        }, 3000);
+        
+        setIsEditingWallet(false);
+      } else {
+        setWalletError('Debe iniciar sesión para actualizar la dirección de wallet.');
+      }
+    } catch (err) {
+      console.error('Error al actualizar la wallet:', err);
+      setWalletError('Error al guardar los cambios. Intente de nuevo más tarde.');
+    } finally {
+      setIsSavingWallet(false);
+    }
+  };
+  
+  // Función para copiar al portapapeles
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text)
+      .then(() => {
+        setShowSnackbar(true);
+        setTimeout(() => {
+          setShowSnackbar(false);
+        }, 3000); // Ocultar después de 3 segundos
+      })
+      .catch(err => {
+        console.error('Error al copiar: ', err);
+      });
   };
 
   if (showKYC) {
@@ -188,11 +264,80 @@ const Settings = ({ onBack }) => {
             }`}
           >
             <div className="px-4 pb-4 border-t border-[#333] pt-4">
-              <div className="p-4 bg-gradient-to-br from-[#232323] to-[#2a2a2a] rounded-lg text-center">
-                <p className="text-gray-400">No se han configurado métodos de pago</p>
-                <button className="mt-4 bg-gradient-to-r from-[#0F7490] to-[#0A5A72] text-white py-2 px-4 rounded-md hover:opacity-90 transition">
-                  Agregar método de pago
-                </button>
+              <div className="p-4 bg-gradient-to-br from-[#232323] to-[#2a2a2a] rounded-lg">
+                <h3 className="text-lg font-medium mb-3">Direccion De Pago USDT</h3>
+                <p className="text-gray-400 mb-4">Proporcionar Una Dirección USDT TRC20 Válida</p>
+                
+                {walletSuccessMessage && (
+                  <div className="bg-green-900/20 border border-green-600 text-green-400 p-3 rounded-lg mb-3">
+                    {walletSuccessMessage}
+                  </div>
+                )}
+                
+                {walletError && (
+                  <div className="bg-red-900/20 border border-red-600 text-red-400 p-3 rounded-lg mb-3 flex items-center">
+                    <AlertTriangle size={16} className="mr-2" />
+                    {walletError}
+                  </div>
+                )}
+                
+                {isEditingWallet ? (
+                  <div className="flex flex-col space-y-3">
+                    <input
+                      type="text"
+                      className="flex-grow p-3 bg-gradient-to-br from-[#1a1a1a] to-[#252525] rounded-lg border border-[#333] text-white"
+                      value={editWalletAddress}
+                      onChange={(e) => setEditWalletAddress(e.target.value)}
+                      placeholder="Ingrese su dirección TRC20 USDT"
+                    />
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <button 
+                        className="px-6 py-3 bg-gradient-to-br from-[#0F7490] to-[#0A5A72] text-white rounded-full hover:opacity-90 transition flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                        onClick={saveWalletAddress}
+                        disabled={isSavingWallet}
+                      >
+                        {isSavingWallet ? (
+                          <>
+                            <Loader size={16} className="animate-spin mr-2" />
+                            Guardando...
+                          </>
+                        ) : (
+                          <>
+                            <Save size={16} className="mr-2" />
+                            Guardar
+                          </>
+                        )}
+                      </button>
+                      <button 
+                        className="px-6 py-3 bg-[#2a2a2a] text-white rounded-full hover:bg-[#333] transition"
+                        onClick={toggleWalletEditMode}
+                        disabled={isSavingWallet}
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col md:flex-row gap-3">
+                    <div className="flex-grow p-3 bg-gradient-to-br from-[#1a1a1a] to-[#252525] rounded-lg border border-[#333] text-gray-300 overflow-hidden flex items-center">
+                      <span className="truncate mr-2">{walletAddress || 'No se ha establecido una dirección de wallet'}</span>
+                      {walletAddress && (
+                        <button 
+                          className="ml-auto p-1 hover:bg-[#333] rounded" 
+                          onClick={() => copyToClipboard(walletAddress)}
+                        >
+                          <Copy size={16} className="text-gray-400" />
+                        </button>
+                      )}
+                    </div>
+                    <button 
+                      className="px-6 py-3 bg-gradient-to-br focus:outline-none from-[#0F7490] to-[#0A5A72] text-white rounded-full hover:opacity-90 transition"
+                      onClick={toggleWalletEditMode}
+                    >
+                      {walletAddress ? 'Editar' : 'Agregar método de pago'}
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -210,6 +355,12 @@ const Settings = ({ onBack }) => {
         isOpen={showUpdateEmailModal} 
         onClose={() => setShowUpdateEmailModal(false)} 
       />
+      
+      {showSnackbar && (
+        <div className="fixed bottom-4 right-4 bg-green-500/90 text-white px-4 py-2 rounded-lg shadow-lg flex items-center animate-fade-in-out">
+          <span>Texto copiado al portapapeles</span>
+        </div>
+      )}
     </div>
   );
 };

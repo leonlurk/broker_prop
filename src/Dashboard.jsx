@@ -9,7 +9,7 @@ import TradingDashboard from './components/TradingDashboard';
 import OperationsHistory from './components/OperationsHistory';
 import Descargas from './components/Descargas';
 import AfiliadosDashboard from './components/AfiliadosDashboard';
-import Noticias from './components/Noticias';
+import Noticias2 from './components/Noticias2';
 import TradingAccounts from "./components/TradingAccounts";
 import CompetitionCards from "./components/CompetitionCards";
 import Settings from "./components/Settings";
@@ -37,11 +37,6 @@ const Dashboard = ({ onLogout }) => {
 
   // Función para renderizar el contenido según la opción seleccionada
   const renderContent = () => {
-    // Si estamos mostrando la configuración
-    if (showSettings) {
-      return <Settings onBack={() => setShowSettings(false)} />;
-    }
-    
     // Si estamos en Dashboard y hay una cuenta seleccionada, mostrar TradingDashboard
     if (selectedOption === "Dashboard" && selectedAccount !== null) {
       return <TradingDashboard 
@@ -49,6 +44,11 @@ const Dashboard = ({ onLogout }) => {
         onBack={() => setSelectedAccount(null)}
         previousSection={previousSection}
       />;
+    }
+    
+    // Si estamos mostrando la configuración
+    if (showSettings) {
+      return <Settings onBack={() => setShowSettings(false)} />;
     }
     
     switch (selectedOption) {
@@ -78,7 +78,7 @@ const Dashboard = ({ onLogout }) => {
       case "Afiliados":
         return <AfiliadosDashboard />;
       case "Noticias":
-        return <Noticias />;
+        return <Noticias2 />;
       case "Cuentas":
         return <TradingAccounts 
           setSelectedOption={setSelectedOption}
@@ -110,9 +110,15 @@ const Dashboard = ({ onLogout }) => {
 
   return (
     <div className="flex h-screen w-full bg-[#232323] overflow-hidden">
+      {/* El Sidebar siempre está presente y funcional, independientemente de la subsección activa */}
       <Sidebar 
         selectedOption={selectedOption} 
-        setSelectedOption={setSelectedOption}
+        setSelectedOption={(option) => {
+          // Al navegar desde el sidebar a una nueva sección, resetear estados de subsecciones
+          setSelectedOption(option);
+          setSelectedAccount(null);
+          setShowSettings(false);
+        }}
         onLogout={onLogout}
       />
       <main className={`flex-1 overflow-y-auto w-full p-4 ${isMobile ? 'ml-0' : ''} transition-all duration-300`}>
