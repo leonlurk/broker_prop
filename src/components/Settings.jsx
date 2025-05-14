@@ -1,12 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { ChevronDown, ChevronRight, Copy, Save, AlertTriangle, Loader } from 'lucide-react';
 import KYCVerification from './KYCVerification';
 import ChangePasswordModal from './ChangePasswordModal';
 import UpdateEmailModal from './UpdateEmailModal';
 import { auth, db } from '../firebase/config';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { useAuth } from '../contexts/AuthContext';
+import { getTranslator } from '../utils/i18n';
 
 const Settings = ({ onBack }) => {
+  const { currentUser, language } = useAuth();
+  const t = useMemo(() => getTranslator(language), [language]);
+
   const [expandedSection, setExpandedSection] = useState(null);
   const [showKYC, setShowKYC] = useState(false);
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
@@ -15,7 +20,6 @@ const Settings = ({ onBack }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [userKycStatus, setUserKycStatus] = useState(null);
   
-  // Estados para la wallet
   const [walletAddress, setWalletAddress] = useState('');
   const [isEditingWallet, setIsEditingWallet] = useState(false);
   const [editWalletAddress, setEditWalletAddress] = useState('');
@@ -25,12 +29,12 @@ const Settings = ({ onBack }) => {
   const [showSnackbar, setShowSnackbar] = useState(false);
 
   useEffect(() => {
+    console.log('Settings.jsx: useEffect for checkUserAccountStatus triggered. Current user UID:', currentUser?.uid);
     const checkUserAccountStatus = async () => {
       setIsLoading(true);
       try {
-        const user = auth.currentUser;
-        if (user) {
-          const userDocRef = doc(db, "users", user.uid);
+        if (currentUser) {
+          const userDocRef = doc(db, "users", currentUser.uid);
           const userDoc = await getDoc(userDocRef);
           
           if (userDoc.exists()) {
@@ -38,7 +42,6 @@ const Settings = ({ onBack }) => {
             setUserHasApprovedAccount(userData.approved === true);
             setUserKycStatus(userData.kyc_status || null);
             
-            // Cargar la dirección de la wallet
             if (userData.withdrawals_wallet) {
               setWalletAddress(userData.withdrawals_wallet);
               setEditWalletAddress(userData.withdrawals_wallet);
@@ -49,14 +52,14 @@ const Settings = ({ onBack }) => {
         }
       } catch (error) {
         console.error("Error:", error);
-        setWalletError('Error al cargar los datos. Intente de nuevo más tarde.');
+        setWalletError(t('settings_error_loadingData'));
       } finally {
         setIsLoading(false);
       }
     };
     
     checkUserAccountStatus();
-  }, []);
+  }, [currentUser, t]);
 
   const toggleSection = (section) => {
     if (expandedSection === section) {
@@ -66,7 +69,6 @@ const Settings = ({ onBack }) => {
     }
   };
   
-  // Funciones para la gestión de la wallet
   const toggleWalletEditMode = () => {
     setIsEditingWallet(!isEditingWallet);
     setEditWalletAddress(walletAddress);
@@ -75,9 +77,8 @@ const Settings = ({ onBack }) => {
   };
   
   const saveWalletAddress = async () => {
-    // Validación básica
     if (!editWalletAddress.trim()) {
-      setWalletError('Por favor, introduzca una dirección de wallet válida.');
+      setWalletError(t('settings_wallet_error_invalidAddress'));
       return;
     }
     
@@ -85,41 +86,36 @@ const Settings = ({ onBack }) => {
     setWalletError('');
     
     try {
-      const user = auth.currentUser;
-      if (user) {
-        const userDocRef = doc(db, 'users', user.uid);
-        
-        // Actualizar sólo el campo withdrawals_wallet
+      if (currentUser) {
+        const userDocRef = doc(db, 'users', currentUser.uid);
         await setDoc(userDocRef, { withdrawals_wallet: editWalletAddress.trim() }, { merge: true });
         
         setWalletAddress(editWalletAddress.trim());
-        setWalletSuccessMessage('Dirección de wallet actualizada correctamente');
+        setWalletSuccessMessage(t('settings_wallet_success_updated'));
         
-        // Ocultar mensaje de éxito después de 3 segundos
         setTimeout(() => {
           setWalletSuccessMessage('');
         }, 3000);
         
         setIsEditingWallet(false);
       } else {
-        setWalletError('Debe iniciar sesión para actualizar la dirección de wallet.');
+        setWalletError(t('settings_wallet_error_mustLogin'));
       }
     } catch (err) {
       console.error('Error al actualizar la wallet:', err);
-      setWalletError('Error al guardar los cambios. Intente de nuevo más tarde.');
+      setWalletError(t('settings_wallet_error_savingChanges'));
     } finally {
       setIsSavingWallet(false);
     }
   };
   
-  // Función para copiar al portapapeles
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text)
       .then(() => {
         setShowSnackbar(true);
         setTimeout(() => {
           setShowSnackbar(false);
-        }, 3000); // Ocultar después de 3 segundos
+        }, 3000);
       })
       .catch(err => {
         console.error('Error al copiar: ', err);
@@ -134,14 +130,13 @@ const Settings = ({ onBack }) => {
     return (
       <div className="p-4 md:p-6 bg-gradient-to-br from-[#232323] to-[#262626] text-white flex flex-col items-center justify-center">
         <div className="w-12 h-12 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p>Cargando...</p>
+        <p>{t('settings_loadingText')}</p>
       </div>
     );
   }
 
   return (
     <div className="p-4 md:p-6 bg-gradient-to-br from-[#232323] to-[#262626] text-white flex flex-col">
-      {/* Header with back button */}
       <div className="mb-6">
         <div className="flex items-center mb-4">
           <button
@@ -151,23 +146,20 @@ const Settings = ({ onBack }) => {
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
             </svg>
-            Volver
+            {t('settings_button_back')}
           </button>
         </div>
-        <h1 className="text-2xl md:text-3xl font-semibold">Ajustes</h1>
+        <h1 className="text-2xl md:text-3xl font-semibold">{t('settings_title')}</h1>
       </div>
       
-      {/* Main Settings Container with border */}
       <div className="border border-[#333] rounded-2xl bg-gradient-to-br from-[#232323] to-[#2d2d2d] p-4 md:p-6">
-        {/* Settings Sections */}
         <div className="space-y-4">
-        {/* Account Configuration */}
         <div className="border border-[#333] rounded-3xl bg-gradient-to-br from-[#232323] to-[#2d2d2d]">
           <div 
             className="p-4 flex justify-between items-center cursor-pointer"
             onClick={() => toggleSection('account')}
           >
-            <h2 className="text-lg md:text-xl">Configuracion de Cuenta</h2>
+            <h2 className="text-lg md:text-xl">{t('settings_section_accountConfiguration')}</h2>
             <div className={`transition-transform duration-500 ease-in-out ${expandedSection === 'account' ? 'rotate-180' : ''}`}>
               <ChevronDown className="h-6 w-6 text-gray-400" />
             </div>
@@ -185,15 +177,15 @@ const Settings = ({ onBack }) => {
               >
                 <div className="flex justify-between items-center">
                   <div className="flex items-center">
-                    <span>Verificacion KYC</span>
+                    <span>{t('settings_item_kycVerification')}</span>
                     {!userHasApprovedAccount && (
                       <span className="ml-2 text-xs bg-gray-700 text-gray-300 px-2 py-1 rounded-full">
-                        Requiere cuenta aprobada
+                        {t('settings_label_requiresApprovedAccount')}
                       </span>
                     )}
                     {userHasApprovedAccount && userKycStatus === 'pending_approval' && (
                       <span className="ml-2 text-xs bg-yellow-900/60 text-yellow-300 px-2 py-1 rounded-full">
-                        Aprobación pendiente
+                        {t('settings_label_pendingApproval')}
                       </span>
                     )}
                   </div>
@@ -202,13 +194,13 @@ const Settings = ({ onBack }) => {
               </div>
                 <div className="p-3 rounded-full bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] cursor-pointer" onClick={() => setShowChangePasswordModal(true)}>
                   <div className="flex justify-between items-center">
-                    <span>Cambiar Contraseña</span>
+                    <span>{t('settings_item_changePassword')}</span>
                     <ChevronRight className="h-5 w-5 text-gray-400" />
                   </div>
                 </div>
                 <div className="p-3 rounded-full bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] cursor-pointer" onClick={() => setShowUpdateEmailModal(true)}>
                   <div className="flex justify-between items-center">
-                    <span>Actualizar Correo Electronico</span>
+                    <span>{t('settings_item_updateEmail')}</span>
                     <ChevronRight className="h-5 w-5 text-gray-400" />
                   </div>
                 </div>
@@ -217,13 +209,12 @@ const Settings = ({ onBack }) => {
           </div>
         </div>
 
-        {/* Notifications */}
         <div className="border border-[#333] rounded-3xl bg-gradient-to-br from-[#232323] to-[#202020]">
           <div 
             className="p-4 flex rounded-3xl bg-gradient-to-br from-[#232323] to-[#2d2d2d] justify-between items-center cursor-pointer"
             onClick={() => toggleSection('notifications')}
           >
-            <h2 className="text-lg md:text-xl">Notificaciones</h2>
+            <h2 className="text-lg md:text-xl">{t('settings_section_notifications')}</h2>
             <div className={`transition-transform duration-500 ease-in-out ${expandedSection === 'notifications' ? 'rotate-180' : ''}`}>
               <ChevronDown className="h-6 w-6 text-gray-400" />
             </div>
@@ -236,7 +227,7 @@ const Settings = ({ onBack }) => {
             <div className="px-4 pb-4 border-t border-[#333] bg-gradient-to-br from-[#232323] to-[#2d2d2d] pt-4">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span>Notificaciones Push</span>
+                  <span>{t('settings_item_pushNotifications')}</span>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input type="checkbox" className="sr-only peer" defaultChecked />
                     <div className="w-11 h-6 bg-gray-700 rounded-full peer peer-checked:bg-cyan-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all duration-300"></div>
@@ -247,13 +238,12 @@ const Settings = ({ onBack }) => {
           </div>
         </div>
 
-        {/* Payment Method */}
         <div className="border border-[#333] rounded-3xl bg-gradient-to-br from-[#232323] to-[#202020]">
           <div 
             className="p-4 flex  rounded-3xl justify-between items-center cursor-pointer bg-gradient-to-br from-[#232323] to-[#2d2d2d]"
             onClick={() => toggleSection('payment')}
           >
-            <h2 className="text-lg md:text-xl">Método de pago</h2>
+            <h2 className="text-lg md:text-xl">{t('settings_section_paymentMethod')}</h2>
             <div className={`transition-transform duration-500 ease-in-out ${expandedSection === 'payment' ? 'rotate-180' : ''}`}>
               <ChevronDown className="h-6 w-6 text-gray-400" />
             </div>
@@ -265,8 +255,8 @@ const Settings = ({ onBack }) => {
           >
             <div className="px-4 pb-4 border-t border-[#333] pt-4">
               <div className="p-4 bg-gradient-to-br from-[#232323] to-[#2a2a2a] rounded-lg">
-                <h3 className="text-lg font-medium mb-3">Direccion De Pago USDT</h3>
-                <p className="text-gray-400 mb-4">Proporcionar Una Dirección USDT TRC20 Válida</p>
+                <h3 className="text-lg font-medium mb-3">{t('settings_label_usdtPaymentAddress')}</h3>
+                <p className="text-gray-400 mb-4">{t('settings_description_usdtPaymentAddress')}</p>
                 
                 {walletSuccessMessage && (
                   <div className="bg-green-900/20 border border-green-600 text-green-400 p-3 rounded-lg mb-3">
@@ -288,7 +278,7 @@ const Settings = ({ onBack }) => {
                       className="flex-grow p-3 bg-gradient-to-br from-[#1a1a1a] to-[#252525] rounded-lg border border-[#333] text-white"
                       value={editWalletAddress}
                       onChange={(e) => setEditWalletAddress(e.target.value)}
-                      placeholder="Ingrese su dirección TRC20 USDT"
+                      placeholder={t('settings_placeholder_enterUsdtAddress')}
                     />
                     <div className="flex flex-col sm:flex-row gap-3">
                       <button 
@@ -299,12 +289,12 @@ const Settings = ({ onBack }) => {
                         {isSavingWallet ? (
                           <>
                             <Loader size={16} className="animate-spin mr-2" />
-                            Guardando...
+                            {t('settings_button_saving')}
                           </>
                         ) : (
                           <>
                             <Save size={16} className="mr-2" />
-                            Guardar
+                            {t('settings_button_save')}
                           </>
                         )}
                       </button>
@@ -313,14 +303,14 @@ const Settings = ({ onBack }) => {
                         onClick={toggleWalletEditMode}
                         disabled={isSavingWallet}
                       >
-                        Cancelar
+                        {t('settings_button_cancel')}
                       </button>
                     </div>
                   </div>
                 ) : (
                   <div className="flex flex-col md:flex-row gap-3">
                     <div className="flex-grow p-3 bg-gradient-to-br from-[#1a1a1a] to-[#252525] rounded-lg border border-[#333] text-gray-300 overflow-hidden flex items-center">
-                      <span className="truncate mr-2">{walletAddress || 'No se ha establecido una dirección de wallet'}</span>
+                      <span className="truncate mr-2">{walletAddress || t('settings_label_noWalletSet')}</span>
                       {walletAddress && (
                         <button 
                           className="ml-auto p-1 hover:bg-[#333] rounded" 
@@ -334,7 +324,7 @@ const Settings = ({ onBack }) => {
                       className="px-6 py-3 bg-gradient-to-br focus:outline-none from-[#0F7490] to-[#0A5A72] text-white rounded-full hover:opacity-90 transition"
                       onClick={toggleWalletEditMode}
                     >
-                      {walletAddress ? 'Editar' : 'Agregar método de pago'}
+                      {walletAddress ? t('settings_button_edit') : t('settings_button_addPaymentMethod')}
                     </button>
                   </div>
                 )}
@@ -345,7 +335,6 @@ const Settings = ({ onBack }) => {
         </div>
       </div>
 
-      {/* Modals */}
       <ChangePasswordModal 
         isOpen={showChangePasswordModal} 
         onClose={() => setShowChangePasswordModal(false)} 
@@ -358,7 +347,7 @@ const Settings = ({ onBack }) => {
       
       {showSnackbar && (
         <div className="fixed bottom-4 right-4 bg-green-500/90 text-white px-4 py-2 rounded-lg shadow-lg flex items-center animate-fade-in-out">
-          <span>Texto copiado al portapapeles</span>
+          <span>{t('settings_snackbar_textCopied')}</span>
         </div>
       )}
     </div>

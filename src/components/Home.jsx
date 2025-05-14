@@ -4,16 +4,64 @@ import UserInformationContent from './UserInformationContent';
 import NotificationsModal from './NotificationsModal';
 import { ChevronDown, Calendar, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext'; // Importar el contexto de autenticación
+import { db } from '../firebase/config';
+import { collection, query, where, onSnapshot, limit } from 'firebase/firestore';
+import { getTranslator } from '../utils/i18n'; // Import the new getTranslator
 
 const fondoTarjetaUrl = "/fondoTarjeta.png";
 
 
 const Home = ({ onViewDetails, onSettingsClick, setSelectedOption }) => {
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
-  const [currentLanguage, setCurrentLanguage] = useState('ES');
   const [showUserInfo, setShowUserInfo] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-  const { currentUser } = useAuth();
+  const { currentUser, language, setLanguage } = useAuth();
+  const [dashboardAccounts, setDashboardAccounts] = useState([]);
+  const [isLoadingDashboardAccounts, setIsLoadingDashboardAccounts] = useState(true);
+
+  const t = getTranslator(language); // Get the translator function for the current language
+
+  // useEffect for fetching dashboard accounts MUST be called before any conditional returns
+  useEffect(() => {
+    if (!currentUser) {
+      setDashboardAccounts([]);
+      setIsLoadingDashboardAccounts(false);
+      return; // This early return inside useEffect is fine
+    }
+
+    setIsLoadingDashboardAccounts(true);
+    const q = query(
+      collection(db, 'tradingAccounts'), 
+      where('userId', '==', currentUser.uid),
+      // where('status', '==', 'Activa'), // You might want to filter by status
+      limit(3) // Show up to 3 accounts on the dashboard
+    );
+
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const accountsData = [];
+      querySnapshot.forEach((doc) => {
+        accountsData.push({ id: doc.id, ...doc.data() });
+      });
+      setDashboardAccounts(accountsData);
+      setIsLoadingDashboardAccounts(false);
+    }, (error) => {
+      console.error("Error fetching dashboard accounts: ", error);
+      setIsLoadingDashboardAccounts(false);
+    });
+
+    return () => unsubscribe(); // Cleanup on unmount
+  }, [currentUser]);
+
+  const getCurrentFormattedDate = () => {
+    const days = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+    const months = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+    const now = new Date();
+    const dayName = days[now.getDay()];
+    const dayOfMonth = now.getDate();
+    const monthName = months[now.getMonth()];
+    const year = now.getFullYear();
+    return `${dayName}, ${dayOfMonth} de ${monthName} de ${year}`;
+  };
 
   const getUserName = () => {
     if (currentUser && currentUser.displayName) {
@@ -30,7 +78,7 @@ const Home = ({ onViewDetails, onSettingsClick, setSelectedOption }) => {
   };
 
   const changeLanguage = (lang) => {
-    setCurrentLanguage(lang);
+    setLanguage(lang);
     setShowLanguageMenu(false);
   };
   
@@ -47,12 +95,31 @@ const Home = ({ onViewDetails, onSettingsClick, setSelectedOption }) => {
     setShowUserInfo(false);
   };
 
-  // If user info is being shown, display the UserInformation component
+  // Conditional return for UserInformationContent is now AFTER all top-level hooks
   if (showUserInfo) {
     return (
       <UserInformationContent onBack={handleBackFromUserInfo} />
     );
   }
+
+  // Helper to format PNL values (example)
+  const formatPnl = (value, isPercentage = false) => {
+    if (typeof value !== 'number') return isPercentage ? '0.00%' : '$0.00';
+    const fixedValue = value.toFixed(2);
+    return isPercentage ? `${fixedValue}%` : `$${fixedValue}`;
+  };
+
+  const formatBalance = (value) => {
+    if (typeof value !== 'number') return '$0,000.00';
+    return `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  };
+
+  console.log('[Home.jsx] Rendering with language:', language);
+
+  const resolvedImagePath = `/Idioma${language.toUpperCase()}.png`;
+  const languageTextDisplay = language.toUpperCase();
+  console.log('[Home.jsx] Image path to render:', resolvedImagePath);
+  console.log('[Home.jsx] Text to render:', languageTextDisplay);
 
   return (
     <div className="p-4 md:p-6 bg-[#232323] border border-[#333] rounded-3xl text-white min-h-screen flex flex-col">
@@ -61,8 +128,8 @@ const Home = ({ onViewDetails, onSettingsClick, setSelectedOption }) => {
         <div className="absolute inset-0 border-solid border-t-4 border-l border-r border-cyan-500 border-opacity-50 rounded-xl"></div>
 
         <div className="mb-3 sm:mb-0">
-        <h1 className="text-xl md:text-2xl font-semibold">Hola, {getUserName()}</h1>
-        <p className="text-sm md:text-base text-gray-400">Miércoles, 8 de diciembre 2025</p>
+        <h1 className="text-xl md:text-2xl font-semibold">{t('greeting')}, {getUserName()}</h1>
+        <p className="text-sm md:text-base text-gray-400">{getCurrentFormattedDate()}</p>
       </div>
         <div className="flex items-center space-x-3 md:space-x-4 w-full sm:w-auto justify-end">
   <button 
@@ -102,28 +169,28 @@ const Home = ({ onViewDetails, onSettingsClick, setSelectedOption }) => {
       className="flex items-center space-x-1 focus:outline-none bg-transparent p-1 hover:ring-1 hover:ring-cyan-400 rounded-full transition-all duration-200"
     >
       <img 
-        src={`/Idioma${currentLanguage}.png`} 
+        src={resolvedImagePath} 
         alt="Language" 
         className="w-6 h-6 md:w-8 md:h-8 rounded-full" 
         onError={(e) => {
           e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%23555'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='20' fill='white'%3ES%3C/text%3E%3C/svg%3E";
         }}
       />
-      <span className="text-sm md:text-base text-gray-300">{currentLanguage}</span>
+      <span className="text-sm md:text-base text-gray-300">{languageTextDisplay}</span>
     </button>
     
     {showLanguageMenu && (
       <div className="absolute top-full right-0 mt-2 bg-black bg-opacity-20 border-t border-cyan-500 rounded-md overflow-hidden z-20 min-w-[90px] fading-borders">
         <button 
           className="focus:outline-none flex items-center space-x-2 px-4 py-2 w-full text-left bg-transparent hover:ring-1 hover:border-cyan-400 transition-all duration-200"
-          onClick={() => changeLanguage('ES')}
+          onClick={() => changeLanguage('es')}
         >
           <img src="/IdiomaES.png" className="w-6 h-6 rounded-full" alt="Spanish" />
           <span className="text-sm md:text-base text-white text-opacity-90">ES</span>
         </button>
         <button 
           className="focus:outline-none flex items-center space-x-2 px-4 py-2 w-full text-left bg-transparent hover:ring-1 hover:border-cyan-400 transition-all duration-200"
-          onClick={() => changeLanguage('EN')}
+          onClick={() => changeLanguage('en')}
         >
           <img src="/IdiomaEN.png" className="w-6 h-6 rounded-full" alt="English" />
           <span className="text-sm md:text-base text-white text-opacity-90">EN</span>
@@ -149,14 +216,14 @@ const Home = ({ onViewDetails, onSettingsClick, setSelectedOption }) => {
           }}
         ></div>
         <div className="max-w-lg relative z-10 py-8 md:py-0">
-          <h2 className="text-xl md:text-5xl font-base mb-3 md:mb-4">Impulsa tu trading con AGM Prop Firm</h2>
-          <p className="text-regular md:text-2xl mb-4 md:mb-6">Obtén hasta un 90% de profit split y gestiona cuentas de hasta $200,000</p>
+          <h2 className="text-xl md:text-5xl font-base mb-3 md:mb-4">{t('pageTitle')}</h2>
+          <p className="text-regular md:text-2xl mb-4 md:mb-6">{t('pageSubtitle')}</p>
           <button 
           className="bg-gradient-to-r from-[#0F7490] to-[#0A5A72] text-white py-2 px-4 md:px-6 rounded-md hover:opacity-90 transition"
           style={{ outline: 'none' }}
           onClick={() => setSelectedOption && setSelectedOption("Desafio")}
         >
-          Empezar
+          {t('startButton')}
         </button>
         </div>
       </div>
@@ -164,35 +231,63 @@ const Home = ({ onViewDetails, onSettingsClick, setSelectedOption }) => {
       {/* Sección de cuentas */}
       <div className="mb-4 md:mb-6 border border-[#333] p-3 md:p-4 rounded-xl flex-grow flex flex-col bg-gradient-to-br from-[#232323] to-[#202020]">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
-          <h2 className="text-2xl md:text-4xl font-semibold mb-2 sm:mb-0">Tus Cuentas</h2>
+          <h2 className="text-2xl md:text-4xl font-semibold mb-2 sm:mb-0">{t('yourAccountsTitle')}</h2>
           <button 
           className="text-white bg-[#232323] rounded-full py-1 md:py-2 px-3 md:px-4 text-base md:text-lg font-regular border border-gray-700 w-full sm:w-auto sm:min-w-24 hover:bg-gray-800 transition"
           style={{ outline: 'none' }}
           onClick={() => setSelectedOption && setSelectedOption("Cuentas")}>
-            Ver Todo
+            {t('seeAllButton')}
           </button>
         </div>
         
         {/* Tarjetas de cuentas */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 flex-grow">
-          {[1, 2, 3].map((accountId) => (
-            <div key={accountId} className="bg-gradient-to-br from-[#232323] to-[#2d2d2d] p-3 md:p-4 rounded-3xl border border-[#333] flex flex-col h-48 md:h-[250px] max-w-lg ">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2">
-                <h3 className="font-medium text-lg md:text-2xl lg:text-3xl mb-1 sm:mb-0">ONE STEP CHALLENGE 100K</h3>
-                <span className="text-gray-400 text-base md:text-xl">#{657230 + accountId}</span>
+        {isLoadingDashboardAccounts && <p className="text-center py-4">Cargando cuentas del dashboard...</p>}
+        {!isLoadingDashboardAccounts && dashboardAccounts.length === 0 && (
+          <p className="text-center py-4">No tienes cuentas activas para mostrar en el dashboard.</p>
+        )}
+        {!isLoadingDashboardAccounts && dashboardAccounts.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 flex-grow">
+            {dashboardAccounts.map((account) => (
+              <div key={account.id} className="bg-gradient-to-br from-[#232323] to-[#2d2d2d] p-3 md:p-4 rounded-3xl border border-[#333] flex flex-col h-auto md:h-[300px] max-w-lg justify-between">
+                <div>
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2">
+                    <h3 className="font-medium text-lg md:text-xl lg:text-2xl mb-1 sm:mb-0 whitespace-nowrap overflow-hidden text-ellipsis">{account.challengePhase} {account.challengeAmountString}</h3>
+                    <span className="text-gray-400 text-sm md:text-base">#{account.accountNumber}</span>
+                  </div>
+                  <p className="text-gray-400 text-sm mb-1">Balance Actual</p>
+                  <p className="text-xl md:text-2xl font-semibold mb-3">{formatBalance(account.balanceActual)}</p>
+                  
+                  <div className="grid grid-cols-3 gap-2 text-xs mb-3">
+                    <div>
+                      <p className="text-gray-400">PNL Hoy</p>
+                      <p className={`${(account.pnlToday || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>{formatPnl(account.pnlToday || 0)} ({formatPnl(((account.pnlToday || 0) / (account.balanceActual || 1)) * 100, true)})</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-400">PNL 7 días</p>
+                      <p className={`${(account.pnl7Days || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>{formatPnl(account.pnl7Days || 0)} ({formatPnl(((account.pnl7Days || 0) / (account.balanceActual || 1)) * 100, true)})</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-400">PNL 30 días</p>
+                      <p className={`${(account.pnl30Days || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>{formatPnl(account.pnl30Days || 0)} ({formatPnl(((account.pnl30Days || 0) / (account.balanceActual || 1)) * 100, true)})</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex justify-center mt-auto pt-2">
+                  <button 
+                    className="border border-cyan-500 border-opacity-50 text-white py-1 md:py-2 px-3 md:px-4 rounded-full hover:bg-gray-800 transition text-sm md:text-base"
+                    style={{ outline: 'none' }}
+                    onClick={() => {
+                      onViewDetails && onViewDetails(account.id);
+                    }}
+                  >
+                    Ver Detalles
+                  </button>
+                </div>
               </div>
-              <div className="flex justify-center mt-auto pt-4">
-                <button 
-                  className="border border-cyan-500 border-opacity-50 text-white py-1 md:py-2 px-3 md:px-4 rounded-full hover:bg-gray-800 transition"
-                  style={{ outline: 'none' }}
-                  onClick={() => onViewDetails && onViewDetails(accountId)}
-                >
-                  Ver Detalles
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
       {showNotifications && (
   <NotificationsModal onClose={() => setShowNotifications(false)} />

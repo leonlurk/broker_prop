@@ -1,385 +1,384 @@
-import React, { useState, useEffect } from 'react';
-import { ChevronDown, Copy, ArrowUpDown, Save, AlertTriangle, Loader } from 'lucide-react';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import React, { useState, useEffect, useCallback } from 'react';
+import { ChevronDown, Copy, ArrowUpDown, Save, AlertTriangle, Loader, Lock, UserCheck, Link, ListChecks, CreditCard } from 'lucide-react';
+import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { auth, db } from '../firebase/config';
+import { useAuth } from '../contexts/AuthContext';
+import { getTranslator } from '../utils/i18n';
+
+// Tier requirements (can be constants or fetched from config later)
+const TIER_REQUIREMENTS = {
+  1: 0, // Base Tier
+  2: 5, // Example: 5 referrals for Tier 2
+  3: 15 // Example: 15 referrals for Tier 3
+};
+
+// Tier commission details (example) - Will be initialized inside component for t function access
+// const TIER_COMMISSIONS = {
+//   1: { direct: '10%', sub_tier_1: null, payments: null, label: 'Comisión 10%' },
+//   2: { direct: '15%', sub_tier_1: '5%', payments: null, label: 'Comisión 15% + 5% (Tier 1 Referidos)' },
+//   3: { direct: '20%', sub_tier_1: '5%', payments: '10%', label: 'Comisión 20% + 5% (Tier 1) + 10% Pagos' }, 
+// };
+
+const determineTier = (referralCount) => {
+  if (referralCount >= TIER_REQUIREMENTS[3]) return 3;
+  if (referralCount >= TIER_REQUIREMENTS[2]) return 2;
+  return 1;
+};
 
 const AfiliadosDashboard = () => {
+  const { currentUser, language } = useAuth();
+  const t = getTranslator(language);
+
+  // Moved TIER_COMMISSIONS here to use t()
+  const TIER_COMMISSIONS = {
+    1: { direct: '10%', sub_tier_1: null, payments: null, labelKey: 'afiliadosDashboard_tier_commission_1' },
+    2: { direct: '15%', sub_tier_1: '5%', payments: null, labelKey: 'afiliadosDashboard_tier_commission_2' },
+    3: { direct: '20%', sub_tier_1: '5%', payments: '10%', labelKey: 'afiliadosDashboard_tier_commission_3' }, 
+  };
+
   const [activeTab, setActiveTab] = useState('panel');
   const [walletAddress, setWalletAddress] = useState('');
-  const [isEditing, setIsEditing] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+  const [isEditingWallet, setIsEditingWallet] = useState(false);
+  const [isSavingWallet, setIsSavingWallet] = useState(false);
   const [editWalletAddress, setEditWalletAddress] = useState('');
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   
-  // Datos para las tablas
-  const referenciasData = [];
-  const pagosData = [];
-  
-  // Cargar la dirección de la wallet desde Firebase
+  const [referralLink, setReferralLink] = useState('');
+  const [referralCount, setReferralCount] = useState(0);
+  const [currentTier, setCurrentTier] = useState(1);
+  const [isLoadingData, setIsLoadingData] = useState(true);
+
+  const [referenciasData, setReferenciasData] = useState([]);
+  const [pagosData, setPagosData] = useState([]);
+  const [isLoadingReferencias, setIsLoadingReferencias] = useState(false);
+  const [isLoadingPagos, setIsLoadingPagos] = useState(false);
+
   useEffect(() => {
-    const fetchWalletAddress = async () => {
+    const fetchUserData = async () => {
+      if (!currentUser) {
+        setIsLoadingData(false);
+        setError(t('afiliadosDashboard_error_userNotAuthenticated'));
+        return;
+      }
+      setIsLoadingData(true);
       try {
-        const user = auth.currentUser;
-        if (user) {
-          const userDocRef = doc(db, 'users', user.uid);
+        setReferralLink(`${window.location.origin}/register?ref=${currentUser.uid}`);
+        const userDocRef = doc(db, 'users', currentUser.uid);
           const userDoc = await getDoc(userDocRef);
           
-          if (userDoc.exists() && userDoc.data().withdrawals_wallet) {
-            setWalletAddress(userDoc.data().withdrawals_wallet);
-            setEditWalletAddress(userDoc.data().withdrawals_wallet);
-          }
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          setWalletAddress(userData.withdrawals_wallet || '');
+          setEditWalletAddress(userData.withdrawals_wallet || '');
+          const count = userData.referralCount || 0;
+          setReferralCount(count);
+          setCurrentTier(determineTier(count));
+        } else {
+          // User document might not exist if created before these fields were added
+          // Or if there was an issue. Initialize with defaults.
+          setReferralCount(0);
+          setCurrentTier(1);
+          setWalletAddress('');
+          setEditWalletAddress('');
+          // Optionally, create/update the user doc with default affiliate fields here if it's missing them
+          // await setDoc(userDocRef, { referralCount: 0, withdrawals_wallet: '' }, { merge: true });
         }
       } catch (err) {
-        console.error('Error al obtener la dirección de wallet:', err);
-        setError('Error al cargar los datos. Intente de nuevo más tarde.');
+        console.error('Error al obtener datos del afiliado:', err);
+        setError(t('afiliadosDashboard_error_loadingData'));
+      } finally {
+        setIsLoadingData(false);
       }
     };
-    
-    fetchWalletAddress();
-  }, []);
+
+    fetchUserData();
+  }, [currentUser]);
+
+  const fetchReferencias = useCallback(async () => {
+    if (!currentUser || activeTab !== 'referencias') {
+      return;
+    }
+    setIsLoadingReferencias(true);
+    setError('');
+    try {
+      const q = query(
+        collection(db, "users"), 
+        where("referredBy", "==", currentUser.uid),
+        orderBy("created_time", "desc")
+      );
+      const querySnapshot = await getDocs(q);
+      const refs = [];
+      querySnapshot.forEach((doc) => {
+        refs.push({ id: doc.id, ...doc.data() });
+      });
+      setReferenciasData(refs);
+    } catch (err) {
+      console.error('Error fetching referrals:', err);
+      setError(t('afiliadosDashboard_error_loadingReferrals'));
+      setReferenciasData([]);
+    } finally {
+      setIsLoadingReferencias(false);
+    }
+  }, [currentUser, activeTab]);
+
+  useEffect(() => {
+    if (activeTab === 'referencias') {
+      fetchReferencias();
+    }
+  }, [activeTab, fetchReferencias]);
 
   const handleTabClick = (tab) => {
     setActiveTab(tab);
+    // Reset messages when changing tabs
+    setError('');
+    setSuccessMessage('');
+    // Potentially trigger data fetching for referral/payment tables here if not already loaded
   };
   
-  const toggleEditMode = () => {
-    setIsEditing(!isEditing);
-    setEditWalletAddress(walletAddress);
+  const toggleEditWalletMode = () => {
+    setIsEditingWallet(!isEditingWallet);
+    setEditWalletAddress(walletAddress); // Reset edit field to current wallet on toggle
     setError('');
     setSuccessMessage('');
   };
   
-  const saveWalletAddress = async () => {
-    // Validación básica
+  const saveWalletAddressHandler = async () => {
     if (!editWalletAddress.trim()) {
-      setError('Por favor, introduzca una dirección de wallet válida.');
+      setError(t('afiliadosDashboard_error_invalidWallet'));
       return;
     }
-    
-    setIsSaving(true);
+    if (!currentUser) {
+      setError(t('afiliadosDashboard_error_mustLoginToUpdateWallet'));
+      return;
+    }
+    setIsSavingWallet(true);
     setError('');
-    
+    setSuccessMessage('');
     try {
-      const user = auth.currentUser;
-      if (user) {
-        const userDocRef = doc(db, 'users', user.uid);
-        
-        // Actualizar sólo el campo withdrawals_wallet
-        await setDoc(userDocRef, { withdrawals_wallet: editWalletAddress.trim() }, { merge: true });
-        
+      const userDocRef = doc(db, 'users', currentUser.uid);
+      await updateDoc(userDocRef, { withdrawals_wallet: editWalletAddress.trim() });
         setWalletAddress(editWalletAddress.trim());
-        setSuccessMessage('Dirección de wallet actualizada correctamente');
-        
-        // Ocultar mensaje de éxito después de 3 segundos
-        setTimeout(() => {
-          setSuccessMessage('');
-        }, 3000);
-        
-        setIsEditing(false);
-      } else {
-        setError('Debe iniciar sesión para actualizar la dirección de wallet.');
-      }
+      setSuccessMessage(t('afiliadosDashboard_success_walletUpdated'));
+      setTimeout(() => setSuccessMessage(''), 3000);
+      setIsEditingWallet(false);
     } catch (err) {
       console.error('Error al actualizar la wallet:', err);
-      setError('Error al guardar los cambios. Intente de nuevo más tarde.');
+      setError(t('afiliadosDashboard_error_savingWallet'));
     } finally {
-      setIsSaving(false);
+      setIsSavingWallet(false);
     }
   };
   
-  const copyToClipboard = (text) => {
-    navigator.clipboard.writeText(text)
+  const copyToClipboardHandler = () => {
+    if (!referralLink) return;
+    navigator.clipboard.writeText(referralLink)
       .then(() => {
-        alert('Dirección copiada al portapapeles');
+        setSuccessMessage(t('afiliadosDashboard_success_linkCopied'));
+        setTimeout(() => setSuccessMessage(''), 2000);
       })
       .catch(err => {
-        console.error('Error al copiar: ', err);
+        console.error('Error al copiar enlace:', err);
+        setError(t('afiliadosDashboard_error_copyingLink'));
+        setTimeout(() => setError(''), 2000);
       });
   };
 
-  // Renderizar el contenido según la pestaña activa
   const renderContent = () => {
+    if (isLoadingData) {
+      return <div className="flex justify-center items-center h-60"><Loader size={40} className="animate-spin text-cyan-500" /></div>;
+    }
+    if (error && activeTab !== 'panel') { // Show general error prominently if not on panel (panel has its own error spots)
+        return <div className="text-red-400 p-4 text-center">{error}</div>;
+    }
+
     switch (activeTab) {
       case 'panel':
         return (
-          <div className="space-y-6">
-            {/* Rendimiento */}
-            <div className="space-y-4">
-              <h2 className="text-3xl font-medium">Rendimiento</h2>
-              
+          <div className="space-y-8">
+            {/* Performance Metrics - Placeholder values for now */}
+            <section>
+              <h2 className="text-2xl font-semibold mb-4 text-gray-100">{t('afiliadosDashboard_panel_performance')}</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Comisiones */}
-                <div className="p-4 md:p-6 bg-gradient-to-br from-[#232323] to-[#2d2d2d] rounded-xl border border-[#333]">
-                  <h3 className="text-xl font-medium mb-2">Comisiones</h3>
-                  <p className="text-2xl md:text-3xl font-medium">$1.000,00</p>
+                <div className="p-5 bg-[#202020] rounded-xl border border-[#333]">
+                  <h3 className="text-md font-medium text-gray-400 mb-1">{t('afiliadosDashboard_panel_totalCommissions')}</h3>
+                  <p className="text-3xl font-bold text-cyan-400">$0.00</p>
                 </div>
-                
-                {/* Referencias */}
-                <div className="p-4 md:p-6 bg-gradient-to-br from-[#232323] to-[#2d2d2d] rounded-xl border border-[#333]">
-                  <h3 className="text-xl font-medium mb-2">Referencias</h3>
-                  <p className="text-2xl md:text-3xl font-medium">200</p>
+                <div className="p-5 bg-[#202020] rounded-xl border border-[#333]">
+                  <h3 className="text-md font-medium text-gray-400 mb-1">{t('afiliadosDashboard_panel_paidReferrals')}</h3>
+                  <p className="text-3xl font-bold text-cyan-400">0</p>
                 </div>
-                
-                {/* Pagos */}
-                <div className="p-4 md:p-6 bg-gradient-to-br from-[#232323] to-[#2d2d2d] rounded-xl border border-[#333]">
-                  <h3 className="text-xl font-medium mb-2">Pagos</h3>
-                  <p className="text-2xl md:text-3xl font-medium">$1.000,00</p>
+                <div className="p-5 bg-[#202020] rounded-xl border border-[#333]">
+                  <h3 className="text-md font-medium text-gray-400 mb-1">{t('afiliadosDashboard_panel_conversion')}</h3>
+                  <p className="text-3xl font-bold text-cyan-400">0%</p>
                 </div>
               </div>
-            </div>
-            
-            {/* Enlace De Afiliados */}
-            <div className="space-y-4">
-              <h2 className="text-3xl font-medium">Enlace De Afiliados</h2>
-              
-              <div className="p-4 md:p-6 bg-gradient-to-br from-[#232323] to-[#2d2d2d] rounded-xl border border-[#333]">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-                  {/* ID Del Afiliado */}
-                  <div>
-                    <label className="block text-gray-400 text-base mb-2">ID Del Afiliado</label>
-                    <div className="p-5 bg-gradient-to-br from-[#232323] to-[#2b2b2b] rounded-full border border-[#333] text-gray-300 truncate">
-                      6265beff-588e-416d-83de-748cb4ce
-                    </div>
-                  </div>
-                  
-                  {/* Campaña */}
-                  <div>
-                    <label className="block text-gray-400 text-base mb-2">Campaña</label>
-                    <div className="relative">
-                      <select className="appearance-none p-5 pr-10 bg-gradient-to-br from-[#232323] to-[#2b2b2b] rounded-full border border-[#333] w-full text-gray-300">
-                        <option>Por Defecto</option>
-                      </select>
-                      <ChevronDown size={16} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                    </div>
-                  </div>
-                  
-                  {/* Pagina De Destino */}
-                  <div>
-                    <label className="block text-gray-400 text-base mb-2">Pagina De Destino</label>
-                    <div className="relative">
-                      <select className="appearance-none p-5 pr-10 bg-gradient-to-br from-[#232323] to-[#2b2b2b] rounded-full border border-[#333] w-full text-gray-300">
-                        <option>Pagina De Compra</option>
-                      </select>
-                      <ChevronDown size={16} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                    </div>
-                  </div>
+            </section>
+
+            {/* Affiliate Link & Tier Info */}
+            <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2 p-5 bg-[#202020] rounded-xl border border-[#333] space-y-3">
+                <h3 className="text-lg font-semibold text-gray-100">{t('afiliadosDashboard_panel_yourAffiliateLink')}</h3>
+                <div className="flex items-center space-x-2">
+                  <input type="text" readOnly value={referralLink} className="w-full p-3 bg-[#1a1a1a] rounded-lg border border-[#444] text-gray-300 text-sm truncate" />
+                  <button onClick={copyToClipboardHandler} className="p-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg transition disabled:opacity-50" disabled={!referralLink}><Copy size={18} /></button>
                 </div>
+                <p className="text-xs text-gray-500">{t('afiliadosDashboard_panel_shareLinkInstruction')}</p>
               </div>
-            </div>
+              <div className="p-5 bg-[#202020] rounded-xl border border-[#333]">
+                <h3 className="text-lg font-semibold text-gray-100 mb-1">{t('afiliadosDashboard_panel_registeredReferrals')}</h3>
+                <p className="text-4xl font-bold text-cyan-400">{referralCount}</p>
+              </div>
+            </section>
             
-            {/* Direccion De Pago USDT */}
-            <div className="space-y-4">
-              <h2 className="text-3xl font-medium">Direccion De Pago USDT</h2>
-              <p className="text-gray-400">Proporcionar Una Dirección USDT TRC20 Válida</p>
-              
-              {successMessage && (
-                <div className="bg-green-900/20 border border-green-600 text-green-400 p-3 rounded-lg mb-3">
-                  {successMessage}
-                </div>
-              )}
-              
-              {error && (
-                <div className="bg-red-900/20 border border-red-600 text-red-400 p-3 rounded-lg mb-3 flex items-center">
-                  <AlertTriangle size={16} className="mr-2" />
-                  {error}
-                </div>
-              )}
-              
-              {isEditing ? (
-                <div className="flex flex-col space-y-3">
-                  <input
-                    type="text"
-                    className="flex-grow p-3 bg-gradient-to-br from-[#1a1a1a] to-[#252525] rounded-lg border border-[#333] text-white"
-                    value={editWalletAddress}
-                    onChange={(e) => setEditWalletAddress(e.target.value)}
-                    placeholder="Ingrese su dirección TRC20 USDT"
-                  />
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <button 
-                      className="px-6 py-3 bg-gradient-to-br from-[#0F7490] to-[#0A5A72] text-white rounded-full hover:opacity-90 transition flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-                      onClick={saveWalletAddress}
-                      disabled={isSaving}
-                    >
-                      {isSaving ? (
-                        <>
-                          <Loader size={16} className="animate-spin mr-2" />
-                          Guardando...
-                        </>
-                      ) : (
-                        <>
-                          <Save size={16} className="mr-2" />
-                          Guardar
-                        </>
-                      )}
+            {/* Wallet Address */}
+            <section>
+              <h2 className="text-2xl font-semibold mb-3 text-gray-100">{t('afiliadosDashboard_panel_paymentAddress')}</h2>
+              {successMessage && <div className="mb-3 p-3 bg-green-500/20 border border-green-500 text-green-300 rounded-lg">{successMessage}</div>}
+              {error && <div className="mb-3 p-3 bg-red-500/20 border border-red-500 text-red-300 rounded-lg flex items-center"><AlertTriangle size={18} className="mr-2"/>{error}</div>}
+              {isEditingWallet ? (
+                <div className="space-y-3">
+                  <input type="text" value={editWalletAddress} onChange={(e) => setEditWalletAddress(e.target.value)} placeholder={t('afiliadosDashboard_panel_walletPlaceholder')} className="w-full p-3 bg-[#1a1a1a] rounded-lg border border-[#444] text-white focus:border-cyan-500 focus:ring-cyan-500" />
+                  <div className="flex gap-3">
+                    <button onClick={saveWalletAddressHandler} disabled={isSavingWallet} className="px-5 py-2.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg transition flex items-center justify-center disabled:opacity-70">
+                      {isSavingWallet ? <><Loader size={18} className="animate-spin mr-2" />{t('afiliadosDashboard_panel_savingButton')}</> : <><Save size={18} className="mr-2"/>{t('afiliadosDashboard_panel_saveButton')}</>}
                     </button>
-                    <button 
-                      className="px-6 py-3 bg-[#2a2a2a] text-white rounded-full hover:bg-[#333] transition"
-                      onClick={toggleEditMode}
-                      disabled={isSaving}
-                    >
-                      Cancelar
-                    </button>
+                    <button onClick={toggleEditWalletMode} className="px-5 py-2.5 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition">{t('afiliadosDashboard_panel_cancelButton')}</button>
                   </div>
                 </div>
               ) : (
-                <div className="flex flex-col md:flex-row gap-3">
-                  <div className="flex-grow p-3 bg-gradient-to-br from-[#1a1a1a] to-[#252525] rounded-lg border border-[#333] text-gray-300 overflow-hidden flex items-center">
-                    <span className="truncate mr-2">{walletAddress || 'No se ha establecido una dirección de wallet'}</span>
-                    {walletAddress && (
-                      <button 
-                        className="ml-auto p-1 hover:bg-[#333] rounded" 
-                        onClick={() => copyToClipboard(walletAddress)}
-                      >
-                        <Copy size={16} className="text-gray-400" />
-                      </button>
-                    )}
-                  </div>
-                  <button 
-                    className="px-6 py-3 bg-gradient-to-br focus:outline-none from-[#0F7490] to-[#0A5A72] text-white rounded-full hover:opacity-90 transition"
-                    onClick={toggleEditMode}
-                  >
-                    Editar
-                  </button>
+                <div className="flex items-center justify-between p-3 bg-[#1a1a1a] rounded-lg border border-[#444]">
+                  <span className="text-gray-300 truncate">{walletAddress || t('afiliadosDashboard_walletNotSet')}</span>
+                  <button onClick={toggleEditWalletMode} className="px-5 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg transition text-sm">{t('afiliadosDashboard_panel_editButton')}</button>
                 </div>
               )}
-            </div>
+            </section>
+
+            {/* Tiers Visual Display */}
+            <section>
+                <h2 className="text-2xl font-semibold mb-4 text-gray-100">{t('afiliadosDashboard_panel_affiliateTiers')}</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {[1, 2, 3].map(tierNum => (
+                        <div key={tierNum} className={`p-5 rounded-xl border-2 ${currentTier >= tierNum ? 'border-cyan-500 bg-[#202020]' : 'border-[#444] bg-[#1c1c1c]' } space-y-1`}>
+                            <div className="flex justify-between items-center">
+                                <h3 className={`text-xl font-bold ${currentTier >= tierNum ? 'text-cyan-400' : 'text-gray-300'}`}>{t('afiliadosDashboard_panel_tierLabel', { tierNum })}</h3>
+                                {currentTier < tierNum && <Lock size={20} className="text-gray-500" />}
+              </div>
+                            <p className={`text-sm ${currentTier >= tierNum ? 'text-gray-200' : 'text-gray-400'}`}>{t(TIER_COMMISSIONS[tierNum].labelKey)}</p>
+                            <p className="text-xs text-gray-500">
+                                {TIER_REQUIREMENTS[tierNum + 1] !== undefined 
+                                    ? t('afiliadosDashboard_panel_tierRequirement', { count: TIER_REQUIREMENTS[tierNum+1] })
+                                    : t('afiliadosDashboard_panel_tierRequirementPlus', { count: TIER_REQUIREMENTS[tierNum] })}
+                            </p>
+                </div>
+                    ))}
+                </div>
+            </section>
+
+             {/* Traders Fondeados Section - Placeholder */}
+            <section>
+                <h2 className="text-2xl font-semibold mb-4 text-gray-100">{t('afiliadosDashboard_panel_fundedTradersTier3')}</h2>
+                <div className="relative rounded-xl border border-[#333] bg-[#202020] min-h-[200px] flex items-center justify-center">
+                {currentTier === 3 ? (
+                    <p className="text-gray-400">{t('afiliadosDashboard_panel_fundedTradersUnlocked')}</p>
+                ) : (
+                    <div className="text-center p-4">
+                        <Lock size={36} className="text-gray-500 mb-3 mx-auto" />
+                        <h3 className="text-xl font-semibold text-gray-300 mb-1">{t('afiliadosDashboard_panel_sectionLocked')}</h3>
+                        <p className="text-sm text-gray-400">{t('afiliadosDashboard_panel_reachTierToUnlock', { tierNum: 3, count: TIER_REQUIREMENTS[3] })}</p>
+                </div>
+                )}
+                </div>
+            </section>
           </div>
         );
+
       case 'referencias':
         return (
           <div className="space-y-4">
-            <div className="overflow-x-auto">
-              <table className="min-w-full">
-                <thead>
-                  <tr className="text-left text-gray-400 border-b border-gray-700">
-                    <th className="py-4 px-3 font-medium">Identificacion de referencia</th>
-                    <th className="py-4 px-3 font-medium">Nombre Completo</th>
-                    <th className="py-4 px-3 font-medium">País</th>
-                    <th className="py-4 px-3 font-medium">Creado en</th>
-                    <th className="py-4 px-3 font-medium">Identificacion de campaña</th>
-                    <th className="py-4 px-3 font-medium">Nombre de la campaña</th>
-                    <th className="py-4 px-3 font-medium">N° de compras</th>
-                    <th className="py-4 px-3 font-medium">Ingresos totales</th>
-                    <th className="py-4 px-3 font-medium">Comisiones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {referenciasData.length > 0 ? (
-                    referenciasData.map((item, index) => (
-                      <tr key={index} className="border-b border-gray-800 text-sm">
-                        {/* Datos dinámicos aquí */}
-                      </tr>
-                    ))
-                  ) : (
+             <h2 className="text-2xl font-semibold mb-4 text-gray-100">{t('afiliadosDashboard_referrals_title')}</h2>
+            {isLoadingReferencias && <div className="flex justify-center items-center p-6"><Loader size={32} className="animate-spin text-cyan-500"/></div>}
+            {!isLoadingReferencias && error && <div className="text-red-400 p-4 text-center">{error}</div>}
+            {!isLoadingReferencias && !error && referenciasData.length === 0 && 
+                <p className="text-gray-400 text-center p-6">{t('afiliadosDashboard_referrals_noReferrals')}</p>
+            }
+            {!isLoadingReferencias && !error && referenciasData.length > 0 && (
+              <div className="overflow-x-auto bg-[#202020] rounded-xl border border-[#333]">
+                <table className="min-w-full text-sm">
+                  <thead className="border-b border-[#444]">
                     <tr>
-                      <td colSpan={9} className="py-6 text-center text-gray-400">
-                        No hay datos disponibles
-                      </td>
+                      <th className="px-4 py-3 text-left font-medium text-gray-300">{t('afiliadosDashboard_referrals_table_user')}</th>
+                      <th className="px-4 py-3 text-left font-medium text-gray-300">{t('afiliadosDashboard_referrals_table_email')}</th>
+                      <th className="px-4 py-3 text-left font-medium text-gray-300">{t('afiliadosDashboard_referrals_table_name')}</th>
+                      <th className="px-4 py-3 text-left font-medium text-gray-300">{t('afiliadosDashboard_referrals_table_country')}</th>
+                      <th className="px-4 py-3 text-left font-medium text-gray-300">{t('afiliadosDashboard_referrals_table_registeredDate')}</th>
                     </tr>
-                  )}
+                  </thead>
+                  <tbody className="divide-y divide-[#333]">
+                    {referenciasData.map(ref => (
+                      <tr key={ref.id} className="hover:bg-[#2a2a2a]">
+                        <td className="px-4 py-3 text-gray-200">{ref.username || t('afiliadosDashboard_table_notAvailable')}</td>
+                        <td className="px-4 py-3 text-gray-200">{ref.email}</td>
+                        <td className="px-4 py-3 text-gray-200">{`${ref.firstName || ''} ${ref.lastName || ''}`.trim() || t('afiliadosDashboard_table_notAvailable')}</td>
+                        <td className="px-4 py-3 text-gray-200">{ref.country || t('afiliadosDashboard_table_notAvailable')}</td>
+                        <td className="px-4 py-3 text-gray-200">
+                          {ref.created_time ? new Date(ref.created_time.seconds * 1000).toLocaleDateString() : t('afiliadosDashboard_table_notAvailable')}
+                        </td>
+                      </tr>
+                    ))}
                 </tbody>
               </table>
             </div>
+            )}
           </div>
         );
+
       case 'pagos':
         return (
           <div className="space-y-4">
-            <div className="overflow-x-auto">
-              <table className="min-w-full">
-                <thead>
-                  <tr className="text-left text-gray-400 border-b border-gray-700">
-                    <th className="py-4 px-3 font-medium">Identificacion de pago</th>
-                    <th className="py-4 px-3 font-medium">
-                      <div className="flex items-center">
-                        Creado en
-                        <ArrowUpDown size={14} className="ml-1" />
-                      </div>
-                    </th>
-                    <th className="py-4 px-3 font-medium">Cantidad a pagar</th>
-                    <th className="py-4 px-3 font-medium">Estado</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {pagosData.length > 0 ? (
-                    pagosData.map((item, index) => (
-                      <tr key={index} className="border-b border-gray-800 text-sm">
-                        {/* Datos dinámicos aquí */}
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={4} className="py-6 text-center text-gray-400">
-                        No hay datos disponibles
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+            <h2 className="text-2xl font-semibold mb-4 text-gray-100">{t('afiliadosDashboard_payments_title')}</h2>
+            {isLoadingPagos && <div className="flex justify-center"><Loader className="animate-spin text-cyan-500"/></div>}
+            {!isLoadingPagos && pagosData.length === 0 && <p className="text-gray-400">{t('afiliadosDashboard_payments_noPayments')}</p>}
+            {pagosData.length > 0 && <p>{t('afiliadosDashboard_payments_tablePlaceholder')}</p>}
           </div>
         );
-      default:
-        return null;
+      default: return <div className="text-center text-gray-400 p-6">{t('afiliadosDashboard_selectTabPrompt')}</div>;
     }
   };
 
+  const tabConfig = [
+    { id: 'panel', labelKey: 'afiliadosDashboard_tab_panel', icon: UserCheck },
+    { id: 'referencias', labelKey: 'afiliadosDashboard_tab_referrals', icon: Link },
+    { id: 'pagos', labelKey: 'afiliadosDashboard_tab_payments', icon: CreditCard },
+  ];
+
   return (
-    <div className="flex flex-col min-h-screen border border-[#333] rounded-3xl bg-[#232323] text-white p-4 md:p-6">
-      {/* Tabs */}
-      <div className="flex space-x-2 mb-6">
-        <button
-          className={`px-4 py-3 rounded-full focus:outline-none bg-gradient-to-br from-[#232323] to-[#2d2d2d] border-[#333] font-regular flex items-center space-x-2 ${
-            activeTab === 'panel' 
-              ? 'border border-cyan-500 text-white' 
-              : 'border border-[#333] text-gray-300 hover:bg-[#2a2a2a]'
-          }`}
-          onClick={() => handleTabClick('panel')}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-            <path d="M3 9h18" />
-            <path d="M9 21V9" />
-          </svg>
-          <span>Panel</span>
-        </button>
-        
-        <button
-          className={`px-4 py-3 rounded-full focus:outline-none font-regular bg-gradient-to-br from-[#232323] to-[#2d2d2d] border-[#333] flex items-center space-x-2 ${
-            activeTab === 'referencias' 
-              ? 'border border-cyan-500 text-white' 
-              : 'border border-[#333] text-gray-300 hover:bg-[#2a2a2a]'
-          }`}
-          onClick={() => handleTabClick('referencias')}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2" />
-            <circle cx="9" cy="7" r="4" />
-            <path d="M22 21v-2a4 4 0 00-3-3.87" />
-            <path d="M16 3.13a4 4 0 010 7.75" />
-          </svg>
-          <span>Referencias</span>
-        </button>
-        
-        <button
-          className={`px-4 py-3 rounded-full flex focus:outline-none font-regular bg-gradient-to-br from-[#232323] to-[#2d2d2d] border-[#333] items-center space-x-2 ${
-            activeTab === 'pagos' 
-              ? 'border border-cyan-500 text-white' 
-              : 'border border-[#333] text-gray-300 hover:bg-[#2a2a2a]'
-          }`}
-          onClick={() => handleTabClick('pagos')}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <rect x="2" y="5" width="20" height="14" rx="2" />
-            <path d="M2 10h20" />
-          </svg>
-          <span>Pagos</span>
-        </button>
+    <div className="flex flex-col min-h-screen bg-[#161616] text-white p-4 md:p-6 rounded-3xl border border-[#333]">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-3xl font-semibold text-gray-100">{t('afiliadosDashboard_mainTitle')}</h1>
       </div>
       
-      {/* Content Container */}
-      <div className="p-4 md:p-6 bg-gradient-to-br from-[#232323] to-[#2d2d2d] rounded-xl border border-[#333] mb-6">
+      <div className="flex space-x-1 mb-6 border-b border-[#333]">
+        {tabConfig.map(tab => {
+            const Icon = tab.icon;
+            return (
+        <button
+                    key={tab.id}
+                    className={`flex items-center space-x-2 px-4 py-3 font-medium focus:outline-none transition-colors duration-150
+                        ${activeTab === tab.id 
+                            ? 'border-b-2 border-cyan-500 text-cyan-400' 
+                            : 'text-gray-400 hover:text-gray-200'
+                        }`}
+                    onClick={() => handleTabClick(tab.id)}
+                >
+                    <Icon size={18} />
+                    <span>{t(tab.labelKey)}</span>
+        </button>
+            );
+        })}
+      </div>
+      
+      <div className="bg-[#1c1c1c] p-4 md:p-6 rounded-xl border border-[#333]">
         {renderContent()}
       </div>
     </div>

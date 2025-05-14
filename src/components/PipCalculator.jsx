@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { getTranslator } from '../utils/i18n';
 
 // Componente principal
 const PipCalculator = () => {
+  const { language } = useAuth();
+  const t = getTranslator(language);
+
   const [activeTab, setActiveTab] = useState('pips');
   const [pipValue, setPipValue] = useState(1.00);
   const [positionSize, setPositionSize] = useState(1.00);
@@ -156,7 +161,7 @@ const PipCalculator = () => {
           }`}
           style={{ outline: 'none' }}
         >
-          Calculadora de pips
+          {t('pipCalculator_tab_pips')}
         </button>
         <button 
           onClick={() => setActiveTab('position')}
@@ -167,7 +172,7 @@ const PipCalculator = () => {
           }`}
           style={{ outline: 'none' }}
         >
-          Calculadora de tamaño de posicion
+          {t('pipCalculator_tab_positionSize')}
         </button>
       </div>
 
@@ -175,7 +180,7 @@ const PipCalculator = () => {
       <div className="flex-1 border border-[#333] rounded-3xl p-4 md:p-6 bg-gradient-to-br from-[#232323] to-[#2d2d2d] flex flex-col">
         {/* Instrumento - Responsivo */}
         <div className="mb-6">
-          <h2 className="text-base md:text-lg mb-2">Instrumento</h2>
+          <h2 className="text-base md:text-lg mb-2">{t('pipCalculator_label_instrument')}</h2>
           <div className="relative">
             <select 
               value={instrument}
@@ -200,7 +205,7 @@ const PipCalculator = () => {
           /* Campos de entrada para calculadora de pips */
           <div className="flex flex-col md:flex-row space-y-6 md:space-y-0 md:space-x-4 mb-6">
             <div className="w-full md:w-1/2">
-              <h2 className="text-base md:text-lg mb-2">Cantidad de pip</h2>
+              <h2 className="text-base md:text-lg mb-2">{t('pipCalculator_label_pipAmount')}</h2>
               <div className="relative flex items-center">
                 <button 
                   onClick={() => handlePipChange(-0.01)}
@@ -227,7 +232,7 @@ const PipCalculator = () => {
               </div>
             </div>
             <div className="w-full md:w-1/2">
-              <h2 className="text-base md:text-lg mb-2">Tamaño de la posición (lotes)</h2>
+              <h2 className="text-base md:text-lg mb-2">{t('pipCalculator_label_positionSizeLots')}</h2>
               <div className="relative flex items-center">
                 <button 
                   onClick={() => handlePositionSizeChange(-0.01)}
@@ -258,7 +263,7 @@ const PipCalculator = () => {
           <div className="flex flex-col space-y-6 mb-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <h2 className="text-base md:text-lg mb-2">Balance de la cuenta</h2>
+                <h2 className="text-base md:text-lg mb-2">{t('pipCalculator_label_accountBalance')}</h2>
                 <div className="relative flex items-center">
                   <input 
                     type="text" 
@@ -272,7 +277,7 @@ const PipCalculator = () => {
                 </div>
               </div>
               <div>
-                <h2 className="text-base md:text-lg mb-2">Riesgo (%)</h2>
+                <h2 className="text-base md:text-lg mb-2">{t('pipCalculator_label_riskPercentage')}</h2>
                 <div className="relative flex items-center">
                   <input 
                     type="text" 
@@ -286,7 +291,7 @@ const PipCalculator = () => {
                 </div>
               </div>
               <div>
-                <h2 className="text-base md:text-lg mb-2">Stop Loss (pips)</h2>
+                <h2 className="text-base md:text-lg mb-2">{t('pipCalculator_label_pipTarget')}</h2>
                 <div className="relative flex items-center">
                   <input 
                     type="text" 
@@ -305,7 +310,7 @@ const PipCalculator = () => {
 
         {/* Moneda de la cuenta - Responsivo */}
         <div className="mb-6">
-          <h2 className="text-base md:text-lg mb-2">Moneda de la cuenta</h2>
+          <h2 className="text-base md:text-lg mb-2">{t('pipCalculator_label_accountCurrency')}</h2>
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-2">
             {currencies.map((currency) => (
               <button
@@ -328,7 +333,7 @@ const PipCalculator = () => {
         {/* Mostrar resultados si hay cálculos */}
         {calculatedResult && (
           <div className="my-6 p-4 border border-cyan-700 rounded-lg bg-gradient-to-br from-[#152e35] to-[#1a3746]">
-            <h2 className="text-lg md:text-xl mb-3 text-cyan-300">Resultado:</h2>
+            <h2 className="text-lg md:text-xl mb-3 text-cyan-300">{t('pipCalculator_result_pipValue')}:</h2>
             {activeTab === 'pips' ? (
               <p className="text-xl font-bold">
                 {pipValue} pip{pipValue !== 1 ? 's' : ''} = {calculatedResult.pipsValue} {calculatedResult.currency}
@@ -336,10 +341,10 @@ const PipCalculator = () => {
             ) : (
               <div>
                 <p className="text-lg md:text-xl mb-2">
-                  Tamaño de posición sugerido: <span className="font-bold">{calculatedResult.suggestedSize} lotes</span>
+                  {t('pipCalculator_result_suggestedPositionSize')}: <span className="font-bold">{calculatedResult.suggestedSize} lotes</span>
                 </p>
                 <p className="text-base md:text-lg text-cyan-200">
-                  Riesgo: {calculatedResult.riskAmount} {calculatedResult.currency} ({riskPercentage}% del balance)
+                  {t('pipCalculator_result_riskedAmount')}: {calculatedResult.riskAmount} {calculatedResult.currency} ({riskPercentage}% del balance)
                 </p>
               </div>
             )}
@@ -351,7 +356,7 @@ const PipCalculator = () => {
           onClick={handleCalculate}
           className="focus:outline-none mt-6 w-full sm:w-1/2 md:w-1/6 bg-gradient-to-r from-[#0F7490] to-[#0A5A72] text-white py-3 rounded-xl hover:opacity-90 transition"
         >
-          Calcular
+          {t('pipCalculator_button_calculate')}
         </button>
       </div>
     </div>

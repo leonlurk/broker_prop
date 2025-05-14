@@ -1,19 +1,25 @@
 import React, { useState } from 'react';
 import { resetPassword, getCurrentUser } from '../firebase/auth';
 import { X } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+import { getTranslator } from '../utils/i18n';
 
 const ChangePasswordModal = ({ isOpen, onClose }) => {
+  const { language } = useAuth();
+  const t = getTranslator(language);
+
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setStatus(null);
     
     try {
       const currentUser = getCurrentUser();
       if (!currentUser || !currentUser.email) {
-        throw new Error('No se pudo obtener el correo electrónico actual');
+        throw new Error(t('changePasswordModal_error_noEmailFound'));
       }
       
       const result = await resetPassword(currentUser.email);
@@ -21,18 +27,18 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
       if (result.success) {
         setStatus({
           type: 'success',
-          message: `Se ha enviado un email a ${currentUser.email} para restablecer tu contraseña. Por favor revisa tu bandeja de entrada.`
+          message: t('changePasswordModal_success_emailSent', { email: currentUser.email })
         });
       } else {
         setStatus({
           type: 'error',
-          message: 'Ha ocurrido un error al enviar el correo de restablecimiento.'
+          message: result.error?.message || t('changePasswordModal_error_sendResetEmailFailed') 
         });
       }
     } catch (error) {
       setStatus({
         type: 'error',
-        message: 'Ha ocurrido un error. Por favor, inténtalo de nuevo más tarde.'
+        message: error.message || t('changePasswordModal_error_generic')
       });
     } finally {
       setLoading(false);
@@ -51,7 +57,7 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
           <X size={20} />
         </button>
         
-        <h2 className="text-xl font-semibold text-white mb-4">Cambiar Contraseña</h2>
+        <h2 className="text-xl font-semibold text-white mb-4">{t('changePasswordModal_title')}</h2>
         
         {status?.type === 'success' ? (
           <div className="text-center py-4">
@@ -65,18 +71,18 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
               onClick={onClose}
               className="bg-gradient-to-r from-[#0F7490] to-[#0A5A72] text-white py-2 px-6 rounded-xl hover:opacity-90 transition w-full"
             >
-              Cerrar
+              {t('changePasswordModal_button_close')}
             </button>
           </div>
         ) : (
           <form onSubmit={handleSubmit}>
             <p className="text-gray-400 mb-4">
-              Se enviará un enlace para restablecer tu contraseña al correo electrónico asociado a tu cuenta.
+              {t('changePasswordModal_text_infoLine1')}
             </p>
             
             <div className="mb-4">
               <div className="p-3 bg-[#1d1d1d] border border-[#333] rounded-xl text-gray-400">
-                <p>Se enviará un email a la dirección de correo registrada con un enlace para restablecer tu contraseña.</p>
+                <p>{t('changePasswordModal_text_infoBox')}</p>
               </div>
             </div>
             
@@ -90,14 +96,14 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
                 onClick={onClose}
                 className="px-4 py-2 rounded-xl border border-[#333] hover:border-cyan-500 transition-colors text-white"
               >
-                Cancelar
+                {t('changePasswordModal_button_cancel')}
               </button>
               <button
                 type="submit"
                 className="bg-gradient-to-r from-[#0F7490] to-[#0A5A72] text-white py-2 px-4 rounded-xl hover:opacity-90 transition"
                 disabled={loading}
               >
-                {loading ? 'Enviando...' : 'Enviar Email'}
+                {loading ? t('changePasswordModal_button_sending') : t('changePasswordModal_button_sendEmail')}
               </button>
             </div>
           </form>

@@ -2,8 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { ChevronDown, Calendar, ArrowLeft, Save, Loader, AlertTriangle, Phone } from 'lucide-react';
 import { auth, db } from '../firebase/config';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { useAuth } from '../contexts/AuthContext';
+import { getTranslator } from '../utils/i18n';
 
 const UserInformationContent = ({ onBack }) => {
+  const { language } = useAuth();
+  const t = getTranslator(language);
+
   const [nombre, setNombre] = useState('');
   const [apellido, setApellido] = useState('');
   const [fechaNacimiento, setFechaNacimiento] = useState('');
@@ -50,7 +55,6 @@ const UserInformationContent = ({ onBack }) => {
         const data = await response.json();
         
         if (data.error === false && data.data) {
-          // Ordenar países alfabéticamente
           const paisesFiltrados = data.data.map(pais => ({
             nombre: pais.country,
             ciudades: pais.cities
@@ -59,8 +63,8 @@ const UserInformationContent = ({ onBack }) => {
           setPaises(paisesFiltrados);
         }
       } catch (error) {
-        console.error('Error al cargar países:', error);
-        setSaveError('Error al cargar la lista de países');
+        console.error(t('userInfo_error_loadCountries'), error);
+        setSaveError(t('userInfo_error_loadCountries'));
       } finally {
         setCargandoPaises(false);
       }
@@ -139,8 +143,8 @@ const UserInformationContent = ({ onBack }) => {
           }
         }
       } catch (err) {
-        console.error('Error al cargar datos del usuario:', err);
-        setSaveError('Error al cargar los datos del usuario');
+        console.error(t('userInfo_error_loadUserData'), err);
+        setSaveError(t('userInfo_error_loadUserData'));
       }
     };
     
@@ -155,8 +159,9 @@ const UserInformationContent = ({ onBack }) => {
     
     const years = Array.from({ length: maxYear - minYear + 1 }, (_, i) => maxYear - i);
     const months = [
-      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+      t('month_january'), t('month_february'), t('month_march'), t('month_april'),
+      t('month_may'), t('month_june'), t('month_july'), t('month_august'),
+      t('month_september'), t('month_october'), t('month_november'), t('month_december')
     ];
     
     // Obtener valores actuales de la fecha
@@ -208,13 +213,13 @@ const UserInformationContent = ({ onBack }) => {
       <div className="absolute top-full left-0 mt-2 p-4 bg-[#1a1a1a] border border-[#333] rounded-lg shadow-lg z-20 w-full">
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <label className="block text-gray-400 text-sm mb-2">Día</label>
+            <label className="block text-gray-400 text-sm mb-2">{t('calendar_day')}</label>
             <select 
               value={day} 
               onChange={(e) => setDatePart('day', e.target.value)}
               className="w-full p-2 bg-[#232323] border border-[#444] rounded text-white"
             >
-              <option value="">--</option>
+              <option value="">{t('calendar_select_day')}</option>
               {days.map(d => (
                 <option key={`day-${d}`} value={d}>{d}</option>
               ))}
@@ -222,13 +227,13 @@ const UserInformationContent = ({ onBack }) => {
           </div>
           
           <div>
-            <label className="block text-gray-400 text-sm mb-2">Mes</label>
+            <label className="block text-gray-400 text-sm mb-2">{t('calendar_month')}</label>
             <select 
               value={month} 
               onChange={(e) => setDatePart('month', e.target.value)}
               className="w-full p-2 bg-[#232323] border border-[#444] rounded text-white"
             >
-              <option value="">--</option>
+              <option value="">{t('calendar_select_day')}</option>
               {months.map((m, i) => (
                 <option key={`month-${i}`} value={i}>{m}</option>
               ))}
@@ -236,13 +241,13 @@ const UserInformationContent = ({ onBack }) => {
           </div>
           
           <div>
-            <label className="block text-gray-400 text-sm mb-2">Año</label>
+            <label className="block text-gray-400 text-sm mb-2">{t('calendar_year')}</label>
             <select 
               value={year} 
               onChange={(e) => setDatePart('year', e.target.value)}
               className="w-full p-2 bg-[#232323] border border-[#444] rounded text-white"
             >
-              <option value="">----</option>
+              <option value="">{t('calendar_select_year')}</option>
               {years.map(y => (
                 <option key={`year-${y}`} value={y}>{y}</option>
               ))}
@@ -270,273 +275,232 @@ const UserInformationContent = ({ onBack }) => {
     setNumeroTelefono(numerosOnly);
   };
   
+  const validateForm = () => {
+    if (!nombre || !apellido || !fechaNacimiento || !genero || !paisSeleccionado || !ciudadSeleccionada || !codigoPais || !numeroTelefono) {
+      setSaveError(t('userInfo_error_allFieldsRequired'));
+      return false;
+    }
+
+    const dateParts = fechaNacimiento.split('/');
+    if (dateParts.length !== 3) {
+      setSaveError(t('userInfo_error_invalidDobFormat'));
+      return false;
+    }
+    const day = parseInt(dateParts[0], 10);
+    const month = parseInt(dateParts[1], 10) - 1; // Month is 0-indexed
+    const year = parseInt(dateParts[2], 10);
+    const birthDate = new Date(year, month, day);
+    const ageDiffMs = Date.now() - birthDate.getTime();
+    const ageDate = new Date(ageDiffMs);
+    const age = Math.abs(ageDate.getUTCFullYear() - 1970);
+
+    if (age < 18) {
+      setSaveError(t('userInfo_error_ageRequirement'));
+      return false;
+    }
+    
+    // Additional validation for date parts if needed (e.g. valid day for month)
+    if (isNaN(birthDate.getTime()) || birthDate.getDate() !== day || birthDate.getMonth() !== month || birthDate.getFullYear() !== year) {
+        setSaveError(t('userInfo_error_invalidDobFormat'));
+        return false;
+    }
+
+    setSaveError('');
+    return true;
+  };
+  
   // Guardar datos del usuario en Firebase
   const handleSaveChanges = async () => {
-    setIsSaving(true);
-    setSaveError('');
-    setSaveSuccess(false);
+    if (!validateForm()) {
+      return;
+    }
     
+    setIsSaving(true);
+    setSaveSuccess(false);
     try {
       const user = auth.currentUser;
-      if (!user) {
-        setSaveError('Debe iniciar sesión para guardar sus datos');
-        setIsSaving(false);
-        return;
+      if (user) {
+        const userDocRef = doc(db, 'users', user.uid);
+        await setDoc(userDocRef, {
+          nombre,
+          apellido,
+          fechaNacimiento,
+          genero,
+          pais: paisSeleccionado,
+          ciudad: ciudadSeleccionada,
+          telefono: `${codigoPais}${numeroTelefono}`
+        }, { merge: true });
+        setSaveSuccess(true);
       }
-      
-      // Validaciones básicas
-      if (!nombre.trim()) {
-        setSaveError('El nombre es obligatorio');
-        setIsSaving(false);
-        return;
-      }
-      
-      if (!apellido.trim()) {
-        setSaveError('El apellido es obligatorio');
-        setIsSaving(false);
-        return;
-      }
-      
-      // Validar fecha de nacimiento
-      if (fechaNacimiento) {
-        const parts = fechaNacimiento.split('/');
-        if (parts.length !== 3 || isNaN(Date.parse(`${parts[1]}/${parts[0]}/${parts[2]}`))) {
-          setSaveError('Formato de fecha inválido. Use DD/MM/YYYY');
-          setIsSaving(false);
-          return;
-        }
-      }
-      
-      // Combinar código de país y número de teléfono
-      const telefonoCompleto = numeroTelefono ? `${codigoPais}${numeroTelefono}` : '';
-      
-      // Preparar datos para guardar
-      const userData = {
-        nombre: nombre.trim(),
-        apellido: apellido.trim(),
-        fechaNacimiento,
-        genero,
-        pais: paisSeleccionado,
-        ciudad: ciudadSeleccionada,
-        telefono: telefonoCompleto,
-        last_updated: new Date()
-      };
-      
-      // Guardar en Firestore
-      const userDocRef = doc(db, 'users', user.uid);
-      await setDoc(userDocRef, userData, { merge: true });
-      
-      setSaveSuccess(true);
-      
-      // Ocultar mensaje de éxito después de 3 segundos
-      setTimeout(() => {
-        setSaveSuccess(false);
-      }, 3000);
-      
     } catch (err) {
-      console.error('Error al guardar datos del usuario:', err);
-      setSaveError('Error al guardar los cambios. Intente de nuevo más tarde.');
+      console.error("Error guardando datos:", err);
+      setSaveError(t('userInfo_error_saveFailed'));
     } finally {
       setIsSaving(false);
     }
   };
 
   return (
-    <div className="border border-[#333] rounded-3xl bg-gradient-to-br from-[#232323] to-[#2d2d2d] bg-opacity-20 p-4 md:p-6 shadow-xl">
-      <div className="border border-[#333] rounded-3xl bg-gradient-to-br from-[#232323] to-[#343434] bg-opacity-90 p-6 md:p-8">
-        {/* Header con botón de volver */}
-        <div className="flex items-center mb-6">
-          <button
-            onClick={onBack}
-            className="flex items-center text-cyan-500 hover:text-cyan-400 transition mr-4 focus:outline-none"
-          >
-            <ArrowLeft size={20} className="mr-1" />
-            <span>Volver</span>
-          </button>
-          <h1 className="text-3xl text-white font-medium">Informacion de usuario</h1>
-        </div>
-        
-        {/* Mensajes de estado */}
-        {saveSuccess && (
-          <div className="mb-4 bg-green-900/20 border border-green-600 text-green-400 p-3 rounded-lg">
-            Datos guardados correctamente
-          </div>
-        )}
-        
-        {saveError && (
-          <div className="mb-4 bg-red-900/20 border border-red-600 text-red-400 p-3 rounded-lg flex items-center">
-            <AlertTriangle size={16} className="mr-2" />
-            {saveError}
-          </div>
-        )}
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          {/* Nombre */}
+    <div className="p-4 md:p-6 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-3xl text-white min-h-screen flex flex-col">
+      <div className="flex items-center mb-6">
+        <button onClick={onBack} className="p-2 rounded-full hover:bg-gray-700 mr-3">
+          <ArrowLeft size={20} />
+        </button>
+        <h1 className="text-2xl font-semibold text-white">{t('userInfo_title')}</h1>
+      </div>
+
+      {/* Formulario */}
+      <div className="space-y-6 flex-1 overflow-y-auto pr-2" style={{ scrollbarWidth: 'thin', scrollbarColor: '#555 #333' }}>
+        {/* Nombre y Apellido */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <input
-              type="text"
+            <label htmlFor="nombre" className="block text-sm font-medium text-gray-300 mb-1">{t('userInfo_label_firstName')}</label>
+            <input 
+              type="text" 
+              id="nombre" 
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
-              placeholder="Nombre"
-              className="w-full py-6 px-6 rounded-full bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] text-white text-xl focus:outline-none focus:border-cyan-500"
+              placeholder={t('userInfo_placeholder_firstName')}
+              className="w-full p-3 bg-[#2c2c2c] border border-[#444] rounded-lg text-white focus:ring-cyan-500 focus:border-cyan-500"
             />
           </div>
-          
-          {/* Apellido */}
           <div>
-            <input
-              type="text"
+            <label htmlFor="apellido" className="block text-sm font-medium text-gray-300 mb-1">{t('userInfo_label_lastName')}</label>
+            <input 
+              type="text" 
+              id="apellido" 
               value={apellido}
               onChange={(e) => setApellido(e.target.value)}
-              placeholder="Apellido"
-              className="w-full py-6 px-6 rounded-full bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] text-xl text-white focus:outline-none focus:border-cyan-500"
+              placeholder={t('userInfo_placeholder_lastName')}
+              className="w-full p-3 bg-[#2c2c2c] border border-[#444] rounded-lg text-white focus:ring-cyan-500 focus:border-cyan-500"
             />
           </div>
         </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          {/* Fecha de nacimiento */}
+
+        {/* Fecha de Nacimiento y Género */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="relative">
-            <input
-              type="text"
-              value={fechaNacimiento}
-              placeholder="Fecha de nacimiento (DD/MM/YYYY)"
-              onClick={() => setShowCalendar(true)}
-              readOnly
-              className="w-full py-6 px-6 rounded-full bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] text-white text-xl focus:outline-none focus:border-cyan-500 pr-12 cursor-pointer"
-            />
-            <Calendar 
-              size={20} 
-              className="absolute right-5 top-1/2 transform -translate-y-1/2 text-gray-400 cursor-pointer" 
-              onClick={() => setShowCalendar(!showCalendar)}
-            />
-            
+            <label htmlFor="fechaNacimiento" className="block text-sm font-medium text-gray-300 mb-1">{t('userInfo_label_dob')}</label>
+            <div 
+              onClick={() => setShowCalendar(!showCalendar)} 
+              className="w-full p-3 bg-[#2c2c2c] border border-[#444] rounded-lg text-white flex justify-between items-center cursor-pointer"
+            >
+              <span>{fechaNacimiento || t('userInfo_placeholder_dob')}</span>
+              <Calendar size={20} className="text-gray-400" />
+            </div>
             {showCalendar && renderCalendar()}
           </div>
-          
-          {/* Género */}
-          <div className="relative">
-            <select
-              value={genero}
+          <div>
+            <label htmlFor="genero" className="block text-sm font-medium text-gray-300 mb-1">{t('userInfo_label_gender')}</label>
+            <select 
+              id="genero" 
+              value={genero} 
               onChange={(e) => setGenero(e.target.value)}
-              className="appearance-none w-full py-6 px-6 rounded-full bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] text-[#a3a3a3] text-xl focus:outline-none focus:border-cyan-500 pr-12"
+              className="w-full p-3 bg-[#2c2c2c] border border-[#444] rounded-lg text-white focus:ring-cyan-500 focus:border-cyan-500 appearance-none pr-8 bg-no-repeat"
+              style={{ backgroundImage: `url('data:image/svg+xml;utf8,<svg fill="gray" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>')`, backgroundPosition: 'right 0.75rem center', backgroundSize: '1.5em' }}
             >
-              <option value="" disabled hidden>Genero</option>
-              <option value="masculino">Masculino</option>
-              <option value="femenino">Femenino</option>
-              <option value="otro">Otro</option>
+              <option value="">{t('userInfo_placeholder_gender')}</option>
+              <option value="masculino">{t('gender_male')}</option>
+              <option value="femenino">{t('gender_female')}</option>
+              <option value="otro">{t('gender_other')}</option>
+              <option value="prefiero_no_decirlo">{t('gender_preferNotToSay')}</option>
             </select>
-            <ChevronDown size={20} className="absolute right-5 top-1/2 transform -translate-y-1/2 text-gray-400" />
           </div>
         </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          {/* País - Usando la API */}
-          <div className="relative">
-            <select
-              value={paisSeleccionado}
+
+        {/* País y Ciudad */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label htmlFor="pais" className="block text-sm font-medium text-gray-300 mb-1">{t('userInfo_label_country')}</label>
+            <select 
+              id="pais" 
+              value={paisSeleccionado} 
               onChange={(e) => setPaisSeleccionado(e.target.value)}
+              className="w-full p-3 bg-[#2c2c2c] border border-[#444] rounded-lg text-white focus:ring-cyan-500 focus:border-cyan-500 appearance-none pr-8 bg-no-repeat"
+              style={{ backgroundImage: `url('data:image/svg+xml;utf8,<svg fill="gray" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>')`, backgroundPosition: 'right 0.75rem center', backgroundSize: '1.5em' }}
               disabled={cargandoPaises}
-              className="appearance-none w-full py-6 px-6 rounded-full bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] text-white text-xl focus:outline-none focus:border-cyan-500 pr-12"
             >
-              {cargandoPaises ? (
-                <option value="">Cargando países...</option>
-              ) : (
-                <>
-                  <option value="" disabled hidden>Seleccionar país</option>
-                  {paises.map((pais, index) => (
-                    <option key={index} value={pais.nombre}>
-                      {pais.nombre}
-                    </option>
-                  ))}
-                </>
-              )}
+              <option value="">{cargandoPaises ? t('userInfo_loading_countries') : t('userInfo_placeholder_country')}</option>
+              {paises.map(pais => (
+                <option key={pais.nombre} value={pais.nombre}>{pais.nombre}</option>
+              ))}
             </select>
-            <ChevronDown size={20} className="absolute right-5 top-1/2 transform -translate-y-1/2 text-gray-400" />
           </div>
-          
-          {/* Ciudad - Usando la API */}
-          <div className="relative">
-            <select
-              value={ciudadSeleccionada}
+          <div>
+            <label htmlFor="ciudad" className="block text-sm font-medium text-gray-300 mb-1">{t('userInfo_label_city')}</label>
+            <select 
+              id="ciudad" 
+              value={ciudadSeleccionada} 
               onChange={(e) => setCiudadSeleccionada(e.target.value)}
+              className="w-full p-3 bg-[#2c2c2c] border border-[#444] rounded-lg text-white focus:ring-cyan-500 focus:border-cyan-500 appearance-none pr-8 bg-no-repeat"
+              style={{ backgroundImage: `url('data:image/svg+xml;utf8,<svg fill="gray" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>')`, backgroundPosition: 'right 0.75rem center', backgroundSize: '1.5em' }}
               disabled={cargandoCiudades || !paisSeleccionado}
-              className="appearance-none w-full py-6 px-6 rounded-full bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] text-white text-xl focus:outline-none focus:border-cyan-500 pr-12"
             >
-              {cargandoCiudades ? (
-                <option value="">Cargando ciudades...</option>
-              ) : !paisSeleccionado ? (
-                <option value="">Seleccione un país primero</option>
-              ) : ciudades.length === 0 ? (
-                <option value="">No hay ciudades disponibles</option>
-              ) : (
-                <>
-                  <option value="" disabled hidden>Seleccionar ciudad</option>
-                  {ciudades.map((ciudad, index) => (
-                    <option key={index} value={ciudad}>
-                      {ciudad}
-                    </option>
-                  ))}
-                </>
-              )}
+              <option value="">
+                {cargandoCiudades ? t('userInfo_loading_cities') : 
+                 (ciudades.length === 0 && paisSeleccionado ? t('userInfo_noCitiesAvailable') : t('userInfo_placeholder_city'))}
+              </option>
+              {ciudades.map(ciudad => (
+                <option key={ciudad} value={ciudad}>{ciudad}</option>
+              ))}
             </select>
-            <ChevronDown size={20} className="absolute right-5 top-1/2 transform -translate-y-1/2 text-gray-400" />
           </div>
         </div>
-        
-        <div className="mb-8">
-          {/* Teléfono - Mejorado con entrada de número */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="relative md:col-span-1">
-              <select
-                value={codigoPais}
-                onChange={(e) => setCodigoPais(e.target.value)}
-                className="appearance-none w-full py-6 text-xl px-6 rounded-full bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] text-white focus:outline-none focus:border-cyan-500 pr-12"
-              >
-                <option value="" disabled hidden>Código</option>
-                {codigosPaises.map((cp, index) => (
-                  <option key={index} value={cp.codigo}>
-                    {cp.codigo} ({cp.pais})
-                  </option>
-                ))}
-              </select>
-              <ChevronDown size={20} className="absolute right-5 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            </div>
-            
-            <div className="relative md:col-span-3">
-              <div className="relative">
-                <input
-                  type="tel"
-                  value={numeroTelefono}
-                  onChange={handlePhoneChange}
-                  placeholder="Número de teléfono"
-                  className="w-full py-6 px-6 rounded-full bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] text-white text-xl focus:outline-none focus:border-cyan-500 pl-10"
-                />
-                <Phone size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              </div>
-            </div>
+
+        {/* Teléfono */}
+        <div>
+          <label htmlFor="telefono" className="block text-sm font-medium text-gray-300 mb-1">{t('userInfo_label_phone')}</label>
+          <div className="flex">
+            <select 
+              value={codigoPais} 
+              onChange={(e) => setCodigoPais(e.target.value)}
+              className="p-3 bg-[#2c2c2c] border border-[#444] rounded-l-lg text-white focus:ring-cyan-500 focus:border-cyan-500 appearance-none pr-8 bg-no-repeat w-1/3 md:w-1/4"
+              style={{ backgroundImage: `url('data:image/svg+xml;utf8,<svg fill="gray" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>')`, backgroundPosition: 'right 0.75rem center', backgroundSize: '1.5em' }}
+            >
+              <option value="">{t('userInfo_placeholder_phoneCode')}</option>
+              {codigosPaises.map(cp => (
+                <option key={cp.codigo} value={cp.codigo}>{cp.pais} ({cp.codigo})</option>
+              ))}
+            </select>
+            <input 
+              type="tel" 
+              id="telefono" 
+              value={numeroTelefono}
+              onChange={(e) => setNumeroTelefono(e.target.value.replace(/[^0-9]/g, ''))}
+              placeholder={t('userInfo_placeholder_phoneNumber')}
+              className="w-2/3 md:w-3/4 p-3 bg-[#2c2c2c] border border-l-0 border-[#444] rounded-r-lg text-white focus:ring-cyan-500 focus:border-cyan-500"
+            />
           </div>
         </div>
-        
-        <div className="flex justify-center">
-          <button 
-            onClick={handleSaveChanges}
-            disabled={isSaving}
-            className="py-4 px-8 rounded-full border border-cyan-500 text-white bg-transparent hover:bg-cyan-500/10 transition-colors focus:outline-none flex items-center"
-          >
-            {isSaving ? (
-              <>
-                <Loader size={16} className="animate-spin mr-2" />
-                Guardando...
-              </>
-            ) : (
-              <>
-                <Save size={16} className="mr-2" />
-                Guardar Cambios
-              </>
-            )}
-          </button>
-        </div>
+
+        {/* Error y Success messages */}
+        {saveError && (
+          <div className="flex items-center p-3 bg-red-500 bg-opacity-20 border border-red-500 rounded-lg text-red-400">
+            <AlertTriangle size={20} className="mr-2" />
+            <span>{saveError}</span>
+          </div>
+        )}
+        {saveSuccess && (
+          <div className="flex items-center p-3 bg-green-500 bg-opacity-20 border border-green-500 rounded-lg text-green-400">
+            <Save size={20} className="mr-2" />
+            <span>{t('userInfo_success_saved')}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Botón Guardar Cambios */}
+      <div className="mt-8 pt-6 border-t border-gray-700">
+        <button 
+          onClick={handleSaveChanges} 
+          disabled={isSaving}
+          className="w-full flex items-center justify-center p-3 bg-gradient-to-r from-[#0F7490] to-[#0A5A72] hover:opacity-90 transition text-white rounded-lg text-lg font-semibold disabled:opacity-50"
+        >
+          {isSaving ? (
+            <><Loader size={20} className="animate-spin mr-2" /> {t('userInfo_button_saving')}</>
+          ) : (
+            <>{t('userInfo_button_saveChanges')}</>
+          )}
+        </button>
       </div>
     </div>
   );

@@ -2,8 +2,13 @@ import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { auth } from '../firebase/config';
 import { updateEmail, sendEmailVerification } from 'firebase/auth';
+import { useAuth } from '../contexts/AuthContext';
+import { getTranslator } from '../utils/i18n';
 
 const UpdateEmailModal = ({ isOpen, onClose }) => {
+  const { language } = useAuth();
+  const t = getTranslator(language);
+
   const [newEmail, setNewEmail] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
   const [status, setStatus] = useState(null);
@@ -26,19 +31,19 @@ const UpdateEmailModal = ({ isOpen, onClose }) => {
         
         setStatus({
           type: 'success',
-          message: 'Se ha enviado un email de verificación a tu nueva dirección de correo. Por favor verifica tu nueva dirección de email.'
+          message: t('updateEmailModal_success_verificationSent')
         });
       }
     } catch (error) {
       console.error(error);
-      let errorMessage = 'Ha ocurrido un error. Por favor, inténtalo de nuevo más tarde.';
+      let errorMessage = t('updateEmailModal_error_generic');
       
       if (error.code === 'auth/requires-recent-login') {
-        errorMessage = 'Por seguridad, debes iniciar sesión nuevamente antes de cambiar tu correo electrónico.';
+        errorMessage = t('updateEmailModal_error_requiresRecentLogin');
       } else if (error.code === 'auth/email-already-in-use') {
-        errorMessage = 'Este correo electrónico ya está en uso.';
+        errorMessage = t('updateEmailModal_error_emailInUse');
       } else if (error.code === 'auth/invalid-email') {
-        errorMessage = 'El formato del correo electrónico no es válido.';
+        errorMessage = t('updateEmailModal_error_invalidEmail');
       }
       
       setStatus({
@@ -62,7 +67,7 @@ const UpdateEmailModal = ({ isOpen, onClose }) => {
           <X size={20} />
         </button>
         
-        <h2 className="text-xl font-semibold text-white mb-4">Actualizar Correo Electrónico</h2>
+        <h2 className="text-xl font-semibold text-white mb-4">{t('updateEmailModal_title')}</h2>
         
         {status?.type === 'success' ? (
           <div className="text-center py-4">
@@ -76,18 +81,18 @@ const UpdateEmailModal = ({ isOpen, onClose }) => {
               onClick={onClose}
               className="bg-gradient-to-r from-[#0F7490] to-[#0A5A72] text-white py-2 px-6 rounded-xl hover:opacity-90 transition w-full"
             >
-              Cerrar
+              {t('updateEmailModal_button_closeModal')}
             </button>
           </div>
         ) : (
           <form onSubmit={handleSubmit}>
             <p className="text-gray-400 mb-4">
-              Ingresa tu nuevo correo electrónico. Te enviaremos un email para verificar la nueva dirección.
+              {t('updateEmailModal_text_info')}
             </p>
             
             <div className="mb-4">
               <label htmlFor="newEmail" className="block text-sm font-medium text-gray-400 mb-1">
-                Nuevo Correo Electrónico
+                {t('updateEmailModal_label_newEmail')}
               </label>
               <input
                 type="email"
@@ -95,14 +100,14 @@ const UpdateEmailModal = ({ isOpen, onClose }) => {
                 value={newEmail}
                 onChange={(e) => setNewEmail(e.target.value)}
                 className="w-full bg-[#232323] border border-[#333] rounded-xl px-3 py-2 text-white focus:outline-none focus:border-cyan-500 transition-colors"
-                placeholder="nuevo@correo.com"
+                placeholder={t('updateEmailModal_placeholder_newEmail')}
                 required
               />
             </div>
             
             <div className="mb-4">
               <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-400 mb-1">
-                Contraseña Actual (para confirmar)
+                {t('updateEmailModal_label_currentPassword')}
               </label>
               <input
                 type="password"
@@ -110,7 +115,7 @@ const UpdateEmailModal = ({ isOpen, onClose }) => {
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
                 className="w-full bg-[#232323] border border-[#333] rounded-xl px-3 py-2 text-white focus:outline-none focus:border-cyan-500 transition-colors"
-                placeholder="••••••••"
+                placeholder={t('updateEmailModal_placeholder_password')}
                 required
               />
             </div>
@@ -125,14 +130,14 @@ const UpdateEmailModal = ({ isOpen, onClose }) => {
                 onClick={onClose}
                 className="px-4 py-2 rounded-xl border border-[#333] hover:border-cyan-500 transition-colors text-white"
               >
-                Cancelar
+                {t('updateEmailModal_button_cancelUpdate')}
               </button>
               <button
                 type="submit"
                 className="bg-gradient-to-r from-[#0F7490] to-[#0A5A72] text-white py-2 px-4 rounded-xl hover:opacity-90 transition"
                 disabled={loading}
               >
-                {loading ? 'Actualizando...' : 'Actualizar Email'}
+                {loading ? t('updateEmailModal_button_updating') : t('updateEmailModal_button_updateEmail')}
               </button>
             </div>
           </form>

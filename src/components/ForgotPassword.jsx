@@ -1,7 +1,12 @@
 import { useState } from 'react';
 import { resetPassword } from '../firebase/auth';
+import { useAuth } from '../contexts/AuthContext';
+import { getTranslator } from '../utils/i18n';
 
 const ForgotPassword = ({ onContinue, onLoginClick }) => {
+  const { language } = useAuth();
+  const t = getTranslator(language);
+
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
@@ -17,16 +22,16 @@ const ForgotPassword = ({ onContinue, onLoginClick }) => {
       const { success, error } = await resetPassword(email);
       
       if (error) {
-        throw new Error(error.message || 'Error al enviar el correo de recuperación');
+        throw new Error(error.message || t('forgotPassword_error_sendFailed'));
       }
       
-      setMessage('Se ha enviado un correo de recuperación a tu dirección de email');
+      setMessage(t('forgotPassword_message_emailSent'));
       setTimeout(() => {
         onContinue();
       }, 3000);
     } catch (err) {
       console.error('Password reset error:', err);
-      setError(err.message || 'Error al enviar el correo de recuperación');
+      setError(err.message || t('forgotPassword_error_sendFailed'));
     } finally {
       setLoading(false);
     }
@@ -58,7 +63,7 @@ const ForgotPassword = ({ onContinue, onLoginClick }) => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-3 rounded-full bg-gray-900 border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 pl-10 bg-opacity-20"
-              placeholder="Correo Electronico"
+              placeholder={t('forgotPassword_placeholder_email')}
               required
             />
             <svg className="absolute top-3.5 left-3 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -73,12 +78,12 @@ const ForgotPassword = ({ onContinue, onLoginClick }) => {
         className="w-full py-3 px-4 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-medium shadow-lg relative overflow-hidden group"
         >
         <span className="absolute inset-0 bg-gradient-to-r from-cyan-600 to-blue-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
-        <span className="relative z-10">{loading ? 'Enviando...' : 'Continuar'}</span>
+        <span className="relative z-10">{loading ? t('forgotPassword_button_sending') : t('forgotPassword_button_continue')}</span>
         </button>
 
         <div className="mt-4 text-center">
           <p className="text-gray-400 mt-1">
-            ¿Recordaste tu contraseña? <button type="button" onClick={onLoginClick} className="text-white font-semibold bg-transparent">Iniciar Sesión</button>
+            {t('forgotPassword_text_rememberedPassword')} <button type="button" onClick={onLoginClick} className="text-white font-semibold bg-transparent">{t('login_button_login')}</button>
           </p>
         </div>
       </form>

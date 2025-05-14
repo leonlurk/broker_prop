@@ -1,8 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { RiCloseLine } from 'react-icons/ri';
+import { useAuth } from '../contexts/AuthContext';
+import { getTranslator } from '../utils/i18n';
 
 const Modal = ({ isOpen, onClose, title, children }) => {
+  const { language } = useAuth();
+  const t = getTranslator(language);
+
   if (!isOpen) return null;
 
   return (
@@ -21,6 +26,7 @@ const Modal = ({ isOpen, onClose, title, children }) => {
           <button 
             onClick={onClose}
             className="text-gray-400 hover:text-white focus:outline-none p-2 rounded-full hover:bg-gray-700"
+            aria-label={t('modal_close_aria_label')}
           >
             <RiCloseLine className="w-5 h-5" />
           </button>

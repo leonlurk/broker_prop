@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { AreaChart, Area, ResponsiveContainer, XAxis, YAxis } from 'recharts';
 import { useAuth } from '../contexts/AuthContext'; // Importar el contexto de autenticación
+import { getTranslator } from '../utils/i18n'; // Added
 
 const TradingDashboard = ({ accountId, onBack, previousSection }) => {
   // Obtener información del usuario desde Firebase
-  const { currentUser } = useAuth();
+  const { currentUser, language } = useAuth();
+  const t = getTranslator(language); // Added
   // Datos para el gráfico de balance
   const balanceData = [
     { name: 'Ene', value: 50000 },
@@ -26,16 +28,16 @@ const getUserName = () => {
     // Si no hay displayName, usar la primera parte del email
     return currentUser.email.split('@')[0];
   }
-  return 'Usuario'; // Valor por defecto
+  return t('tradingDashboard_defaultUserName'); // Changed
 };
 
   const getBackText = () => {
     if (previousSection === "Cuentas") {
-      return "Volver a cuentas";
+      return t('tradingDashboard_backToAccounts'); // Changed
     } else if (previousSection === "Dashboard") {
-      return "Volver a inicio";
+      return t('tradingDashboard_backToHome'); // Changed
     } else {
-      return "Volver"; // Fallback
+      return t('tradingDashboard_backDefault'); // Changed
     }
   };
 
@@ -70,12 +72,12 @@ const getUserName = () => {
   <div className="flex flex-col md:flex-row justify-between w-full">
     <div className="flex items-start mb-4 md:mb-0 md:w-1/2">
       <div className="w-16 h-16 bg-[#333] rounded-full flex items-center justify-center text-2xl mr-4">
-        <img src="/IconoPerfil.png" alt="Avatar" />
+        <img src="/IconoPerfil.png" alt={t('tradingDashboard_avatarAlt')} />
       </div>
       <div className="w-full">
-        <h1 className="text-xl md:text-2xl font-semibold">Hola, {getUserName()}</h1>
+        <h1 className="text-xl md:text-2xl font-semibold">{t('tradingDashboard_greetingPrefix')}{getUserName()}</h1>
         <p className="text-sm md:text-base text-gray-400">
-          Actualmente, tienes una cuenta de 100k
+          {t('tradingDashboard_currentAccountInfo', { accountSize: '100k' })}
         </p>
         
         <div className="space-y-2 mt-4">
@@ -86,7 +88,7 @@ const getUserName = () => {
                 e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23333'/%3E%3Cpath d='M12 6L9 13H12V18L15 11H12V6Z' fill='white'/%3E%3C/svg%3E";
               }} />
             </div>
-            <span className="text-gray-400 mr-2">Balance Inicial:</span>
+            <span className="text-gray-400 mr-2">{t('tradingDashboard_initialBalanceLabel')}</span>
             <span className="font-medium">$100.000</span>
           </div>
           
@@ -97,7 +99,7 @@ const getUserName = () => {
                 e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23333'/%3E%3Cpath d='M12 6L9 13H12V18L15 11H12V6Z' fill='white'/%3E%3C/svg%3E";
               }} />
             </div>
-            <span className="text-gray-400 mr-2">Tipo de plan:</span>
+            <span className="text-gray-400 mr-2">{t('tradingDashboard_planTypeLabel')}</span>
             <span className="font-medium">100k Challenge</span>
           </div>
           
@@ -108,7 +110,7 @@ const getUserName = () => {
                 e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23333'/%3E%3Cpath d='M12 6L9 13H12V18L15 11H12V6Z' fill='white'/%3E%3C/svg%3E";
               }} />
             </div>
-            <span className="text-gray-400 mr-2">Tipo de cuenta:</span>
+            <span className="text-gray-400 mr-2">{t('tradingDashboard_accountTypeLabel')}</span>
             <span className="font-medium">Swipe</span>
           </div>
         </div>
@@ -123,19 +125,19 @@ const getUserName = () => {
             e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath d='M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z' fill='%23555'/%3E%3C/svg%3E";
           }} />
         </div>
-        <h3 className="text-xl font-medium mr-3">Detalles de cuenta</h3>
+        <h3 className="text-xl font-medium mr-3">{t('tradingDashboard_accountDetailsTitle')}</h3>
         <div className="bg-gradient-to-br from-cyan-500 to-cyan-800/30 ml-auto rounded-full py-2 px-6 text-sm text-white">
-          Activa
+          {t('tradingDashboard_statusActive')}
         </div>
       </div>
       
       <div className="grid grid-cols-2 gap-4 w-full">
         <div className="border border-gray-700 rounded p-2">
           <div className="flex items-center justify-between">
-            <span className="text-s text-gray-400">Log In</span>
+            <span className="text-s text-gray-400">{t('tradingDashboard_loginLabel')}</span>
             <div className="flex items-center">
               <span className="text-s mr-2">462777</span>
-              <img src="/Copy.png" alt="Shield" className="w-4 h-4" onError={(e) => {
+              <img src="/Copy.png" alt="Copy" className="w-4 h-4" onError={(e) => {
             e.target.onerror = null;
             e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath d='M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z' fill='%23555'/%3E%3C/svg%3E";
           }} />
@@ -145,17 +147,17 @@ const getUserName = () => {
         
         <div className="border border-gray-700 rounded p-2">
           <div className="flex items-center justify-between">
-            <span className="text-s text-gray-400">Investor Pass</span>
-            <span className="text-s text-gray-300 underline">Set Password</span>
+            <span className="text-s text-gray-400">{t('tradingDashboard_investorPassLabel')}</span>
+            <span className="text-s text-gray-300 underline">{t('tradingDashboard_setPasswordButton')}</span>
           </div>
         </div>
         
         <div className="border border-gray-700 rounded p-2">
           <div className="flex items-center justify-between">
-            <span className="text-s text-gray-400">Master pass.</span>
+            <span className="text-s text-gray-400">{t('tradingDashboard_masterPassLabel')}</span>
             <div className="flex items-center">
               <span className="text-s mr-2">********</span>
-              <img src="/Visibilidad.png" alt="Shield" className="w-4 h-4" onError={(e) => {
+              <img src="/Visibilidad.png" alt="Visibility" className="w-4 h-4" onError={(e) => {
             e.target.onerror = null;
             e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath d='M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z' fill='%23555'/%3E%3C/svg%3E";
           }} />
@@ -165,7 +167,7 @@ const getUserName = () => {
         
         <div className="border border-gray-700 rounded p-2">
           <div className="flex items-center justify-between">
-            <span className="text-s text-gray-400">MT5 Server</span>
+            <span className="text-s text-gray-400">{t('tradingDashboard_mt5ServerLabel')}</span>
             <span className="text-s">APE server</span>
           </div>
         </div>
@@ -177,7 +179,7 @@ const getUserName = () => {
       {/* Sección de balance y métricas */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
         <div className="lg:col-span-2 p-4 md:p-6 bg-gradient-to-br from-[#232323] to-[#434242] border border-[#333] rounded-xl">
-          <h2 className="text-xl md:text-3xl font-bold mb-4">Balance</h2>
+          <h2 className="text-xl md:text-3xl font-bold mb-4">{t('tradingDashboard_balanceChartTitle')}</h2>
           <div className="flex items-center mb-6">
             <span className="text-2xl md:text-4xl font-bold mr-3">$124.700,00</span>
             <span className="bg-green-800 bg-opacity-30 text-green-400 px-2 py-1 rounded text-sm">+24.7%</span>
@@ -225,7 +227,7 @@ const getUserName = () => {
 
         <div className="grid grid-cols-1 gap-4">
           <div className="p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl">
-            <h2 className="text-xl font-bold mb-2">Profit/Loss</h2>
+            <h2 className="text-xl font-bold mb-2">{t('tradingDashboard_profitLossWidgetTitle')}</h2>
             <div className="flex items-center mb-1">
               <span className="text-2xl font-bold mr-3">$24.700,00</span>
               <span className="bg-green-800 bg-opacity-30 text-green-400 px-2 py-1 rounded text-sm">+24.7%</span>
@@ -233,12 +235,12 @@ const getUserName = () => {
             <p className="text-sm text-gray-400">Lun, 13 Enero</p>
           </div> 
           <div className="p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl">
-            <h2 className="text-xl font-bold mb-2">Drawdown</h2>
+            <h2 className="text-xl font-bold mb-2">{t('tradingDashboard_drawdownWidgetTitle')}</h2>
             <div className="text-2xl font-bold">25%</div>
           </div>
 
           <div className="p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl">
-            <h2 className="text-xl font-bold mb-2">Días de Trading</h2>
+            <h2 className="text-xl font-bold mb-2">{t('tradingDashboard_tradingDaysWidgetTitle')}</h2>
             <div className="text-2xl font-bold">5 Días</div>
           </div>
         </div>
@@ -248,41 +250,38 @@ const getUserName = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div className="p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl flex justify-between items-center">
           <div>
-            <h3 className="text-gray-400 text-sm mb-1">Pérdida promedio</h3>
-            <span className="text-xl md:text-2xl font-bold">$77,61</span>
+            <p className="text-sm text-gray-400">{t('tradingDashboard_metric_profitTarget')}</p>
+            <p className="text-lg font-semibold">10%</p>
           </div>
-          <div className="bg-[#2d2d2d] p-2 rounded-full">
-            <img src="/loss.png" alt="Avatar" />
-          </div>
-        </div>
-
-        <div className="p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl flex justify-between items-center">
-          <div>
-            <h3 className="text-gray-400 text-sm mb-1">Ganancia promedio</h3>
-            <span className="text-xl md:text-2xl font-bold">$20,61</span>
-          </div>
-          <div className="bg-[#2d2d2d] p-2 rounded-full">
-            <img src="/gain.png" alt="Avatar" />
+          <div className="px-3 py-1 rounded-full bg-red-500 bg-opacity-20 text-red-400 text-sm">
+            {t('tradingDashboard_metric_targetNotReached')}
           </div>
         </div>
-
         <div className="p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl flex justify-between items-center">
           <div>
-            <h3 className="text-gray-400 text-sm mb-1">Ratio de victorias</h3>
-            <span className="text-xl md:text-2xl font-bold">$20,61</span>
+            <p className="text-sm text-gray-400">{t('tradingDashboard_metric_maxDailyLoss')}</p>
+            <p className="text-lg font-semibold">5%</p>
           </div>
-          <div className="bg-[#2d2d2d] p-2 rounded-full">
-            <img src="/victory.png" alt="Avatar" />
+          <div className="px-3 py-1 rounded-full bg-green-500 bg-opacity-20 text-green-400 text-sm">
+            {t('tradingDashboard_metric_targetReached')}
           </div>
         </div>
-
         <div className="p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl flex justify-between items-center">
           <div>
-            <h3 className="text-gray-400 text-sm mb-1">Lotes</h3>
-            <span className="text-xl md:text-2xl font-bold">3.26</span>
+            <p className="text-sm text-gray-400">{t('tradingDashboard_metric_maxLoss')}</p>
+            <p className="text-lg font-semibold">10%</p>
           </div>
-          <div className="bg-[#2d2d2d] p-2 rounded-full">
-            <img src="/graph.png" alt="Avatar" />
+          <div className="px-3 py-1 rounded-full bg-green-500 bg-opacity-20 text-green-400 text-sm">
+            {t('tradingDashboard_metric_targetReached')}
+          </div>
+        </div>
+        <div className="p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl flex justify-between items-center">
+          <div>
+            <p className="text-sm text-gray-400">{t('tradingDashboard_metric_minTradingDays')}</p>
+            <p className="text-lg font-semibold">5</p>
+          </div>
+          <div className="px-3 py-1 rounded-full bg-green-500 bg-opacity-20 text-green-400 text-sm">
+            {t('tradingDashboard_metric_targetReached')}
           </div>
         </div>
       </div>
@@ -379,52 +378,46 @@ const getUserName = () => {
       </div>
 
       {/* Tabla de operaciones */}
-      <div className="p-4 md:p-6 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl mb-6 overflow-x-auto">
-        <table className="min-w-full">
-          <thead>
-            <tr className="text-left text-gray-400 border-b border-gray-700">
-              <th className="py-2 px-4 font-medium">Abierta</th>
-              <th className="py-2 px-4 font-medium">Símbolo</th>
-              <th className="py-2 px-4 font-medium">ID de posicion</th>
-              <th className="py-2 px-4 font-medium">Tipo</th>
-              <th className="py-2 px-4 font-medium">Volumen</th>
-              <th className="py-2 px-4 font-medium">Precio</th>
-              <th className="py-2 px-4 font-medium">Cerrar</th>
-              <th className="py-2 px-4 font-medium">Precio de cierre</th>
-            </tr>
-          </thead>
-          <tbody>
-            {operaciones.map((op, index) => (
-              <tr key={index} className="border-b border-gray-800 text-sm">
-                <td className="py-3 px-4">
-                  <div className="flex flex-col">
-                    <span>12:00 {op.fecha}</span>
-                    <span className="text-gray-500 text-xs">{op.hora}</span>
-                  </div>
-                </td>
-                <td className="py-3 px-4">
-                  <div className="flex items-center">
-                    <div className="w-6 h-6 rounded-full flex items-center justify-center mr-2">
-                      <img src="/us.png" alt="Avatar" />
-                    </div>
-                    <span>{op.simbolo}</span>
-                  </div>
-                </td>
-                <td className="py-3 px-4">{op.id}</td>
-                <td className="py-3 px-4">{op.tipo}</td>
-                <td className="py-3 px-4">{op.volumen}</td>
-                <td className="py-3 px-4">${op.precio}</td>
-                <td className="py-3 px-4">
-                  <div className="flex flex-col">
-                    <span>12:00 {op.fecha}</span>
-                    <span className="text-gray-500 text-xs">{op.hora}</span>
-                  </div>
-                </td>
-                <td className="py-3 px-4">${op.precioFinal}</td>
+      <div className="p-4 md:p-6 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl flex-1 flex flex-col">
+        <h2 className="text-xl md:text-2xl font-bold mb-6">{t('tradingDashboard_operationsSummaryTitle')}</h2>
+        <div className="flex-1 overflow-x-auto">
+          <table className="w-full text-left">
+            <thead>
+              <tr className="border-b border-gray-700">
+                <th className="p-2 text-gray-400 font-normal">{t('tradingDashboard_tableHeader_operationId')}</th>
+                <th className="p-2 text-gray-400 font-normal">{t('tradingDashboard_tableHeader_symbol')}</th>
+                <th className="p-2 text-gray-400 font-normal">{t('tradingDashboard_tableHeader_type')}</th>
+                <th className="p-2 text-gray-400 font-normal">{t('tradingDashboard_tableHeader_volume')}</th>
+                <th className="p-2 text-gray-400 font-normal">{t('tradingDashboard_tableHeader_price')}</th>
+                <th className="p-2 text-gray-400 font-normal">{t('tradingDashboard_tableHeader_finalPrice')}</th>
+                <th className="p-2 text-gray-400 font-normal">{t('tradingDashboard_tableHeader_date')}</th>
+                <th className="p-2 text-gray-400 font-normal">{t('tradingDashboard_tableHeader_time')}</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {operaciones.length > 0 ? (
+                operaciones.map((op, index) => (
+                  <tr key={index} className="border-b border-gray-800 hover:bg-gray-700/30 transition-colors">
+                    <td className="p-2">{op.id}</td>
+                    <td className="p-2">{op.simbolo}</td>
+                    <td className="p-2">{op.tipo === 'Comprar' ? t('tradingDashboard_operationType_buy') : op.tipo}</td>
+                    <td className="p-2">{op.volumen}</td>
+                    <td className="p-2">{op.precio}</td>
+                    <td className="p-2">{op.precioFinal}</td>
+                    <td className="p-2">{op.fecha}</td>
+                    <td className="p-2">{op.hora}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="8" className="text-center py-8 text-gray-500">
+                    {t('tradingDashboard_emptyTable_noOperations')}
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

@@ -11,10 +11,10 @@ import {
   EmailAuthProvider
 } from "firebase/auth";
 import { auth, db } from "./config";
-import { doc, setDoc, getDoc, serverTimestamp, updateDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc, serverTimestamp, updateDoc, increment } from "firebase/firestore";
 
 // Register a new user
-export const registerUser = async (username, email, password) => {
+export const registerUser = async (username, email, password, refId = null) => {
   try {
     // Create user with email and password
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -28,14 +28,40 @@ export const registerUser = async (username, email, password) => {
     // Send email verification
     await sendEmailVerification(user);
     
-    // Store additional user data in Firestore
-    await setDoc(doc(db, "users", user.uid), {
+    // Prepare user data for Firestore
+    const userData = {
       uid: user.uid,
       username,
       email,
       display_name: username,
       created_time: serverTimestamp(),
-    });
+      referralCount: 0, // Initialize for the new user
+      withdrawals_wallet: "", // Initialize for the new user
+      preferredLanguage: 'es', // Default language preference
+    };
+
+    if (refId) {
+      userData.referredBy = refId;
+    }
+
+    // Store additional user data in Firestore for the new user
+    await setDoc(doc(db, "users", user.uid), userData);
+
+    // If referred, increment referrer's count
+    if (refId) {
+      try {
+        const referrerDocRef = doc(db, "users", refId);
+        // Atomically increment the referralCount by 1
+        await updateDoc(referrerDocRef, {
+          referralCount: increment(1)
+        });
+        console.log(`Referral count incremented for referrer: ${refId}`);
+      } catch (referrerError) {
+        console.error(`Failed to update referral count for referrer ${refId}:`, referrerError);
+        // Optionally, decide how to handle this error. 
+        // For now, the new user registration will still succeed.
+      }
+    }
     
     return { user };
   } catch (error) {

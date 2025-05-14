@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { getTranslator } from '../utils/i18n';
 
 const Descargas = () => {
+  const { language } = useAuth();
+  const t = getTranslator(language);
+
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -23,17 +28,17 @@ const Descargas = () => {
   const platforms = [
   {
     id: 'mt5',
-    name: 'Metatrader 5',
-    description: 'MetaTrader 5 es la plataforma de trading más popular, con una interfaz fácil de usar y altamente personalizable. Ofrece herramientas avanzadas de gráficos y gestión de órdenes para un seguimiento eficaz de las posiciones de trading, mejorando así el rendimiento del usuario.',
+    name: t('descargas_platform_mt5_name'),
+    description: t('descargas_platform_mt5_description'),
     image: '/mt5.png',
     downloads: [
       { 
-        os: isMobile ? 'Android' : 'Windows',
+        os: isMobile ? t('descargas_os_android') : t('descargas_os_windows'),
         icon: isMobile ? '/Android.png' : '/windows.png',
         link: isMobile ? '#android-link' : '#windows-link'
       },
       { 
-        os: isMobile ? 'iPhone' : 'Mac',
+        os: isMobile ? t('descargas_os_iphone') : t('descargas_os_mac'),
         icon: isMobile ? '/apple.png' : '/apple.png',
         link: isMobile ? '#iphone-link' : '#mac-link'
       }
@@ -42,17 +47,17 @@ const Descargas = () => {
   // Aquí va la nueva plataforma
   {
     id: 'mt4',
-    name: 'Alpha Global Market',
-    description: 'Descubre el poder de AGM en tus manos. Nuestra aplicación ofrece acceso inmediato a mercados financieros globales con herramientas de análisis avanzadas y ejecución rápida. Interfaz intuitiva diseñada para traders de todos los niveles, con actualizaciones en tiempo real y alertas personalizables. Optimiza tu estrategia de trading desde cualquier lugar. Descarga ahora y lleva tu experiencia de trading al siguiente nivel.',
+    name: t('descargas_platform_alphaGlobalMarket_name'),
+    description: t('descargas_platform_alphaGlobalMarket_description'),
     image: '/logo.png',
     downloads: [
       { 
-        os: isMobile ? 'Android' : 'Windows',
+        os: isMobile ? t('descargas_os_android') : t('descargas_os_windows'),
         icon: isMobile ? '/Android.png' : '/windows.png',
         link: isMobile ? '#android-mt4-link' : '#windows-mt4-link'
       },
       { 
-        os: isMobile ? 'iPhone' : 'Mac',
+        os: isMobile ? t('descargas_os_iphone') : t('descargas_os_mac'),
         icon: isMobile ? '/apple.png' : '/apple.png',
         link: isMobile ? '#iphone-mt4-link' : '#mac-mt4-link'
       }

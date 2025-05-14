@@ -1,0 +1,29 @@
+selectedAccount / accountId:
+Descripción: Identificador único de la cuenta de trading seleccionada por el usuario.
+
+accounts:
+Descripción: Colección (lista) de las cuentas de trading del usuario.
+
+account.id:
+Descripción: Identificador único de una cuenta específica dentro de la lista accounts.
+
+account.type:
+Descripción: Tipo o categoría de una cuenta de trading (ej: "Desafío", "Real").
+
+account.status:
+Descripción: Estado actual de una cuenta de trading (ej: "Activa", "Pendiente", "Fallida").
+
+balanceData:
+Descripción: Datos numéricos representando el historial o estado del balance de una cuenta (usado para gráficos).
+
+Balance Inicial (Texto en UI):
+Descripción: Valor del balance de una cuenta al inicio de un período o desafío.
+
+userHasApprovedAccount:
+Descripción: Indicador (booleano) de si la cuenta general del usuario ha sido aprobada.
+
+walletAddress / editWalletAddress:
+Descripción: Dirección de la cripto-wallet del usuario (para retiros).
+
+withdrawals_wallet:
+Descripción: Nombre del campo (probablemente en la base de datos/backend) donde se almacena la walletAddress del usuario.

@@ -1,7 +1,12 @@
 import { useState } from 'react';
 import { loginUser } from '../firebase/auth';
+import { useAuth } from '../contexts/AuthContext';
+import { getTranslator } from '../utils/i18n';
 
 const Login = ({ onRegisterClick, onForgotClick, onLoginSuccess }) => {
+  const { language } = useAuth();
+  const t = getTranslator(language);
+
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
@@ -21,14 +26,14 @@ const Login = ({ onRegisterClick, onForgotClick, onLoginSuccess }) => {
       const { user, error } = await loginUser(email, password);
       
       if (error) {
-        throw new Error(error.message || 'Error al iniciar sesión');
+        throw new Error(error.message || t('login_error_loginFailed'));
       }
       
       console.log('Login successful:', user);
       onLoginSuccess();
     } catch (err) {
       console.error('Login error:', err);
-      setError(err.message || 'Error al iniciar sesión');
+      setError(err.message || t('login_error_loginFailed'));
     } finally {
       setLoading(false);
     }
@@ -54,7 +59,7 @@ const Login = ({ onRegisterClick, onForgotClick, onLoginSuccess }) => {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               className="w-full px-4 py-3 rounded-full bg-gray-900 border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 pl-10 bg-opacity-20"
-              placeholder="Usuario o Email"
+              placeholder={t('login_placeholder_usernameOrEmail')}
               required
             />
             <svg className="absolute top-3.5 left-3 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -68,7 +73,7 @@ const Login = ({ onRegisterClick, onForgotClick, onLoginSuccess }) => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-4 py-3 rounded-full bg-gray-900 border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 pl-10 bg-opacity-20"
-              placeholder="Contraseña"
+              placeholder={t('login_placeholder_password')}
               required
             />
             <svg className="absolute top-3.5 left-3 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -87,7 +92,7 @@ const Login = ({ onRegisterClick, onForgotClick, onLoginSuccess }) => {
               className="h-4 w-4 bg-gray-800 border-gray-700 rounded focus:ring-blue-500"
             />
             <label htmlFor="remember_me" className="ml-2 block text-gray-300">
-              Recuérdame
+              {t('login_label_rememberMe')}
             </label>
           </div>
           <button
@@ -95,7 +100,7 @@ const Login = ({ onRegisterClick, onForgotClick, onLoginSuccess }) => {
             onClick={onForgotClick}
             className="text-white hover:text-blue-500 bg-transparent whitespace-nowrap"
           >
-            ¿Olvidaste la contraseña?
+            {t('login_button_forgotPassword')}
           </button>
         </div>
 
@@ -105,7 +110,7 @@ const Login = ({ onRegisterClick, onForgotClick, onLoginSuccess }) => {
             className="w-full py-3 px-4 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-medium shadow-lg relative overflow-hidden group"
             >
             <span className="absolute inset-0 bg-gradient-to-r from-cyan-600 to-blue-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
-            <span className="relative z-10">{loading ? 'Iniciando...' : 'Iniciar Sesión'}</span>
+            <span className="relative z-10">{loading ? t('login_button_loggingIn') : t('login_button_login')}</span>
         </button>
 
         <div className="mt-4 text-center">
@@ -114,10 +119,10 @@ const Login = ({ onRegisterClick, onForgotClick, onLoginSuccess }) => {
             onClick={onRegisterClick}
             className="text-gray-300 hover:text-white bg-transparent"
           >
-            Verificar Ahora
+            {t('login_button_verifyNow')}
           </button>
           <p className="text-gray-400 mt-1">
-            ¿No tienes cuenta? <button type="button" onClick={onRegisterClick} className="text-white font-semibold bg-transparent">Regístrate</button>
+            {t('login_text_noAccount')} <button type="button" onClick={onRegisterClick} className="text-white font-semibold bg-transparent">{t('login_button_register')}</button>
           </p>
         </div>
       </form>
