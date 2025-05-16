@@ -148,6 +148,11 @@ const PipCalculator = () => {
     { code: 'CHF', flag: './chf.png' },
   ];
 
+  const pipsCurrencies = [
+    { code: 'USD', flag: '/us.png' },
+    { code: 'EUR', flag: './eur.png' },
+  ];
+
   return (
     <div className="p-4 md:p-6 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-3xl text-white h-screen flex flex-col">
       {/* Tabs - Responsivos */}
@@ -312,7 +317,7 @@ const PipCalculator = () => {
         <div className="mb-6">
           <h2 className="text-base md:text-lg mb-2">{t('pipCalculator_label_accountCurrency')}</h2>
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-2">
-            {currencies.map((currency) => (
+            {(activeTab === 'pips' ? pipsCurrencies : currencies).map((currency) => (
               <button
                 key={currency.code}
                 onClick={() => setAccountCurrency(currency.code)}
