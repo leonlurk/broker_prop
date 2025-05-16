@@ -200,45 +200,45 @@ const AfiliadosDashboard = () => {
             <section>
               <h2 className="text-2xl font-semibold mb-4 text-gray-100">{t('afiliadosDashboard_panel_performance')}</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-5 bg-[#202020] rounded-xl border border-[#333]">
+                <div className="p-5 bg-gradient-to-br from-[#232323] to-[#2b2b2b] rounded-xl border border-[#4A4A4A]">
                   <h3 className="text-md font-medium text-gray-400 mb-1">{t('afiliadosDashboard_panel_totalCommissions')}</h3>
-                  <p className="text-3xl font-bold text-cyan-400">$0.00</p>
+                  <p className="text-3xl font-bold text-white">$0.00</p>
                 </div>
-                <div className="p-5 bg-[#202020] rounded-xl border border-[#333]">
+                <div className="p-5 bg-gradient-to-br from-[#232323] to-[#2b2b2b] rounded-xl border border-[#4A4A4A]">
                   <h3 className="text-md font-medium text-gray-400 mb-1">{t('afiliadosDashboard_panel_paidReferrals')}</h3>
-                  <p className="text-3xl font-bold text-cyan-400">0</p>
+                  <p className="text-3xl font-bold text-white">0</p>
                 </div>
-                <div className="p-5 bg-[#202020] rounded-xl border border-[#333]">
+                <div className="p-5 bg-gradient-to-br from-[#232323] to-[#2b2b2b] rounded-xl border border-[#4A4A4A]">
                   <h3 className="text-md font-medium text-gray-400 mb-1">{t('afiliadosDashboard_panel_conversion')}</h3>
-                  <p className="text-3xl font-bold text-cyan-400">0%</p>
+                  <p className="text-3xl font-bold text-white">0%</p>
                 </div>
               </div>
             </section>
 
             {/* Affiliate Link & Tier Info */}
             <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 p-5 bg-[#202020] rounded-xl border border-[#333] space-y-3">
+              <div className="lg:col-span-2 p-5 bg-gradient-to-br from-[#232323] to-[#2b2b2b] rounded-xl border border-[#4A4A4A] space-y-3">
                 <h3 className="text-lg font-semibold text-gray-100">{t('afiliadosDashboard_panel_yourAffiliateLink')}</h3>
                 <div className="flex items-center space-x-2">
-                  <input type="text" readOnly value={referralLink} className="w-full p-3 bg-[#1a1a1a] rounded-lg border border-[#444] text-gray-300 text-sm truncate" />
-                  <button onClick={copyToClipboardHandler} className="p-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg transition disabled:opacity-50" disabled={!referralLink}><Copy size={18} /></button>
+                  <input type="text" readOnly value={referralLink} className="w-full p-3 bg-gradient-to-br from-[#232323] to-[#2b2b2b] rounded-full border border-[#444] text-gray-300 text-sm truncate" />
+                  <button onClick={copyToClipboardHandler} className="p-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-full transition disabled:opacity-50" disabled={!referralLink}><Copy size={18} /></button>
                 </div>
                 <p className="text-xs text-gray-500">{t('afiliadosDashboard_panel_shareLinkInstruction')}</p>
               </div>
-              <div className="p-5 bg-[#202020] rounded-xl border border-[#333]">
+              <div className="p-5 bg-gradient-to-br from-[#232323] to-[#2b2b2b] rounded-xl border border-[#4A4A4A]">
                 <h3 className="text-lg font-semibold text-gray-100 mb-1">{t('afiliadosDashboard_panel_registeredReferrals')}</h3>
-                <p className="text-4xl font-bold text-cyan-400">{referralCount}</p>
+                <p className="text-4xl font-bold text-white">{referralCount}</p>
               </div>
             </section>
             
             {/* Wallet Address */}
             <section>
               <h2 className="text-2xl font-semibold mb-3 text-gray-100">{t('afiliadosDashboard_panel_paymentAddress')}</h2>
-              {successMessage && <div className="mb-3 p-3 bg-green-500/20 border border-green-500 text-green-300 rounded-lg">{successMessage}</div>}
-              {error && <div className="mb-3 p-3 bg-red-500/20 border border-red-500 text-red-300 rounded-lg flex items-center"><AlertTriangle size={18} className="mr-2"/>{error}</div>}
+              {successMessage && <div className="mb-3 p-3 bg-green-500/20 border border-green-500 text-green-300 rounded-full">{successMessage}</div>}
+              {error && <div className="mb-3 p-3 bg-red-500/20 border border-red-500 text-red-300 rounded-full flex items-center"><AlertTriangle size={18} className="mr-2"/>{error}</div>}
               {isEditingWallet ? (
                 <div className="space-y-3">
-                  <input type="text" value={editWalletAddress} onChange={(e) => setEditWalletAddress(e.target.value)} placeholder={t('afiliadosDashboard_panel_walletPlaceholder')} className="w-full p-3 bg-[#1a1a1a] rounded-lg border border-[#444] text-white focus:border-cyan-500 focus:ring-cyan-500" />
+                  <input type="text" value={editWalletAddress} onChange={(e) => setEditWalletAddress(e.target.value)} placeholder={t('afiliadosDashboard_panel_walletPlaceholder')} className="w-full p-3 bg-gradient-to-br from-[#232323] to-[#2b2b2b] rounded-full border border-[#444] text-white focus:border-cyan-500 focus:ring-cyan-500" />
                   <div className="flex gap-3">
                     <button onClick={saveWalletAddressHandler} disabled={isSavingWallet} className="px-5 py-2.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg transition flex items-center justify-center disabled:opacity-70">
                       {isSavingWallet ? <><Loader size={18} className="animate-spin mr-2" />{t('afiliadosDashboard_panel_savingButton')}</> : <><Save size={18} className="mr-2"/>{t('afiliadosDashboard_panel_saveButton')}</>}
@@ -247,9 +247,9 @@ const AfiliadosDashboard = () => {
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center justify-between p-3 bg-[#1a1a1a] rounded-lg border border-[#444]">
+                <div className="flex items-center justify-between p-3 bg-gradient-to-br from-[#232323] to-[#2b2b2b] rounded-full border border-[#444]">
                   <span className="text-gray-300 truncate">{walletAddress || t('afiliadosDashboard_walletNotSet')}</span>
-                  <button onClick={toggleEditWalletMode} className="px-5 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg transition text-sm">{t('afiliadosDashboard_panel_editButton')}</button>
+                  <button onClick={toggleEditWalletMode} className="px-5 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-full transition text-sm">{t('afiliadosDashboard_panel_editButton')}</button>
                 </div>
               )}
             </section>
@@ -259,9 +259,9 @@ const AfiliadosDashboard = () => {
                 <h2 className="text-2xl font-semibold mb-4 text-gray-100">{t('afiliadosDashboard_panel_affiliateTiers')}</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {[1, 2, 3].map(tierNum => (
-                        <div key={tierNum} className={`p-5 rounded-xl border-2 ${currentTier >= tierNum ? 'border-cyan-500 bg-[#202020]' : 'border-[#444] bg-[#1c1c1c]' } space-y-1`}>
+                        <div key={tierNum} className={`p-5 rounded-xl border ${currentTier >= tierNum ? 'border-cyan-400 bg-[#2d2d2d]' : 'border-[#4A4A4A] bg-[#2d2d2d]' } space-y-1`}>
                             <div className="flex justify-between items-center">
-                                <h3 className={`text-xl font-bold ${currentTier >= tierNum ? 'text-cyan-400' : 'text-gray-300'}`}>{t('afiliadosDashboard_panel_tierLabel', { tierNum })}</h3>
+                                <h3 className={`text-xl font-bold ${currentTier >= tierNum ? 'text-white' : 'text-gray-300'}`}>{t('afiliadosDashboard_panel_tierLabel', { tierNum })}</h3>
                                 {currentTier < tierNum && <Lock size={20} className="text-gray-500" />}
               </div>
                             <p className={`text-sm ${currentTier >= tierNum ? 'text-gray-200' : 'text-gray-400'}`}>{t(TIER_COMMISSIONS[tierNum].labelKey)}</p>
@@ -278,7 +278,7 @@ const AfiliadosDashboard = () => {
              {/* Traders Fondeados Section - Placeholder */}
             <section>
                 <h2 className="text-2xl font-semibold mb-4 text-gray-100">{t('afiliadosDashboard_panel_fundedTradersTier3')}</h2>
-                <div className="relative rounded-xl border border-[#333] bg-[#202020] min-h-[200px] flex items-center justify-center">
+                <div className="relative rounded-xl border border-[#4A4A4A] bg-gradient-to-br from-[#232323] to-[#2b2b2b] min-h-[200px] flex items-center justify-center">
                 {currentTier === 3 ? (
                     <p className="text-gray-400">{t('afiliadosDashboard_panel_fundedTradersUnlocked')}</p>
                 ) : (
@@ -297,15 +297,15 @@ const AfiliadosDashboard = () => {
         return (
           <div className="space-y-4">
              <h2 className="text-2xl font-semibold mb-4 text-gray-100">{t('afiliadosDashboard_referrals_title')}</h2>
-            {isLoadingReferencias && <div className="flex justify-center items-center p-6"><Loader size={32} className="animate-spin text-cyan-500"/></div>}
+            {isLoadingReferencias && <div className="flex justify-center items-center p-6"><Loader size={32} className="animate-spin text-white"/></div>}
             {!isLoadingReferencias && error && <div className="text-red-400 p-4 text-center">{error}</div>}
             {!isLoadingReferencias && !error && referenciasData.length === 0 && 
                 <p className="text-gray-400 text-center p-6">{t('afiliadosDashboard_referrals_noReferrals')}</p>
             }
             {!isLoadingReferencias && !error && referenciasData.length > 0 && (
-              <div className="overflow-x-auto bg-[#202020] rounded-xl border border-[#333]">
+              <div className="overflow-x-auto bg-gradient-to-br from-[#232323] to-[#2b2b2b] rounded-xl border border-[#4A4A4A]">
                 <table className="min-w-full text-sm">
-                  <thead className="border-b border-[#444]">
+                  <thead className="border-b border-[#4A4A4A]">
                     <tr>
                       <th className="px-4 py-3 text-left font-medium text-gray-300">{t('afiliadosDashboard_referrals_table_user')}</th>
                       <th className="px-4 py-3 text-left font-medium text-gray-300">{t('afiliadosDashboard_referrals_table_email')}</th>
@@ -314,9 +314,9 @@ const AfiliadosDashboard = () => {
                       <th className="px-4 py-3 text-left font-medium text-gray-300">{t('afiliadosDashboard_referrals_table_registeredDate')}</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#333]">
+                  <tbody className="divide-y divide-[#4A4A4A]">
                     {referenciasData.map(ref => (
-                      <tr key={ref.id} className="hover:bg-[#2a2a2a]">
+                      <tr key={ref.id} className="hover:bg-[#333]">
                         <td className="px-4 py-3 text-gray-200">{ref.username || t('afiliadosDashboard_table_notAvailable')}</td>
                         <td className="px-4 py-3 text-gray-200">{ref.email}</td>
                         <td className="px-4 py-3 text-gray-200">{`${ref.firstName || ''} ${ref.lastName || ''}`.trim() || t('afiliadosDashboard_table_notAvailable')}</td>
@@ -337,7 +337,7 @@ const AfiliadosDashboard = () => {
         return (
           <div className="space-y-4">
             <h2 className="text-2xl font-semibold mb-4 text-gray-100">{t('afiliadosDashboard_payments_title')}</h2>
-            {isLoadingPagos && <div className="flex justify-center"><Loader className="animate-spin text-cyan-500"/></div>}
+            {isLoadingPagos && <div className="flex justify-center"><Loader className="animate-spin text-white"/></div>}
             {!isLoadingPagos && pagosData.length === 0 && <p className="text-gray-400">{t('afiliadosDashboard_payments_noPayments')}</p>}
             {pagosData.length > 0 && <p>{t('afiliadosDashboard_payments_tablePlaceholder')}</p>}
           </div>
@@ -353,20 +353,16 @@ const AfiliadosDashboard = () => {
   ];
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#161616] text-white p-4 md:p-6 rounded-3xl border border-[#333]">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-semibold text-gray-100">{t('afiliadosDashboard_mainTitle')}</h1>
-      </div>
-      
-      <div className="flex space-x-1 mb-6 border-b border-[#333]">
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-[#232323] to-[#2b2b2b] text-white p-4 md:p-6 rounded-3xl border border-[#4A4A4A]">
+      <div className="flex space-x-1 mb-6">
         {tabConfig.map(tab => {
             const Icon = tab.icon;
             return (
         <button
                     key={tab.id}
-                    className={`flex items-center space-x-2 px-4 py-3 font-medium focus:outline-none transition-colors duration-150
+                    className={`flex items-center space-x-2 px-4 py-3 font-medium focus:outline-none transition-colors duration-150 rounded-full bg-gradient-to-br from-[#232323] to-[#2b2b2b] text-white
                         ${activeTab === tab.id 
-                            ? 'border-b-2 border-cyan-500 text-cyan-400' 
+                            ? 'border border-cyan-500 text-white' 
                             : 'text-gray-400 hover:text-gray-200'
                         }`}
                     onClick={() => handleTabClick(tab.id)}
@@ -378,7 +374,7 @@ const AfiliadosDashboard = () => {
         })}
       </div>
       
-      <div className="bg-[#1c1c1c] p-4 md:p-6 rounded-xl border border-[#333]">
+      <div className="bg-gradient-to-br from-[#232323] to-[#2b2b2b] p-4 md:p-6 rounded-xl border border-[#4A4A4A]">
         {renderContent()}
       </div>
     </div>

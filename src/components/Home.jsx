@@ -125,7 +125,7 @@ const Home = ({ onViewDetails, onSettingsClick, setSelectedOption }) => {
     <div className="p-4 md:p-6 bg-[#232323] border border-[#333] rounded-3xl text-white min-h-screen flex flex-col">
       {/* Header con saludo y fecha */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 md:mb-6 p-3 md:p-4 bg-gradient-to-br from-[#232323] to-[#202020] border border-[#333] rounded-xl relative">
-        <div className="absolute inset-0 border-solid border-t-4 border-l border-r border-cyan-500 border-opacity-50 rounded-xl"></div>
+        <div className="absolute inset-0 border-solid border-t-2 border-l border-r border-cyan-300 border-opacity-50 rounded-xl"></div>
 
         <div className="mb-3 sm:mb-0">
         <h1 className="text-xl md:text-2xl font-semibold">{t('greeting')}, {getUserName()}</h1>
@@ -203,7 +203,7 @@ const Home = ({ onViewDetails, onSettingsClick, setSelectedOption }) => {
 
       {/* Tarjeta principal con fondo de imagen */}
       <div 
-        className="mb-4 md:mb-6 p-4 md:p-6 rounded-2xl relative h-auto md:h-[430px] flex flex-col justify-center border-solid border-t-4 border-l border-r border-cyan-500 border-opacity-50"
+        className="mb-4 md:mb-6 p-4 md:p-6 rounded-2xl relative h-auto md:h-[430px] flex flex-col justify-center border-solid border-t-2 border-l border-r border-cyan-300 border-opacity-50"
       >
         <div 
           className="absolute inset-0 rounded-md"
