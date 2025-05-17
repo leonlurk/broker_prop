@@ -56,16 +56,16 @@ const getUserName = () => {
   return (
     <div className="p-4 md:p-6 bg-gradient-to-br from-[#232323] to-[#2d2d2d] text-white min-h-screen flex flex-col">
       {/* Botón de regreso */}
-      <div className="mb-4">
-        <button
-          onClick={onBack}
-          className="flex items-center text-cyan-500 hover:text-cyan-400 transition"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
-          </svg>
-          {getBackText()}
-        </button>
+      <div className="mb-6">
+        <div className="flex items-center mb-4">
+          <button
+            onClick={onBack}
+            className="transition-opacity duration-150 ease-in-out hover:opacity-80 rounded-full bg-transparent border-none"
+            aria-label="Volver"
+          >
+            <img src="/Back.svg" alt="Volver" className="w-12 h-12" />
+          </button>
+        </div>
       </div>
 {/* Header con saludo y detalles */}
 <div className="p-4 md:p-6 rounded-2xl relative bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] mb-4 md:mb-6">
@@ -236,7 +236,11 @@ const getUserName = () => {
           </div> 
           <div className="p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl">
             <h2 className="text-xl font-bold mb-2">{t('tradingDashboard_drawdownWidgetTitle')}</h2>
-            <div className="text-2xl font-bold">25%</div>
+            <div className="flex items-center mb-1">
+              <span className="text-2xl font-bold mr-3">$200,00</span>
+              <span className="bg-green-800 bg-opacity-30 text-green-400 px-2 py-1 rounded text-sm">+25.0%</span>
+            </div>
+            <p className="text-sm text-gray-400">{t('tradingDashboard_drawdownTypeDaily')}</p>
           </div>
 
           <div className="p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl">
@@ -246,99 +250,109 @@ const getUserName = () => {
         </div>
       </div>
 
-      {/* Sección de métricas detalladas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      {/* Sección de métricas detalladas (Pérdida Promedio, Ganancia Promedio, etc.) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        {/* Duración Promedio Por Operación */}
         <div className="p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl flex justify-between items-center">
           <div>
-            <p className="text-sm text-gray-400">{t('tradingDashboard_metric_profitTarget')}</p>
-            <p className="text-lg font-semibold">10%</p>
-          </div>
-          <div className="px-3 py-1 rounded-full bg-red-500 bg-opacity-20 text-red-400 text-sm">
-            {t('tradingDashboard_metric_targetNotReached')}
-          </div>
-        </div>
-        <div className="p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl flex justify-between items-center">
-          <div>
-            <p className="text-sm text-gray-400">{t('tradingDashboard_metric_maxDailyLoss')}</p>
-            <p className="text-lg font-semibold">5%</p>
-          </div>
-          <div className="px-3 py-1 rounded-full bg-green-500 bg-opacity-20 text-green-400 text-sm">
-            {t('tradingDashboard_metric_targetReached')}
-          </div>
-        </div>
-        <div className="p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl flex justify-between items-center">
-          <div>
-            <p className="text-sm text-gray-400">{t('tradingDashboard_metric_maxLoss')}</p>
-            <p className="text-lg font-semibold">10%</p>
-          </div>
-          <div className="px-3 py-1 rounded-full bg-green-500 bg-opacity-20 text-green-400 text-sm">
-            {t('tradingDashboard_metric_targetReached')}
-          </div>
-        </div>
-        <div className="p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl flex justify-between items-center">
-          <div>
-            <p className="text-sm text-gray-400">{t('tradingDashboard_metric_minTradingDays')}</p>
-            <p className="text-lg font-semibold">5</p>
-          </div>
-          <div className="px-3 py-1 rounded-full bg-green-500 bg-opacity-20 text-green-400 text-sm">
-            {t('tradingDashboard_metric_targetReached')}
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div className="p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl flex justify-between items-center">
-          <div>
-            <h3 className="text-gray-400 text-sm mb-1">Duración promedio del trading</h3>
+            <h3 className="text-gray-400 text-sm mb-1">{t('tradingDashboard_avgTradeDuration')}</h3>
             <span className="text-xl md:text-2xl font-bold">02:25:36</span>
           </div>
           <div className="bg-[#2d2d2d] p-2 rounded-full">
-            <img src="/clock.png" alt="Avatar" />
+            <img src="/clock.png" alt={t('tradingDashboard_iconAlt_clock')} onError={(e) => { e.target.onerror = null; e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23333'/%3E%3Cpath d='M12 6v6l4 2' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"; }} />
           </div>
         </div>
 
+        {/* Ganancia Promedio Por Operación */}
         <div className="p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl flex justify-between items-center">
           <div>
-            <h3 className="text-gray-400 text-sm mb-1">Factor de beneficio</h3>
-            <span className="text-xl md:text-2xl font-bold">$20,61</span>
+            <h3 className="text-gray-400 text-sm mb-1">{t('tradingDashboard_avgProfitPerOperation')}</h3>
+            <div className="flex items-baseline">
+              <span className="text-xl md:text-2xl font-bold mr-2">$20.61</span>
+              <span className="text-green-400 text-xs">+25.0%</span>
+            </div>
           </div>
           <div className="bg-[#2d2d2d] p-2 rounded-full">
-            <img src="/coins.png" alt="Avatar" />
+            <img src="/coins.png" alt={t('tradingDashboard_iconAlt_coins')} onError={(e) => { e.target.onerror = null; e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23333'/%3E%3Cpath d='M12 6L12 18M9 10L15 10M9 14L15 14' stroke='white' stroke-width='2'/%3E%3C/svg%3E"; }} />
+          </div>
+        </div>
+
+        {/* Pérdida Promedio Por Operación */}
+        <div className="p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl flex justify-between items-center">
+          <div>
+            <h3 className="text-gray-400 text-sm mb-1">{t('tradingDashboard_avgLossPerOperation')}</h3>
+            <span className="text-xl md:text-2xl font-bold">$77.61</span>
+          </div>
+          <div className="bg-[#2d2d2d] p-2 rounded-full">
+            <img src="/trending_down.png" alt={t('tradingDashboard_iconAlt_loss')} onError={(e) => { e.target.onerror = null; e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23333'/%3E%3Cpath d='M7 17L17 7M17 7H11M17 7V13' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"; }} />
+          </div>
+        </div>
+        
+        {/* Lotaje Promedio Por Operación */}
+        <div className="p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl flex justify-between items-center">
+          <div>
+            <h3 className="text-gray-400 text-sm mb-1">{t('tradingDashboard_avgLotPerOperation')}</h3>
+            <span className="text-xl md:text-2xl font-bold">3.26</span>
+          </div>
+          <div className="bg-[#2d2d2d] p-2 rounded-full">
+            <img src="/layers.png" alt={t('tradingDashboard_iconAlt_lot')} onError={(e) => { e.target.onerror = null; e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23333'/%3E%3Cpath d='M4 12L12 4L20 12L12 20L4 12Z' stroke='white' stroke-width='2'/%3E%3Cpath d='M8 12L12 8L16 12L12 16L8 12Z' stroke='white' stroke-width='1.5'/%3E%3C/svg%3E"; }} />
+          </div>
+        </div>
+
+        {/* Relación Riesgo Beneficio */}
+        <div className="p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl flex justify-between items-center">
+          <div>
+            <h3 className="text-gray-400 text-sm mb-1">{t('tradingDashboard_riskRewardRatio')}</h3>
+            <span className="text-xl md:text-2xl font-bold">1:3</span>
+          </div>
+          <div className="bg-[#2d2d2d] p-2 rounded-full">
+            <img src="/award.png" alt={t('tradingDashboard_iconAlt_ratio')} onError={(e) => { e.target.onerror = null; e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23333'/%3E%3Cpath d='M12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.63L12 2L9.19 8.63L2 9.24L7.46 13.97L5.82 21L12 17.27Z' fill='white'/%3E%3C/svg%3E"; }} />
+          </div>
+        </div>
+
+        {/* Ratio De Ganancia */}
+        <div className="p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl flex justify-between items-center">
+          <div>
+            <h3 className="text-gray-400 text-sm mb-1">{t('tradingDashboard_winRate')}</h3>
+            <span className="text-xl md:text-2xl font-bold">20%</span>
+          </div>
+          <div className="bg-[#2d2d2d] p-2 rounded-full">
+            <img src="/chart_pie.png" alt={t('tradingDashboard_iconAlt_winRate')} onError={(e) => { e.target.onerror = null; e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23333'/%3E%3Cpath d='M12 2A10 10 0 0 0 2 12A10 10 0 0 0 12 22A10 10 0 0 0 22 12A10 10 0 0 0 12 2M12 4V12H20A8 8 0 0 1 12 20V12H4A8 8 0 0 1 12 4Z' fill='white'/%3E%3C/svg%3E"; }} />
           </div>
         </div>
       </div>
 
       {/* Sección de Objetivos */}
       <div className="p-4 md:p-6 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl mb-6">
-        <h2 className="text-xl md:text-2xl font-bold mb-4">Objetivos</h2>
+        <h2 className="text-xl md:text-2xl font-bold mb-4">{t('tradingDashboard_objectivesTitle')}</h2>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
           <div className="p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium">Límite diario de pérdidas</h3>
-              <span className="bg-yellow-800 bg-opacity-30 text-yellow-400 px-2 py-1 rounded text-xs">En Proceso</span>
+              <h3 className="text-lg font-medium">{t('tradingDashboard_dailyLossLimitTitle')}</h3>
+              <span className="bg-yellow-800 bg-opacity-30 text-yellow-400 px-2 py-1 rounded text-xs">{t('tradingDashboard_status_inProgress')}</span>
             </div>
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm text-gray-400">Límite máximo de pérdida</span>
+              <span className="text-sm text-gray-400">{t('tradingDashboard_maxLossLimitLabel')}</span>
               <span>$245.36</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-400">Pérdida permitida hoy</span>
+              <span className="text-sm text-gray-400">{t('tradingDashboard_allowedLossTodayLabel')}</span>
               <span>$4,661.81</span>
             </div>
           </div>
           
           <div className="p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium">Límite de pérdida global</h3>
-              <span className="bg-red-800 bg-opacity-30 text-red-400 px-2 py-1 rounded text-xs">Perdido</span>
+              <h3 className="text-lg font-medium">{t('tradingDashboard_globalLossLimitTitle')}</h3>
+              <span className="bg-red-800 bg-opacity-30 text-red-400 px-2 py-1 rounded text-xs">{t('tradingDashboard_status_lost')}</span>
             </div>
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm text-gray-400">Límite máximo de pérdida</span>
+              <span className="text-sm text-gray-400">{t('tradingDashboard_maxLossLimitLabel')}</span>
               <span>$245.36</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-400">Pérdida máxima permitida</span>
+              <span className="text-sm text-gray-400">{t('tradingDashboard_allowedLossTodayLabel')}</span> {/* Figma usa "Pérdida máxima permitida" aquí, considerar si se necesita una key diferente o si esta es aceptable */} 
               <span>$4,661.81</span>
             </div>
           </div>
@@ -347,30 +361,30 @@ const getUserName = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div className="p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium">Días mínimos de negociación</h3>
-              <span className="bg-green-800 bg-opacity-30 text-green-400 px-2 py-1 rounded text-xs">Superado</span>
+              <h3 className="text-lg font-medium">{t('tradingDashboard_minTradingDaysTitle')}</h3>
+              <span className="bg-green-800 bg-opacity-30 text-green-400 px-2 py-1 rounded text-xs">{t('tradingDashboard_status_surpassed')}</span>
             </div>
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm text-gray-400">Mínimo</span>
+              <span className="text-sm text-gray-400">{t('tradingDashboard_minimumLabel')}</span>
               <span>5 Días</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-400">Resultado actual</span>
+              <span className="text-sm text-gray-400">{t('tradingDashboard_currentResultLabel')}</span>
               <span>7 Días</span>
             </div>
           </div>
           
           <div className="p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium">Objetivo de ganancias</h3>
-              <span className="bg-yellow-800 bg-opacity-30 text-yellow-400 px-2 py-1 rounded text-xs">En Proceso</span>
+              <h3 className="text-lg font-medium">{t('tradingDashboard_profitTargetTitle')}</h3>
+              <span className="bg-yellow-800 bg-opacity-30 text-yellow-400 px-2 py-1 rounded text-xs">{t('tradingDashboard_status_inProgress')}</span>
             </div>
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm text-gray-400">Mínimo</span>
+              <span className="text-sm text-gray-400">{t('tradingDashboard_minimumLabel')}</span>
               <span>$8,000.00</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-400">Resultado actual</span>
+              <span className="text-sm text-gray-400">{t('tradingDashboard_currentResultLabel')}</span>
               <span>$843.10</span>
             </div>
           </div>

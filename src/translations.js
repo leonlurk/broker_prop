@@ -1069,6 +1069,35 @@ export const translations = {
   tradingDashboard_emptyTable_noOperations: { es: "No hay operaciones para mostrar.", en: "No operations to display." },
   tradingDashboard_operationType_buy: { es: "Comprar", en: "Buy" },
 
+  // Nuevas traducciones para TradingDashboard KPIs y Objetivos
+  tradingDashboard_drawdownTypeDaily: { es: "Diario", en: "Daily" },
+  tradingDashboard_avgTradeDuration: { es: "Duración Promedio Por Operación", en: "Average Trade Duration" },
+  tradingDashboard_iconAlt_clock: { es: "Reloj", en: "Clock" },
+  tradingDashboard_avgProfitPerOperation: { es: "Ganancia Promedio Por Operación", en: "Average Profit Per Operation" },
+  tradingDashboard_iconAlt_coins: { es: "Monedas", en: "Coins" },
+  tradingDashboard_avgLossPerOperation: { es: "Pérdida Promedio Por Operación", en: "Average Loss Per Operation" },
+  tradingDashboard_iconAlt_loss: { es: "Pérdida", en: "Loss" },
+  tradingDashboard_avgLotPerOperation: { es: "Lotaje Promedio Por Operación", en: "Average Lot Per Operation" },
+  tradingDashboard_iconAlt_lot: { es: "Lotaje", en: "Lot" },
+  tradingDashboard_riskRewardRatio: { es: "Relación Riesgo Beneficio", en: "Risk/Reward Ratio" },
+  tradingDashboard_iconAlt_ratio: { es: "Ratio", en: "Ratio" },
+  tradingDashboard_winRate: { es: "Ratio De Ganancia", en: "Win Rate" },
+  tradingDashboard_iconAlt_winRate: { es: "Ratio Ganancia", en: "Win Rate Icon" },
+
+  tradingDashboard_objectivesTitle: { es: "Objetivos", en: "Objectives" },
+  tradingDashboard_dailyLossLimitTitle: { es: "Límite diario de pérdidas", en: "Daily Loss Limit" },
+  tradingDashboard_status_inProgress: { es: "En Proceso", en: "In Progress" },
+  tradingDashboard_maxLossLimitLabel: { es: "Límite máximo de pérdida", en: "Maximum loss limit" },
+  tradingDashboard_allowedLossTodayLabel: { es: "Pérdida permitida hoy", en: "Allowed loss today" },
+  tradingDashboard_globalLossLimitTitle: { es: "Límite de pérdida global", en: "Global Loss Limit" },
+  tradingDashboard_status_lost: { es: "Perdido", en: "Lost" },
+  tradingDashboard_minTradingDaysTitle: { es: "Días mínimos de negociación", en: "Minimum Trading Days" },
+  tradingDashboard_status_surpassed: { es: "Superado", en: "Surpassed" },
+  tradingDashboard_minimumLabel: { es: "Mínimo", en: "Minimum" },
+  tradingDashboard_currentResultLabel: { es: "Resultado actual", en: "Current Result" },
+  tradingDashboard_profitTargetTitle: { es: "Objetivo de ganancias", en: "Profit Target" },
+  // Fin de nuevas traducciones para TradingDashboard
+
   // CertificateComponent.jsx translations
   certificate_button_challengeSuccess: {
     es: "Superación de Challenge",
