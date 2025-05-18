@@ -251,34 +251,47 @@ const Home = ({ onViewDetails, onSettingsClick, setSelectedOption }) => {
         {!isLoadingDashboardAccounts && dashboardAccounts.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 flex-grow">
             {dashboardAccounts.map((account) => (
-              <div key={account.id} className="bg-gradient-to-br from-[#232323] to-[#2d2d2d] p-3 md:p-4 rounded-3xl border border-[#333] flex flex-col h-auto md:h-[300px] max-w-lg justify-between">
-                <div>
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2">
-                    <h3 className="font-medium text-lg md:text-xl lg:text-2xl mb-1 sm:mb-0 whitespace-nowrap overflow-hidden text-ellipsis">{account.challengePhase} {account.challengeAmountString}</h3>
-                    <span className="text-gray-400 text-sm md:text-base">#{account.accountNumber}</span>
+              <div key={account.id} className="bg-gradient-to-br from-[#232323] to-[#2d2d2d] p-5 rounded-3xl border border-[#333] flex flex-col h-[300px] md:h-[320px] max-w-lg">
+                <div className="flex justify-between items-start mb-4">
+                  <h3 className="font-medium text-xl md:text-2xl">
+                    ONE STEP<br />
+                    CHALLENGE {account.challengeAmount?.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                  </h3>
+                  <span className="text-gray-400 text-sm">#{account.accountNumber}</span>
+                </div>
+
+                <div className="mb-4">
+                  <p className="text-gray-400 text-sm">Balance Actual</p>
+                  <p className="text-2xl font-medium">{formatBalance(account.balanceActual)}</p>
+                </div>
+
+                <div className="grid grid-cols-3 gap-4 text-sm mb-6">
+                  <div>
+                    <p className="text-gray-400">PNL Hoy</p>
+                    <p className={`${(account.pnlToday || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      {(account.pnlToday || 0) >= 0 ? '+' : ''}{((account.pnlToday || 0) / (account.balanceActual || 1) * 100).toFixed(2)}%<br />
+                      {(account.pnlToday || 0) >= 0 ? '+' : ''}{formatBalance(account.pnlToday || 0)}
+                    </p>
                   </div>
-                  <p className="text-gray-400 text-sm mb-1">Balance Actual</p>
-                  <p className="text-xl md:text-2xl font-semibold mb-3">{formatBalance(account.balanceActual)}</p>
-                  
-                  <div className="grid grid-cols-3 gap-2 text-xs mb-3">
-                    <div>
-                      <p className="text-gray-400">PNL Hoy</p>
-                      <p className={`${(account.pnlToday || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>{formatPnl(account.pnlToday || 0)} ({formatPnl(((account.pnlToday || 0) / (account.balanceActual || 1)) * 100, true)})</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-400">PNL 7 días</p>
-                      <p className={`${(account.pnl7Days || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>{formatPnl(account.pnl7Days || 0)} ({formatPnl(((account.pnl7Days || 0) / (account.balanceActual || 1)) * 100, true)})</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-400">PNL 30 días</p>
-                      <p className={`${(account.pnl30Days || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>{formatPnl(account.pnl30Days || 0)} ({formatPnl(((account.pnl30Days || 0) / (account.balanceActual || 1)) * 100, true)})</p>
-                    </div>
+                  <div>
+                    <p className="text-gray-400">PNL 7 días</p>
+                    <p className={`${(account.pnl7Days || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      {(account.pnl7Days || 0) >= 0 ? '+' : ''}{((account.pnl7Days || 0) / (account.balanceActual || 1) * 100).toFixed(2)}%<br />
+                      {(account.pnl7Days || 0) >= 0 ? '+' : ''}{formatBalance(account.pnl7Days || 0)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-gray-400">PNL 30 días</p>
+                    <p className={`${(account.pnl30Days || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      {(account.pnl30Days || 0) >= 0 ? '+' : ''}{((account.pnl30Days || 0) / (account.balanceActual || 1) * 100).toFixed(2)}%<br />
+                      {(account.pnl30Days || 0) >= 0 ? '+' : ''}{formatBalance(account.pnl30Days || 0)}
+                    </p>
                   </div>
                 </div>
-                
-                <div className="flex justify-center mt-auto pt-2">
+
+                <div className="flex justify-center">
                   <button 
-                    className="border border-cyan-500 border-opacity-50 text-white py-1 md:py-2 px-3 md:px-4 rounded-full hover:bg-gray-800 transition text-sm md:text-base"
+                    className="border border-cyan-500 border-opacity-50 text-white py-1.5 px-6 rounded-full hover:bg-gray-800 transition text-sm"
                     style={{ outline: 'none' }}
                     onClick={() => {
                       onViewDetails && onViewDetails(account.id);

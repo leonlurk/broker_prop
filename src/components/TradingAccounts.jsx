@@ -13,9 +13,9 @@ const TradingAccounts = ({ setSelectedOption, setSelectedAccount }) => {
   const [isLoadingAccounts, setIsLoadingAccounts] = useState(true);
   
   const tabs = [
-    { key: 'tradingAccounts_tab_phase1', dataFilter: '1 Fase' },
-    { key: 'tradingAccounts_tab_phase2', dataFilter: '2 Fases' },
-    { key: 'tradingAccounts_tab_realAccount', dataFilter: 'Cuenta Real' }
+    { key: 'tradingAccounts_tab_phase1', dataFilter: 'ONE STEP' },
+    { key: 'tradingAccounts_tab_phase2', dataFilter: 'TWO STEP' },
+    { key: 'tradingAccounts_tab_realAccount', dataFilter: 'REAL' }
   ];
 
   const [activeTab, setActiveTab] = useState(tabs[0].key);
@@ -23,10 +23,16 @@ const TradingAccounts = ({ setSelectedOption, setSelectedAccount }) => {
   const currentDataFilter = tabs.find(tab => tab.key === activeTab)?.dataFilter || tabs[0].dataFilter;
 
   const filteredAccounts = userAccounts.filter(account => {
-    if (currentDataFilter === 'Cuenta Real') {
-      return !['1 Fase', '2 Fases'].includes(account.challengePhase) && account.status === 'Aprobada';
-    } 
-    return account.challengePhase?.replace('s','') === currentDataFilter.replace('s','');
+    if (currentDataFilter === 'REAL') {
+      return account.status === 'Aprobada' || account.status === 'Approved';
+    }
+    if (currentDataFilter === 'ONE STEP') {
+      return account.challengeType === 'one_step' && account.status !== 'Aprobada' && account.status !== 'Approved';
+    }
+    if (currentDataFilter === 'TWO STEP') {
+      return account.challengeType === 'two_step' && account.status !== 'Aprobada' && account.status !== 'Approved';
+    }
+    return false;
   });
 
   useEffect(() => {
@@ -37,13 +43,26 @@ const TradingAccounts = ({ setSelectedOption, setSelectedAccount }) => {
     }
 
     setIsLoadingAccounts(true);
-    const q = query(collection(db, 'tradingAccounts'), where('userId', '==', currentUser.uid));
+    const q = query(
+      collection(db, 'tradingAccounts'), 
+      where('userId', '==', currentUser.uid)
+    );
 
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const accountsData = [];
       querySnapshot.forEach((doc) => {
-        accountsData.push({ id: doc.id, ...doc.data() });
+        const data = doc.data();
+        const challengeType = data.challengeType || 
+                            (data.numberOfPhases === 2 ? 'two_step' : 'one_step');
+        
+        accountsData.push({ 
+          id: doc.id, 
+          ...data,
+          challengeType,
+          challengePhase: data.challengeType === 'two_step' ? 'TWO STEP' : 'ONE STEP'
+        });
       });
+      console.log('Accounts loaded:', accountsData);
       setUserAccounts(accountsData);
       setIsLoadingAccounts(false);
     }, (error) => {
@@ -124,7 +143,9 @@ const TradingAccounts = ({ setSelectedOption, setSelectedAccount }) => {
                   <img src="/userchart.png" alt="Account Chart"/>
                 </div>
                 <div>
-                  <div className="font-medium text-lg">{t('tradingAccounts_accountInfo', { phase: account.challengePhase, amount: account.challengeAmountString })}</div>
+                  <div className="font-medium text-lg">
+                    {account.challengePhase} CHALLENGE {account.challengeAmount?.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                  </div>
                   <div className="text-gray-400 text-sm">
                     {t('tradingAccounts_serverTypeLabel')} {account.serverType}
                     <br />
