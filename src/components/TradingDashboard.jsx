@@ -3,10 +3,73 @@ import { AreaChart, Area, ResponsiveContainer, XAxis, YAxis } from 'recharts';
 import { useAuth } from '../contexts/AuthContext'; // Importar el contexto de autenticación
 import { getTranslator } from '../utils/i18n'; // Added
 
+// Helper function to format the date
+const formatDate = (date, locale, t) => {
+  const days = [
+    t('date_short_sunday'), 
+    t('date_short_monday'), 
+    t('date_short_tuesday'), 
+    t('date_short_wednesday'), 
+    t('date_short_thursday'), 
+    t('date_short_friday'), 
+    t('date_short_saturday')
+  ];
+  const months = [
+    t('month_january'), 
+    t('month_february'), 
+    t('month_march'), 
+    t('month_april'), 
+    t('month_may'), 
+    t('month_june'), 
+    t('month_july'), 
+    t('month_august'), 
+    t('month_september'), 
+    t('month_october'), 
+    t('month_november'), 
+    t('month_december')
+  ];
+  
+  const dayName = days[date.getDay()];
+  const monthName = months[date.getMonth()];
+  return `${dayName}, ${date.getDate()} ${monthName}`;
+};
+
 const TradingDashboard = ({ accountId, onBack, previousSection }) => {
   // Obtener información del usuario desde Firebase
   const { currentUser, language } = useAuth();
   const t = getTranslator(language); // Added
+  const [currentDate, setCurrentDate] = useState('');
+  const [drawdownType, setDrawdownType] = useState('daily'); // 'daily' or 'total'
+  const [isLoading, setIsLoading] = useState(true); // Added
+  const [account, setAccount] = useState(null); // Added
+
+  useEffect(() => {
+    const today = new Date();
+    setCurrentDate(formatDate(today, language, t));
+  }, [language, t]);
+
+  // useEffect to fetch account data (placeholder)
+  useEffect(() => {
+    if (accountId) {
+      setIsLoading(true);
+      // Simulate fetching data
+      setTimeout(() => {
+        setAccount({
+          id: accountId,
+          balance: 124700,
+          currency: '$',
+          status: 'Active',
+          // Add other necessary account details here
+        });
+        setIsLoading(false);
+      }, 1000); // Simulate network delay
+    } else {
+      // Handle case where accountId is not provided, if necessary
+      setIsLoading(false);
+      setAccount(null);
+    }
+  }, [accountId]);
+
   // Datos para el gráfico de balance
   const balanceData = [
     { name: 'Ene', value: 50000 },
@@ -53,17 +116,38 @@ const getUserName = () => {
     hora: '00:30:23'
   }));
 
+  const handleBackClick = () => {
+    if (onBack) {
+      onBack(); 
+    } else {
+      // Fallback or default behavior if onBack is not provided
+      // This might involve navigating to a default route, e.g., using useNavigate if in a React Router context
+      // For now, just log or do nothing if a more specific app-wide navigation isn't set up here
+      console.log("Back action, but no onBack prop defined");
+    }
+  };
+
+  if (isLoading) {
+    return <div className="p-4 text-center">Cargando datos de la cuenta...</div>;
+  }
+
+  if (!account) {
+    return <div className="p-4 text-center">No se pudieron cargar los detalles de la cuenta.</div>;
+  }
+
   return (
     <div className="p-4 md:p-6 bg-gradient-to-br from-[#232323] to-[#2d2d2d] text-white min-h-screen flex flex-col">
       {/* Botón de regreso */}
       <div className="mb-6">
         <div className="flex items-center mb-4">
           <button
-            onClick={onBack}
-            className="transition-opacity duration-150 ease-in-out hover:opacity-80 rounded-full bg-transparent border-none"
-            aria-label="Volver"
+            onClick={handleBackClick}
+            className="text-white bg-[#2c2c2c] rounded-full p-2 hover:bg-[#3a3a3a] focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-opacity-50"
+            aria-label={t('common_back', 'Volver')}
           >
-            <img src="/Back.svg" alt="Volver" className="w-12 h-12" />
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+            </svg>
           </button>
         </div>
       </div>
@@ -232,15 +316,47 @@ const getUserName = () => {
               <span className="text-2xl font-bold mr-3">$24.700,00</span>
               <span className="bg-green-800 bg-opacity-30 text-green-400 px-2 py-1 rounded text-sm">+24.7%</span>
             </div>
-            <p className="text-sm text-gray-400">Lun, 13 Enero</p>
+            <p className="text-sm text-gray-400">{currentDate}</p>
           </div> 
           <div className="p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl">
-            <h2 className="text-xl font-bold mb-2">{t('tradingDashboard_drawdownWidgetTitle')}</h2>
-            <div className="flex items-center mb-1">
-              <span className="text-2xl font-bold mr-3">$200,00</span>
-              <span className="bg-green-800 bg-opacity-30 text-green-400 px-2 py-1 rounded text-sm">+25.0%</span>
+            <div className="flex justify-between items-center mb-2">
+              <h2 className="text-xl font-bold">{t('tradingDashboard_drawdownWidgetTitle')}</h2>
+              <div className="flex text-sm">
+                <button 
+                  onClick={() => setDrawdownType('total')} 
+                  className={`px-3 py-1 rounded-md transition-colors
+                    ${drawdownType === 'total' 
+                      ? 'bg-cyan-600 text-white' 
+                      : 'bg-transparent text-gray-400 hover:text-gray-200'}
+                  `}
+                >
+                  {t('tradingDashboard_drawdownTypeTotal', 'Total')}
+                </button>
+                <div className="border-r border-gray-600 mx-1 h-4 self-center"></div>
+                <button 
+                  onClick={() => setDrawdownType('daily')} 
+                  className={`px-3 py-1 rounded-md transition-colors
+                    ${drawdownType === 'daily' 
+                      ? 'bg-cyan-600 text-white' 
+                      : 'bg-transparent text-gray-400 hover:text-gray-200'}
+                  `}
+                >
+                  {t('tradingDashboard_drawdownTypeDaily', 'Diario')}
+                </button>
+              </div>
             </div>
-            <p className="text-sm text-gray-400">{t('tradingDashboard_drawdownTypeDaily')}</p>
+            <div className="flex items-center mb-1">
+              <span className="text-2xl font-bold mr-3">
+                {/* Placeholder: Value would change based on drawdownType */}
+                {drawdownType === 'daily' ? '$200,00' : '$1,200.00'} 
+              </span>
+              <span className="bg-green-800 bg-opacity-30 text-green-400 px-2 py-1 rounded text-sm">
+                {/* Placeholder: Percentage would change based on drawdownType */}
+                {drawdownType === 'daily' ? '+25.0%' : '+15.0%'} 
+              </span>
+            </div>
+            {/* The sub-text <p> might be removed or changed depending on design with tabs */}
+            {/* <p className="text-sm text-gray-400">{t('tradingDashboard_drawdownTypeDaily')}</p> */}
           </div>
 
           <div className="p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl">
@@ -252,10 +368,49 @@ const getUserName = () => {
 
       {/* Sección de métricas detalladas (Pérdida Promedio, Ganancia Promedio, etc.) */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        {/* Pérdida Promedio Por Operación */}
+        <div className="p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl flex justify-between items-center">
+          <div>
+            <h3 className="text-2xl font-medium mb-1">{t('tradingDashboard_avgLossPerOperation')}</h3>
+            <div className="flex items-baseline">
+              <span className="text-xl md:text-2xl font-bold mr-2">$77.61</span>
+              <span className="bg-red-800 bg-opacity-30 text-red-400 px-2 py-1 rounded text-xs">-25.0%</span>
+            </div>
+          </div>
+          <div className="bg-[#2d2d2d] p-2 rounded-full">
+            <img src="/loss.png" alt={t('tradingDashboard_iconAlt_loss')} onError={(e) => { e.target.onerror = null; e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23333'/%3E%3Cpath d='M7 17L17 7M17 7H11M17 7V13' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"; }} />
+          </div>
+        </div>
+
+        {/* Ganancia Promedio Por Operación */}
+        <div className="p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl flex justify-between items-center">
+          <div>
+            <h3 className="text-2xl font-medium mb-1">{t('tradingDashboard_avgProfitPerOperation')}</h3>
+            <div className="flex items-baseline">
+              <span className="text-xl md:text-2xl font-bold mr-2">$20.61</span>
+              <span className="text-green-400 text-xs bg-green-800 bg-opacity-30 px-2 py-1 rounded">+25.0%</span>
+            </div>
+          </div>
+          <div className="bg-[#2d2d2d] p-2 rounded-full">
+            <img src="/gain.png" alt={t('tradingDashboard_iconAlt_coins')} onError={(e) => { e.target.onerror = null; e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23333'/%3E%3Cpath d='M12 6L12 18M9 10L15 10M9 14L15 14' stroke='white' stroke-width='2'/%3E%3C/svg%3E"; }} />
+          </div>
+        </div>
+
+        {/* Lotaje Promedio Por Operación */}
+        <div className="p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl flex justify-between items-center">
+          <div>
+            <h3 className="text-2xl font-medium mb-1">{t('tradingDashboard_avgLotPerOperation')}</h3>
+            <span className="text-xl md:text-2xl font-bold">3.26</span>
+          </div>
+          <div className="bg-[#2d2d2d] p-2 rounded-full">
+            <img src="/graph.png" alt={t('tradingDashboard_iconAlt_lot')} onError={(e) => { e.target.onerror = null; e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23333'/%3E%3Cpath d='M4 12L12 4L20 12L12 20L4 12Z' stroke='white' stroke-width='2'/%3E%3Cpath d='M8 12L12 8L16 12L12 16L8 12Z' stroke='white' stroke-width='1.5'/%3E%3C/svg%3E"; }} />
+          </div>
+        </div>
+        
         {/* Duración Promedio Por Operación */}
         <div className="p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl flex justify-between items-center">
           <div>
-            <h3 className="text-gray-400 text-sm mb-1">{t('tradingDashboard_avgTradeDuration')}</h3>
+            <h3 className="text-2xl font-medium mb-1">{t('tradingDashboard_avgTradeDuration')}</h3>
             <span className="text-xl md:text-2xl font-bold">02:25:36</span>
           </div>
           <div className="bg-[#2d2d2d] p-2 rounded-full">
@@ -263,61 +418,25 @@ const getUserName = () => {
           </div>
         </div>
 
-        {/* Ganancia Promedio Por Operación */}
-        <div className="p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl flex justify-between items-center">
-          <div>
-            <h3 className="text-gray-400 text-sm mb-1">{t('tradingDashboard_avgProfitPerOperation')}</h3>
-            <div className="flex items-baseline">
-              <span className="text-xl md:text-2xl font-bold mr-2">$20.61</span>
-              <span className="text-green-400 text-xs">+25.0%</span>
-            </div>
-          </div>
-          <div className="bg-[#2d2d2d] p-2 rounded-full">
-            <img src="/coins.png" alt={t('tradingDashboard_iconAlt_coins')} onError={(e) => { e.target.onerror = null; e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23333'/%3E%3Cpath d='M12 6L12 18M9 10L15 10M9 14L15 14' stroke='white' stroke-width='2'/%3E%3C/svg%3E"; }} />
-          </div>
-        </div>
-
-        {/* Pérdida Promedio Por Operación */}
-        <div className="p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl flex justify-between items-center">
-          <div>
-            <h3 className="text-gray-400 text-sm mb-1">{t('tradingDashboard_avgLossPerOperation')}</h3>
-            <span className="text-xl md:text-2xl font-bold">$77.61</span>
-          </div>
-          <div className="bg-[#2d2d2d] p-2 rounded-full">
-            <img src="/trending_down.png" alt={t('tradingDashboard_iconAlt_loss')} onError={(e) => { e.target.onerror = null; e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23333'/%3E%3Cpath d='M7 17L17 7M17 7H11M17 7V13' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"; }} />
-          </div>
-        </div>
-        
-        {/* Lotaje Promedio Por Operación */}
-        <div className="p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl flex justify-between items-center">
-          <div>
-            <h3 className="text-gray-400 text-sm mb-1">{t('tradingDashboard_avgLotPerOperation')}</h3>
-            <span className="text-xl md:text-2xl font-bold">3.26</span>
-          </div>
-          <div className="bg-[#2d2d2d] p-2 rounded-full">
-            <img src="/layers.png" alt={t('tradingDashboard_iconAlt_lot')} onError={(e) => { e.target.onerror = null; e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23333'/%3E%3Cpath d='M4 12L12 4L20 12L12 20L4 12Z' stroke='white' stroke-width='2'/%3E%3Cpath d='M8 12L12 8L16 12L12 16L8 12Z' stroke='white' stroke-width='1.5'/%3E%3C/svg%3E"; }} />
-          </div>
-        </div>
-
         {/* Relación Riesgo Beneficio */}
         <div className="p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl flex justify-between items-center">
           <div>
-            <h3 className="text-gray-400 text-sm mb-1">{t('tradingDashboard_riskRewardRatio')}</h3>
+            <h3 className="text-2xl font-medium mb-1">{t('tradingDashboard_riskRewardRatio')}</h3>
             <span className="text-xl md:text-2xl font-bold">1:3</span>
           </div>
           <div className="bg-[#2d2d2d] p-2 rounded-full">
-            <img src="/award.png" alt={t('tradingDashboard_iconAlt_ratio')} onError={(e) => { e.target.onerror = null; e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23333'/%3E%3Cpath d='M12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.63L12 2L9.19 8.63L2 9.24L7.46 13.97L5.82 21L12 17.27Z' fill='white'/%3E%3C/svg%3E"; }} />
+            <img src="/victory.png" alt={t('tradingDashboard_iconAlt_ratio')} onError={(e) => { e.target.onerror = null; e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23333'/%3E%3Cpath d='M12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.63L12 2L9.19 8.63L2 9.24L7.46 13.97L5.82 21L12 17.27Z' fill='white'/%3E%3C/svg%3E"; }} />
           </div>
         </div>
 
         {/* Ratio De Ganancia */}
         <div className="p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl flex justify-between items-center">
           <div>
-            <h3 className="text-gray-400 text-sm mb-1">{t('tradingDashboard_winRate')}</h3>
+            <h3 className="text-2xl font-medium mb-1">{t('tradingDashboard_winRate')}</h3>
             <span className="text-xl md:text-2xl font-bold">20%</span>
           </div>
           <div className="bg-[#2d2d2d] p-2 rounded-full">
-            <img src="/chart_pie.png" alt={t('tradingDashboard_iconAlt_winRate')} onError={(e) => { e.target.onerror = null; e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23333'/%3E%3Cpath d='M12 2A10 10 0 0 0 2 12A10 10 0 0 0 12 22A10 10 0 0 0 22 12A10 10 0 0 0 12 2M12 4V12H20A8 8 0 0 1 12 20V12H4A8 8 0 0 1 12 4Z' fill='white'/%3E%3C/svg%3E"; }} />
+            <img src="/coins.png" alt={t('tradingDashboard_iconAlt_winRate')} onError={(e) => { e.target.onerror = null; e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23333'/%3E%3Cpath d='M12 2A10 10 0 0 0 2 12A10 10 0 0 0 12 22A10 10 0 0 0 22 12A10 10 0 0 0 12 2M12 4V12H20A8 8 0 0 1 12 20V12H4A8 8 0 0 1 12 4Z' fill='white'/%3E%3C/svg%3E"; }} />
           </div>
         </div>
       </div>

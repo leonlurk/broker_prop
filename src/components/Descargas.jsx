@@ -63,6 +63,24 @@ const Descargas = () => {
       }
     ]
   },
+  {
+    id: 'vpn',
+    name: t('descargas_platform_vpn_name'),
+    description: t('descargas_platform_vpn_description'),
+    image: '/Vector.png',
+    downloads: [
+      { 
+        os: isMobile ? t('descargas_os_android') : t('descargas_os_windows'),
+        icon: isMobile ? '/Android.png' : '/windows.png',
+        link: isMobile ? '#android-vpn-link' : '#windows-vpn-link'
+      },
+      { 
+        os: isMobile ? t('descargas_os_iphone') : t('descargas_os_mac'),
+        icon: isMobile ? '/apple.png' : '/apple.png',
+        link: isMobile ? '#iphone-vpn-link' : '#mac-vpn-link'
+      }
+    ]
+  }
 ];
 
   return (

@@ -28,7 +28,7 @@ const CertificateComponent = () => {
       <div className="flex justify-start">
         <div className="relative">
           <img 
-            src="/cert.png" 
+            src="/cert.svg" 
             alt={t('certificate_image_alt')} 
             className="rounded-xl"
             onError={(e) => {

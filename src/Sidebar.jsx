@@ -211,7 +211,7 @@ const Sidebar = ({ selectedOption, setSelectedOption, onLogout }) => {
                                     className={`flex items-center justify-between py-4 px-6 w-full bg-[#232323] text-lg font-regular
                                         ${selectedOption === item.key || (item.subOptionKeys && item.subOptionKeys.includes(selectedOption))
                                             ? "bg-[#191919]" 
-                                            : "hover:bg-[#191919]"}`}
+                                            : "hover:bg-[#2a2a2a]"}`}
                                     style={{ outline: 'none' }}
                                 >
                                     <div className="flex items-center">
@@ -263,7 +263,7 @@ const Sidebar = ({ selectedOption, setSelectedOption, onLogout }) => {
                                                     className={`flex items-center py-2 px-4 w-full text-md font-regular rounded-lg transition-colors
                                                         ${selectedOption === subOptionKey 
                                                             ? "bg-transparent border-cyan-500" 
-                                                            : "text-gray-400 hover:text-white bg-transparent hover:bg-white hover:bg-opacity-5"}`}
+                                                            : "text-gray-400 hover:text-white bg-transparent hover:bg-white hover:bg-opacity-10"}`}
                                                     style={{ outline: 'none' }}
                                                 >
                                                     <span className="w-5 h-5 mr-3 flex items-center justify-center">
@@ -294,7 +294,7 @@ const Sidebar = ({ selectedOption, setSelectedOption, onLogout }) => {
                     <div className="h-px w-full bg-[#333] my-4"></div>
                     
                     <button onClick={handleLogout} 
-                        className="w-full bg-transparent flex items-center space-x-3 py-4 px-6 text-gray-300 hover:bg-gray-700 mb-6 md:mb-2 style={{ outline: 'none' }}"
+                        className="w-full bg-transparent flex items-center space-x-3 py-4 px-6 text-gray-300 hover:bg-white hover:bg-opacity-5 mb-6 md:mb-2 style={{ outline: 'none' }}"
                         >
                         <img src="./Sign-out.svg" className="w-8 h-8" alt={t('sidebar_alt_logout')} />
                         <span className="text-lg">{t('sidebar_logout')}</span>

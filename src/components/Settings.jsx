@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { ChevronDown, ChevronRight, Copy, Save, AlertTriangle, Loader } from 'lucide-react';
 import KYCVerification from './KYCVerification';
+import BillingPage from './BillingPage';
 import ChangePasswordModal from './ChangePasswordModal';
 import UpdateEmailModal from './UpdateEmailModal';
 import { auth, db } from '../firebase/config';
@@ -14,6 +15,7 @@ const Settings = ({ onBack }) => {
 
   const [expandedSection, setExpandedSection] = useState(null);
   const [showKYC, setShowKYC] = useState(false);
+  const [showBillingPage, setShowBillingPage] = useState(false);
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [showUpdateEmailModal, setShowUpdateEmailModal] = useState(false);
   const [userHasApprovedAccount, setUserHasApprovedAccount] = useState(false);
@@ -126,6 +128,10 @@ const Settings = ({ onBack }) => {
     return <KYCVerification onBack={() => setShowKYC(false)} />;
   }
 
+  if (showBillingPage) {
+    return <BillingPage onBack={() => setShowBillingPage(false)} />;
+  }
+
   if (isLoading) {
     return (
       <div className="p-4 md:p-6 bg-gradient-to-br from-[#232323] to-[#262626] text-white flex flex-col items-center justify-center">
@@ -137,14 +143,18 @@ const Settings = ({ onBack }) => {
 
   return (
     <div className="p-4 md:p-6 bg-gradient-to-br from-[#232323] to-[#262626] text-white flex flex-col">
+      {!showBillingPage && !showKYC ? (
+        <>
       <div className="mb-6">
         <div className="flex items-center mb-4">
           <button
             onClick={onBack}
-            className="transition-opacity duration-150 ease-in-out hover:opacity-80 rounded-full bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-opacity-50 mr-4"
+            className="text-white bg-[#2c2c2c] rounded-full p-2 hover:bg-[#3a3a3a] focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-opacity-50 mr-4"
             aria-label={t('settings_button_back')}
           >
-            <img src="/Back.svg" alt={t('settings_button_back')} className="w-12 h-12" />
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+            </svg>
           </button>
         </div>
         <h1 className="text-2xl md:text-3xl font-semibold">{t('settings_title')}</h1>
@@ -209,7 +219,7 @@ const Settings = ({ onBack }) => {
 
         <div className="border border-[#333] rounded-3xl bg-gradient-to-br from-[#232323] to-[#202020]">
           <div 
-            className="p-4 flex rounded-3xl bg-gradient-to-br from-[#232323] to-[#2d2d2d] justify-between items-center cursor-pointer"
+                className="p-4 flex rounded-3xl justify-between items-center cursor-pointer bg-gradient-to-br from-[#232323] to-[#2d2d2d]"
             onClick={() => toggleSection('notifications')}
           >
             <h2 className="text-lg md:text-xl">{t('settings_section_notifications')}</h2>
@@ -330,8 +340,21 @@ const Settings = ({ onBack }) => {
             </div>
           </div>
         </div>
+
+            <div 
+              className="p-4 flex rounded-3xl justify-between items-center cursor-pointer bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333]"
+              onClick={() => setShowBillingPage(true)}
+            >
+              <h2 className="text-lg md:text-xl">{t('settings_section_billing')}</h2>
+              <ChevronRight className="h-6 w-6 text-gray-400" />
+            </div>
+
         </div>
       </div>
+        </>
+      ) : showBillingPage ? (
+        <BillingPage onBack={() => setShowBillingPage(false)} />
+      ) : null}
 
       <ChangePasswordModal 
         isOpen={showChangePasswordModal} 

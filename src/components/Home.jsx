@@ -8,7 +8,7 @@ import { db } from '../firebase/config';
 import { collection, query, where, onSnapshot, limit } from 'firebase/firestore';
 import { getTranslator } from '../utils/i18n'; // Import the new getTranslator
 
-const fondoTarjetaUrl = "/fondoTarjeta.png";
+const fondoTarjetaUrl = "/fondoTarjeta2.png";
 
 
 const Home = ({ onViewDetails, onSettingsClick, setSelectedOption }) => {
@@ -209,9 +209,12 @@ const Home = ({ onViewDetails, onSettingsClick, setSelectedOption }) => {
           className="absolute inset-0 rounded-md"
           style={{ 
             backgroundImage: `url(${fondoTarjetaUrl})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            opacity: 0.2,
+            backgroundSize: '95%',
+            backgroundPositionY: '-80px',
+            backgroundPositionX: 'right',
+            backgroundPosition: 'right',
+            backgroundRepeat: 'no-repeat',
+            opacity: 0.3,
             zIndex: 0
           }}
         ></div>

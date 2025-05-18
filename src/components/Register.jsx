@@ -235,15 +235,28 @@ const Register = ({ onLoginClick }) => {
                 className: "w-full px-4 py-3 rounded-full bg-gray-900 border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 bg-opacity-20 pl-12 sm:pl-14 md:pl-16", // Adjust padding-left
               }}
               containerClass="w-full"
-              dropdownClass="bg-gray-800 border-gray-700" // Style for the dropdown
-              buttonClass="bg-transparent border-gray-700 hover:bg-gray-700" // Style for the flag button
-              inputClass="!w-full !py-3 !rounded-full !bg-gray-900 !border !border-gray-700 !text-white !focus:outline-none !focus:ring-2 !focus:ring-blue-500 !bg-opacity-20" // Override default styles
-              // The ! is to ensure tailwind utilities take precedence
+              dropdownClass="bg-gradient-to-b from-[#232323] to-[#2b2b2b] border border-gray-700 text-white rounded-lg shadow-lg" // Updated for gradient background
+              buttonClass="!bg-transparent !border-0 focus:outline-none focus:ring-0 hover:bg-gray-700" // Added !bg-transparent
+              buttonStyle={{ 
+                backgroundColor: 'transparent',
+                paddingLeft: '0.75rem' // Added padding to move flag right
+              }}
+              inputClass="!w-full !py-3 !rounded-full !bg-gray-900 !border !border-gray-700 !text-white !focus:outline-none !focus:ring-2 !focus:ring-blue-500 !bg-opacity-20"
               placeholder={t('register_placeholder_phoneNumber')}
-              searchClass="bg-gray-700 text-white p-2"
-              searchStyle={{width: '90%', margin: '5px auto'}}
-              dropdownStyle={{borderRadius: '0.5rem'}}
-
+              enableSearch={false}
+              dropdownStyle={{ 
+                width: '230px',
+                backgroundColor: 'transparent', // Ensure dropdown container is also transparent
+                background: 'linear-gradient(to bottom, #232323, #2b2b2b)'
+              }}
+              itemStyle={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                padding: '0.5rem 0.75rem', 
+                color: 'white',
+                backgroundColor: 'transparent' // Ensure items are transparent by default
+              }}
+              activeClass="!bg-gray-700 text-white" // Added !bg-gray-700 for active item
             />
           </div>
           

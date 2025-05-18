@@ -75,7 +75,12 @@ export const loginUser = async (email, password) => {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     return { user: userCredential.user };
   } catch (error) {
-    return { error };
+    console.error("[loginUser] Login process error:", error);
+    let friendlyMessage = "Error al iniciar sesión. Por favor, intente nuevamente.";
+    if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential' || error.code === 'auth/invalid-email') {
+        friendlyMessage = "Las credenciales ingresadas son incorrectas.";
+    }
+    return { error: { message: friendlyMessage } };
   }
 };
 

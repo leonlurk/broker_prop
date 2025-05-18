@@ -212,6 +212,18 @@ export const translations = {
     es: "Mac",
     en: "Mac",
   },
+  descargas_platform_vpn_name: {
+    es: "Activa el VPN durante tus viajes",
+    en: "Activate VPN during your travels",
+  },
+  descargas_platform_vpn_description: {
+    es: "Querido usuario, si tienes un viaje programado fuera de tu país y necesitas utilizar la aplicación Pro Firm, es importante descargar y activar la conexión VPN durante todo el tiempo de uso de la aplicación. Esto garantizará su correcto funcionamiento independientemente de tu ubicación geográfica, permitiéndote acceder a la plataforma sin restricciones regionales. Si tienes alguna pregunta o quieres más información, consulta la sección de Preguntas Frecuentes (FAQs).",
+    en: "Dear user, if you have a trip planned outside your country and need to use the Pro Firm application, it is important to download and activate the VPN connection during the entire time you use the application. This will ensure its correct functioning regardless of your geographical location, allowing you to access the platform without regional restrictions. If you have any questions or want more information, consult the Frequently Asked Questions (FAQs) section.",
+  },
+  descargas_platform_vpn_image_alt: {
+    es: "Icono VPN",
+    en: "VPN Icon",
+  },
   // ChangePasswordModal.jsx translations
   changePasswordModal_error_noEmailFound: {
     es: "No se pudo obtener el correo electrónico actual. Por favor, asegúrate de haber iniciado sesión.",
@@ -582,8 +594,8 @@ export const translations = {
     en: "No accounts found for \"{{tabName}}\".",
   },
   tradingAccounts_accountInfo: {
-    es: "{phase} - {amount}",
-    en: "{phase} - {amount}",
+    es: "{{phase}} - {{amount}}",
+    en: "{{phase}} - {{amount}}",
   },
   tradingAccounts_serverTypeLabel: {
     es: "Server Type:",
@@ -722,6 +734,35 @@ export const translations = {
     es: "Al proceder al pago, acepto que la compra cumple con los términos de mis documentos emitidos por el gobierno.",
     en: "By proceeding to payment, I accept that the purchase complies with the terms of my government-issued documents.",
   },
+  // New keys for TradingChallenge.jsx based on recent UI changes
+  tradingChallenge_button_standard: {
+    es: "Estándar",
+    en: "Standard",
+  },
+  tradingChallenge_button_swim: {
+    es: "Swim",
+    en: "Swim",
+  },
+  tradingChallenge_subtitle_complements: {
+    es: "Selecciona el complemento ideal para tu estilo de trading",
+    en: "Select the ideal add-on for your trading style",
+  },
+  tradingChallenge_label_profitTargetP1: {
+    es: "Profit Target Fase 1",
+    en: "Profit Target Phase 1",
+  },
+  tradingChallenge_label_profitTargetP2: {
+    es: "Profit Target Fase 2",
+    en: "Profit Target Phase 2",
+  },
+  tradingChallenge_label_profitSplit: {
+    es: "Profit Split",
+    en: "Profit Split",
+  },
+  tradingChallenge_leverage_info: {
+    es: " (Apalancamiento 1:100)",
+    en: " (Leverage 1:100)"
+  },
   // Settings.jsx translations
   settings_error_loadingData: {
     es: "Error al cargar los datos. Intente de nuevo más tarde.",
@@ -794,6 +835,10 @@ export const translations = {
   settings_section_paymentMethod: {
     es: "Método de pago",
     en: "Payment Method",
+  },
+  settings_section_billing: {
+    es: "Facturación",
+    en: "Billing",
   },
   settings_label_usdtPaymentAddress: {
     es: "Direccion De Pago USDT",
@@ -965,6 +1010,15 @@ export const translations = {
     en: "Data saved successfully!",
   },
 
+  // Date formatting keys
+  date_short_sunday: { es: "Dom", en: "Sun" },
+  date_short_monday: { es: "Lun", en: "Mon" },
+  date_short_tuesday: { es: "Mar", en: "Tue" },
+  date_short_wednesday: { es: "Mié", en: "Wed" },
+  date_short_thursday: { es: "Jue", en: "Thu" },
+  date_short_friday: { es: "Vie", en: "Fri" },
+  date_short_saturday: { es: "Sáb", en: "Sat" },
+
   // PipCalculator.jsx translations
   pipCalculator_tab_pips: {
     es: "Calculadora de pips",
@@ -1022,7 +1076,7 @@ export const translations = {
     es: "Monto arriesgado",
     en: "Amount Risked",
   },
-
+  
   // Modal.jsx translations
   modal_close_aria_label: {
     es: "Cerrar modal",
@@ -1044,12 +1098,14 @@ export const translations = {
   tradingDashboard_statusActive: { es: "Activa", en: "Active" },
   tradingDashboard_loginLabel: { es: "Log In", en: "Log In" },
   tradingDashboard_investorPassLabel: { es: "Investor Pass", en: "Investor Pass" },
-  tradingDashboard_setPasswordButton: { es: "Set Password", en: "Set Password" }, // Consider if this should be different key if it's a button text
+  tradingDashboard_setPasswordButton: { es: "Set Password", en: "Set Password" }, 
   tradingDashboard_masterPassLabel: { es: "Master pass.", en: "Master pass." },
   tradingDashboard_mt5ServerLabel: { es: "MT5 Server", en: "MT5 Server" },
   tradingDashboard_balanceChartTitle: { es: "Balance", en: "Balance" },
   tradingDashboard_profitLossWidgetTitle: { es: "Profit/Loss", en: "Profit/Loss" },
   tradingDashboard_drawdownWidgetTitle: { es: "Drawdown", en: "Drawdown" },
+  tradingDashboard_drawdownTypeDaily: { es: "Diario", en: "Daily" },
+  tradingDashboard_drawdownTypeTotal: { es: "Total", en: "Total" }, 
   tradingDashboard_tradingDaysWidgetTitle: { es: "Días de Trading", en: "Trading Days" },
   tradingDashboard_metric_profitTarget: { es: "Objetivo de ganancia", en: "Profit Target" },
   tradingDashboard_metric_targetNotReached: { es: "No alcanzado", en: "Not Reached" },
@@ -1068,9 +1124,6 @@ export const translations = {
   tradingDashboard_tableHeader_time: { es: "Hora", en: "Time" },
   tradingDashboard_emptyTable_noOperations: { es: "No hay operaciones para mostrar.", en: "No operations to display." },
   tradingDashboard_operationType_buy: { es: "Comprar", en: "Buy" },
-
-  // Nuevas traducciones para TradingDashboard KPIs y Objetivos
-  tradingDashboard_drawdownTypeDaily: { es: "Diario", en: "Daily" },
   tradingDashboard_avgTradeDuration: { es: "Duración Promedio Por Operación", en: "Average Trade Duration" },
   tradingDashboard_iconAlt_clock: { es: "Reloj", en: "Clock" },
   tradingDashboard_avgProfitPerOperation: { es: "Ganancia Promedio Por Operación", en: "Average Profit Per Operation" },
@@ -1083,7 +1136,6 @@ export const translations = {
   tradingDashboard_iconAlt_ratio: { es: "Ratio", en: "Ratio" },
   tradingDashboard_winRate: { es: "Ratio De Ganancia", en: "Win Rate" },
   tradingDashboard_iconAlt_winRate: { es: "Ratio Ganancia", en: "Win Rate Icon" },
-
   tradingDashboard_objectivesTitle: { es: "Objetivos", en: "Objectives" },
   tradingDashboard_dailyLossLimitTitle: { es: "Límite diario de pérdidas", en: "Daily Loss Limit" },
   tradingDashboard_status_inProgress: { es: "En Proceso", en: "In Progress" },
@@ -1096,7 +1148,6 @@ export const translations = {
   tradingDashboard_minimumLabel: { es: "Mínimo", en: "Minimum" },
   tradingDashboard_currentResultLabel: { es: "Resultado actual", en: "Current Result" },
   tradingDashboard_profitTargetTitle: { es: "Objetivo de ganancias", en: "Profit Target" },
-  // Fin de nuevas traducciones para TradingDashboard
 
   // CertificateComponent.jsx translations
   certificate_button_challengeSuccess: {
@@ -1115,6 +1166,39 @@ export const translations = {
     es: "Certificado",
     en: "Certificate",
   },
+
+  // Billing Page Translations
+  settings_section_billing: { es: "Facturación", en: "Billing" },
+  billing_header_desafio: { es: "Desafío", en: "Challenge" },
+  billing_header_fechas: { es: "Fechas", en: "Dates" },
+  billing_header_cantidad: { es: "Cantidad A Pagar", en: "Amount To Pay" },
+  billing_header_orden: { es: "Orden", en: "Order" },
+  billing_header_cuenta: { es: "Cuenta", en: "Account" },
+  billing_header_estado: { es: "Estado", en: "Status" },
+  billing_header_factura: { es: "Factura Y Documentos", en: "Invoice & Documents" },
+  billing_status_upcoming: { es: "Próximo", en: "Upcoming" },
+  billing_status_pendiente: { es: "Pendiente", en: "Pending" },
+  billing_status_pagado: { es: "Pagado", en: "Paid" },
+  billing_action_verDetalles: { es: "Ver Detalles", en: "View Details" },
+  billing_empty_noInvoices: { es: "No hay facturas para mostrar.", en: "No invoices to display." },
+
+  // Billing Detail Modal Translations
+  billing_modal_statusLabel: { es: "Estado:", en: "Status:" },
+  billing_modal_orderNumberLabel: { es: "Número De Orden:", en: "Order Number:" },
+  billing_modal_invoiceSentLabel: { es: "Factura Enviada:", en: "Invoice Sent:" },
+  billing_modal_dueDateLabel: { es: "Fecha Vencimiento:", en: "Due Date:" },
+  billing_modal_paymentDateLabel: { es: "Factura De Pago:", en: "Payment Date:" },
+  billing_modal_paymentMethodLabel: { es: "Método De Pago:", en: "Payment Method:" },
+  billing_modal_rolloverLabel: { es: "Rollover:", en: "Rollover:" },
+  billing_modal_withdrawalLabel: { es: "Withdrawal:", en: "Withdrawal:" },
+  billing_modal_refundLabel: { es: "Refund:", en: "Refund:" },
+  billing_modal_subtotalLabel: { es: "Subtotal", en: "Subtotal" },
+  billing_modal_summaryRolloverLabel: { es: "Rollover", en: "Rollover" }, // For the summary charge line
+  billing_modal_totalToPayLabel: { es: "Total A Pagar", en: "Total To Pay" },
+  billing_modal_totalLabel: { es: "Total", en: "Total" },
+  billing_modal_payButton: { es: "Pagar", en: "Pay" },
+  billing_modal_downloadPdfButton: { es: "Descargar PDF", en: "Download PDF" },
+  // common_cancel is already available as settings_button_cancel: { es: "Cancelar", en: "Cancel" }
 
   // Add more translations here as we go through other components
 }; 

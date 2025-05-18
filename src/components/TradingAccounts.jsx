@@ -9,7 +9,6 @@ const TradingAccounts = ({ setSelectedOption, setSelectedAccount }) => {
   const { currentUser, language } = useAuth();
   const t = getTranslator(language);
 
-  const [activeTab, setActiveTab] = useState('1 Fase');
   const [userAccounts, setUserAccounts] = useState([]);
   const [isLoadingAccounts, setIsLoadingAccounts] = useState(true);
   
@@ -19,7 +18,9 @@ const TradingAccounts = ({ setSelectedOption, setSelectedAccount }) => {
     { key: 'tradingAccounts_tab_realAccount', dataFilter: 'Cuenta Real' }
   ];
 
-  const currentDataFilter = tabs.find(tab => tab.key === activeTab)?.dataFilter || '1 Fase';
+  const [activeTab, setActiveTab] = useState(tabs[0].key);
+
+  const currentDataFilter = tabs.find(tab => tab.key === activeTab)?.dataFilter || tabs[0].dataFilter;
 
   const filteredAccounts = userAccounts.filter(account => {
     if (currentDataFilter === 'Cuenta Real') {

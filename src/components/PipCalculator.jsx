@@ -140,17 +140,17 @@ const PipCalculator = () => {
 
   const currencies = [
     { code: 'USD', flag: '/us.png' },
-    { code: 'GBP', flag: './gbp.png' },
-    { code: 'EUR', flag: './eur.png' },
-    { code: 'CZK', flag: './czk.png' },
-    { code: 'CAD', flag: './cad.png' },
-    { code: 'AUD', flag: './aud.png' },
-    { code: 'CHF', flag: './chf.png' },
+    // { code: 'GBP', flag: './gbp.png' },
+    // { code: 'EUR', flag: './eur.png' },
+    // { code: 'CZK', flag: './czk.png' },
+    // { code: 'CAD', flag: './cad.png' },
+    // { code: 'AUD', flag: './aud.png' },
+    // { code: 'CHF', flag: './chf.png' },
   ];
 
   const pipsCurrencies = [
     { code: 'USD', flag: '/us.png' },
-    { code: 'EUR', flag: './eur.png' },
+    // { code: 'EUR', flag: './eur.png' },
   ];
 
   return (
