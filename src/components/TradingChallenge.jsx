@@ -81,7 +81,7 @@ export default function TradingChallengeUI() {
     try {
       const accountData = {
         userId: currentUser.uid,
-        challengeType: challengeType,
+        challengeType: challengeType === 'Estándar' ? 'one_step' : 'two_step',
         challengeAmountString: challengeAmount,
         challengeAmountNumber: parseCurrencyToNumber(challengeAmount),
         selectedProfitTargetP1: selectedProfitTargetP1,

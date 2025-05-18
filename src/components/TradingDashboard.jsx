@@ -142,7 +142,7 @@ const getUserName = () => {
         <div className="flex items-center mb-4">
           <button
             onClick={handleBackClick}
-            className="text-white bg-[#2c2c2c] rounded-full p-2 hover:bg-[#3a3a3a] focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-opacity-50"
+            className="text-white bg-[#2c2c2c] hover:bg-[#252525] rounded-full p-2 border border-cyan-500 focus:outline-none transition-colors"
             aria-label={t('common_back', 'Volver')}
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">

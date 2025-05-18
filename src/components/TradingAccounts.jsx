@@ -27,10 +27,12 @@ const TradingAccounts = ({ setSelectedOption, setSelectedAccount }) => {
       return account.status === 'Aprobada' || account.status === 'Approved';
     }
     if (currentDataFilter === 'ONE STEP') {
-      return account.challengeType === 'one_step' && account.status !== 'Aprobada' && account.status !== 'Approved';
+      return (account.challengeType === 'one_step' || account.challengeType === 'Estándar') && 
+             account.status !== 'Aprobada' && account.status !== 'Approved';
     }
     if (currentDataFilter === 'TWO STEP') {
-      return account.challengeType === 'two_step' && account.status !== 'Aprobada' && account.status !== 'Approved';
+      return (account.challengeType === 'two_step' || account.challengeType === 'Swim') && 
+             account.status !== 'Aprobada' && account.status !== 'Approved';
     }
     return false;
   });
@@ -52,14 +54,23 @@ const TradingAccounts = ({ setSelectedOption, setSelectedAccount }) => {
       const accountsData = [];
       querySnapshot.forEach((doc) => {
         const data = doc.data();
-        const challengeType = data.challengeType || 
-                            (data.numberOfPhases === 2 ? 'two_step' : 'one_step');
+        let challengeType = data.challengeType;
+        
+        // Asegurar compatibilidad con cuentas existentes
+        if (!challengeType) {
+          challengeType = data.numberOfPhases === 2 ? 'two_step' : 'one_step';
+        }
+        
+        // Determinar la fase del desafío
+        const challengePhase = challengeType === 'two_step' || challengeType === 'Swim' 
+          ? 'TWO STEP' 
+          : 'ONE STEP';
         
         accountsData.push({ 
           id: doc.id, 
           ...data,
           challengeType,
-          challengePhase: data.challengeType === 'two_step' ? 'TWO STEP' : 'ONE STEP'
+          challengePhase
         });
       });
       console.log('Accounts loaded:', accountsData);
