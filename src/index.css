@@ -99,3 +99,30 @@ button:focus-visible {
 .react-tel-input .selected-flag {
   background-color: transparent !important;
 }
+
+/* Custom Scrollbar Styles */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px; /* Width of the scrollbar */
+  height: 8px; /* Height of the scrollbar (for horizontal scrollbars) */
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #232323; /* Slightly darker or same as your component's darkest bg */
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #4a4a4a; /* Dark gray, adjust as needed */
+  border-radius: 10px;
+  border: 2px solid #232323; /* Creates a padding effect around the thumb */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #5a5a5a; /* Slightly lighter on hover */
+}
+
+/* For Firefox */
+.custom-scrollbar {
+  scrollbar-width: thin; /* "auto" or "thin" */
+  scrollbar-color: #4a4a4a #232323; /* thumb color track color */
+}

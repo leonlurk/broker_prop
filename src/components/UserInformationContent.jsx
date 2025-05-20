@@ -1,13 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { ChevronDown, Calendar, ArrowLeft, Save, Loader, AlertTriangle, Phone } from 'lucide-react';
-import { auth, db } from '../firebase/config';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { auth, db, storage } from '../firebase/config';
+import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { updateProfile } from 'firebase/auth';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useAuth } from '../contexts/AuthContext';
 import { getTranslator } from '../utils/i18n';
+import ReactCrop, { centerCrop, makeAspectCrop } from 'react-image-crop';
+import 'react-image-crop/dist/ReactCrop.css';
 
 const UserInformationContent = ({ onBack }) => {
-  const { language } = useAuth();
-  const t = getTranslator(language);
+  const { currentUser, language, reloadUserDetails } = useAuth();
+  const t = useMemo(() => getTranslator(language), [language]);
 
   const [nombre, setNombre] = useState('');
   const [apellido, setApellido] = useState('');
@@ -15,7 +19,6 @@ const UserInformationContent = ({ onBack }) => {
   const [showCalendar, setShowCalendar] = useState(false);
   const [genero, setGenero] = useState('');
   
-  // Estados para país y ciudad
   const [paises, setPaises] = useState([]);
   const [ciudades, setCiudades] = useState([]);
   const [paisSeleccionado, setPaisSeleccionado] = useState('');
@@ -23,30 +26,38 @@ const UserInformationContent = ({ onBack }) => {
   const [cargandoPaises, setCargandoPaises] = useState(false);
   const [cargandoCiudades, setCargandoCiudades] = useState(false);
   
-  // Estados para teléfono
   const [codigoPais, setCodigoPais] = useState('');
   const [numeroTelefono, setNumeroTelefono] = useState('');
   
-  // Estados para manejo de guardado
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
   const [saveSuccess, setSaveSuccess] = useState(false);
   
-  // Códigos de países para teléfonos
+  const [profileImageUrl, setProfileImageUrl] = useState(currentUser?.photoURL || '');
+  const [isUploadingProfilePic, setIsUploadingProfilePic] = useState(false);
+  const [profilePicError, setProfilePicError] = useState('');
+  const [profilePicSuccessMessage, setProfilePicSuccessMessage] = useState('');
+
+  const [imageSrcForCropper, setImageSrcForCropper] = useState(null);
+  const [crop, setCrop] = useState();
+  const [completedCrop, setCompletedCrop] = useState(null);
+  const [showCropModal, setShowCropModal] = useState(false);
+  const imgRefForCropper = useRef(null);
+  const aspect = 1 / 1;
+  
   const codigosPaises = [
-    { codigo: '+54', pais: 'Argentina' },
-    { codigo: '+598', pais: 'Uruguay' },
-    { codigo: '+56', pais: 'Chile' },
-    { codigo: '+55', pais: 'Brasil' },
-    { codigo: '+595', pais: 'Paraguay' },
-    { codigo: '+51', pais: 'Perú' },
-    { codigo: '+593', pais: 'Ecuador' },
-    { codigo: '+57', pais: 'Colombia' },
-    { codigo: '+58', pais: 'Venezuela' },
-    { codigo: '+52', pais: 'México' },
+    { codigo: '+54', pais: t('country_argentina') || 'Argentina' },
+    { codigo: '+598', pais: t('country_uruguay') || 'Uruguay' },
+    { codigo: '+56', pais: t('country_chile') || 'Chile' },
+    { codigo: '+55', pais: t('country_brazil') || 'Brasil' },
+    { codigo: '+595', pais: t('country_paraguay') || 'Paraguay' },
+    { codigo: '+51', pais: t('country_peru') || 'Perú' },
+    { codigo: '+593', pais: t('country_ecuador') || 'Ecuador' },
+    { codigo: '+57', pais: t('country_colombia') || 'Colombia' },
+    { codigo: '+58', pais: t('country_venezuela') || 'Venezuela' },
+    { codigo: '+52', pais: t('country_mexico') || 'México' },
   ];
   
-  // 1. Cargar lista de países al montar el componente
   useEffect(() => {
     const fetchPaises = async () => {
       setCargandoPaises(true);
@@ -64,33 +75,23 @@ const UserInformationContent = ({ onBack }) => {
         }
       } catch (error) {
         console.error(t('userInfo_error_loadCountries'), error);
-        setSaveError(t('userInfo_error_loadCountries'));
       } finally {
         setCargandoPaises(false);
       }
     };
     
     fetchPaises();
-  }, []);
+  }, [t]);
   
-  // 2. Actualizar ciudades cuando cambia el país seleccionado
   useEffect(() => {
-    if (!paisSeleccionado) return;
+    if (!paisSeleccionado || paises.length === 0) return;
     
     setCargandoCiudades(true);
-    
-    // Buscar el país seleccionado en la lista
     const paisEncontrado = paises.find(pais => pais.nombre === paisSeleccionado);
     
     if (paisEncontrado && paisEncontrado.ciudades) {
-      // Ordenar ciudades alfabéticamente
       const ciudadesOrdenadas = [...paisEncontrado.ciudades].sort();
       setCiudades(ciudadesOrdenadas);
-      
-      // Seleccionar la primera ciudad si hay ciudades disponibles
-      if (ciudadesOrdenadas.length > 0 && !ciudadSeleccionada) {
-        setCiudadSeleccionada(ciudadesOrdenadas[0]);
-      }
     } else {
       setCiudades([]);
     }
@@ -98,7 +99,6 @@ const UserInformationContent = ({ onBack }) => {
     setCargandoCiudades(false);
   }, [paisSeleccionado, paises]);
   
-  // Cargar datos del usuario desde Firebase
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -114,21 +114,15 @@ const UserInformationContent = ({ onBack }) => {
             setFechaNacimiento(userData.fechaNacimiento || '');
             setGenero(userData.genero || '');
             
-            // Establecer país y ciudad si existen en los datos
             if (userData.pais) {
               setPaisSeleccionado(userData.pais);
-              // Las ciudades se cargarán automáticamente cuando cambie el país
             }
-            
             if (userData.ciudad) {
-              setCiudadSeleccionada(userData.ciudad);
+                setCiudadSeleccionada(userData.ciudad);
             }
             
-            // Cargar código de país y número de teléfono
             if (userData.telefono) {
               const fullPhone = userData.telefono;
-              
-              // Buscar el código de país en el número completo
               const codigoEncontrado = codigosPaises.find(cp => 
                 fullPhone.startsWith(cp.codigo)
               );
@@ -140,22 +134,36 @@ const UserInformationContent = ({ onBack }) => {
                 setNumeroTelefono(fullPhone);
               }
             }
+            if (userData.photoURL) {
+                setProfileImageUrl(userData.photoURL);
+            } else if (currentUser.photoURL) { 
+                setProfileImageUrl(currentUser.photoURL);
+            } else {
+                setProfileImageUrl('');
+            }
           }
         }
       } catch (err) {
         console.error(t('userInfo_error_loadUserData'), err);
-        setSaveError(t('userInfo_error_loadUserData'));
       }
     };
-    
-    fetchUserData();
-  }, []);
-  
-  // Función para generar el calendario
+    if (paises.length > 0) { 
+        fetchUserData();
+    }
+  }, [currentUser, t, paises]);
+
+  useEffect(() => {
+    if (currentUser?.photoURL) {
+      setProfileImageUrl(currentUser.photoURL);
+    } else {
+      setProfileImageUrl('');
+    }
+  }, [currentUser?.photoURL]);
+
   const renderCalendar = () => {
     const today = new Date();
-    const minYear = today.getFullYear() - 100; // Permitir hasta 100 años atrás
-    const maxYear = today.getFullYear() - 18;  // Mínimo 18 años
+    const minYear = today.getFullYear() - 100;
+    const maxYear = today.getFullYear() - 18;  
     
     const years = Array.from({ length: maxYear - minYear + 1 }, (_, i) => maxYear - i);
     const months = [
@@ -164,60 +172,60 @@ const UserInformationContent = ({ onBack }) => {
       t('month_september'), t('month_october'), t('month_november'), t('month_december')
     ];
     
-    // Obtener valores actuales de la fecha
-    let day = '', month = '', year = '';
+    let currentDay = '', currentMonthIndex = '', currentYear = '';
     if (fechaNacimiento) {
       const parts = fechaNacimiento.split('/');
       if (parts.length === 3) {
-        day = parseInt(parts[0]).toString(); // Remove leading zeros
-        month = parseInt(parts[1]) - 1; // Ajustar a índice base 0
-        year = parts[2];
+        currentDay = parts[0]; 
+        currentMonthIndex = (parseInt(parts[1]) - 1).toString();
+        currentYear = parts[2];
       }
     }
     
-    // Función para obtener días del mes
-    const getDaysInMonth = (month, year) => {
-      // Si no hay mes o año seleccionado, devolver 31 días
-      if (month === '' || year === '') return Array.from({ length: 31 }, (_, i) => i + 1);
-      
-      const daysInMonth = new Date(parseInt(year), parseInt(month) + 1, 0).getDate();
-      return Array.from({ length: daysInMonth }, (_, i) => i + 1);
+    const getDaysInMonth = (monthIndex, yr) => {
+      if (monthIndex === '' || yr === '') return Array.from({ length: 31 }, (_, i) => (i + 1).toString());
+      const daysInMonthVal = new Date(parseInt(yr), parseInt(monthIndex) + 1, 0).getDate();
+      return Array.from({ length: daysInMonthVal }, (_, i) => (i + 1).toString());
     };
     
-    // Obtener días basados en el mes y año seleccionados
-    const days = getDaysInMonth(month, year);
+    const days = getDaysInMonth(currentMonthIndex, currentYear);
     
-    // Función para establecer un componente de la fecha
     const setDatePart = (part, value) => {
-      let newDay = day, newMonth = month, newYear = year;
+      let newDay = currentDay, newMonthIndex = currentMonthIndex, newYear = currentYear;
       
       if (part === 'day') newDay = value;
-      if (part === 'month') newMonth = value;
+      if (part === 'month') newMonthIndex = value;
       if (part === 'year') newYear = value;
       
-      // Asegurarse de que el día es válido para el mes/año
-      if (newDay && newMonth !== '' && newYear) {
-        const daysInMonth = new Date(parseInt(newYear), parseInt(newMonth) + 1, 0).getDate();
-        if (parseInt(newDay) > daysInMonth) {
-          newDay = daysInMonth.toString();
+      if (newDay && newMonthIndex !== '' && newYear) {
+        const daysInSelectedMonth = new Date(parseInt(newYear), parseInt(newMonthIndex) + 1, 0).getDate();
+        if (parseInt(newDay) > daysInSelectedMonth) {
+          newDay = daysInSelectedMonth.toString();
         }
       }
       
-      // Formatear la fecha como DD/MM/YYYY
-      const formattedDay = newDay.toString().padStart(2, '0');
-      const formattedMonth = (parseInt(newMonth) + 1).toString().padStart(2, '0');
-      setFechaNacimiento(`${formattedDay}/${formattedMonth}/${newYear}`);
+      currentDay = newDay;
+      currentMonthIndex = newMonthIndex;
+      currentYear = newYear;
+
+      if (newDay && newMonthIndex !== '' && newYear){
+        const formattedDay = newDay.padStart(2, '0');
+        const formattedMonth = (parseInt(newMonthIndex) + 1).toString().padStart(2, '0');
+        setFechaNacimiento(`${formattedDay}/${formattedMonth}/${newYear}`);
+      } else {
+        setFechaNacimiento('');
+      }
     };
     
     return (
-      <div className="absolute top-full left-0 mt-2 p-4 bg-[#1a1a1a] border border-[#333] rounded-lg shadow-lg z-20 w-full">
-        <div className="grid grid-cols-3 gap-4">
+      <div className="absolute top-full left-0 mt-2 p-4 bg-[#1a1a1a] border border-[#333] rounded-lg shadow-lg z-20 w-full max-w-xs sm:max-w-sm md:max-w-md">
+        <div className="grid grid-cols-3 gap-2 sm:gap-4">
           <div>
-            <label className="block text-gray-400 text-sm mb-2">{t('calendar_day')}</label>
+            <label className="block text-gray-400 text-xs sm:text-sm mb-1 sm:mb-2">{t('calendar_day')}</label>
             <select 
-              value={day} 
+              value={currentDay} 
               onChange={(e) => setDatePart('day', e.target.value)}
-              className="w-full p-2 bg-[#232323] border border-[#444] rounded text-white"
+              className="w-full p-2 bg-[#232323] border border-[#444] rounded text-white text-xs sm:text-sm"
             >
               <option value="">{t('calendar_select_day')}</option>
               {days.map(d => (
@@ -227,50 +235,48 @@ const UserInformationContent = ({ onBack }) => {
           </div>
           
           <div>
-            <label className="block text-gray-400 text-sm mb-2">{t('calendar_month')}</label>
+            <label className="block text-gray-400 text-xs sm:text-sm mb-1 sm:mb-2">{t('calendar_month')}</label>
             <select 
-              value={month} 
+              value={currentMonthIndex}
               onChange={(e) => setDatePart('month', e.target.value)}
-              className="w-full p-2 bg-[#232323] border border-[#444] rounded text-white"
+              className="w-full p-2 bg-[#232323] border border-[#444] rounded text-white text-xs sm:text-sm"
             >
-              <option value="">{t('calendar_select_day')}</option>
+              <option value="">{t('calendar_select_month')}</option>
               {months.map((m, i) => (
-                <option key={`month-${i}`} value={i}>{m}</option>
+                <option key={`month-${i}`} value={i.toString()}>{m}</option>
               ))}
             </select>
           </div>
           
           <div>
-            <label className="block text-gray-400 text-sm mb-2">{t('calendar_year')}</label>
+            <label className="block text-gray-400 text-xs sm:text-sm mb-1 sm:mb-2">{t('calendar_year')}</label>
             <select 
-              value={year} 
+              value={currentYear} 
               onChange={(e) => setDatePart('year', e.target.value)}
-              className="w-full p-2 bg-[#232323] border border-[#444] rounded text-white"
+              className="w-full p-2 bg-[#232323] border border-[#444] rounded text-white text-xs sm:text-sm"
             >
               <option value="">{t('calendar_select_year')}</option>
               {years.map(y => (
-                <option key={`year-${y}`} value={y}>{y}</option>
+                <option key={`year-${y}`} value={y.toString()}>{y}</option>
               ))}
             </select>
           </div>
         </div>
         
-        <div className="mt-4 flex justify-end">
+        <div className="mt-3 sm:mt-4 flex justify-end">
           <button 
             onClick={() => setShowCalendar(false)}
-            className="px-4 py-2 bg-cyan-700 text-white rounded-md hover:bg-cyan-600 transition"
+            className="px-3 py-1.5 sm:px-4 sm:py-2 bg-cyan-700 text-white rounded-md hover:bg-cyan-600 transition text-xs sm:text-sm"
           >
-            Aceptar
+            {t('common_accept')}
           </button>
         </div>
       </div>
     );
   };
   
-  // Validar y formatear el número de teléfono
   const handlePhoneChange = (e) => {
     const value = e.target.value;
-    // Permitir solo números
     const numerosOnly = value.replace(/[^\d]/g, '');
     setNumeroTelefono(numerosOnly);
   };
@@ -287,7 +293,7 @@ const UserInformationContent = ({ onBack }) => {
       return false;
     }
     const day = parseInt(dateParts[0], 10);
-    const month = parseInt(dateParts[1], 10) - 1; // Month is 0-indexed
+    const month = parseInt(dateParts[1], 10) - 1;
     const year = parseInt(dateParts[2], 10);
     const birthDate = new Date(year, month, day);
     const ageDiffMs = Date.now() - birthDate.getTime();
@@ -299,7 +305,6 @@ const UserInformationContent = ({ onBack }) => {
       return false;
     }
     
-    // Additional validation for date parts if needed (e.g. valid day for month)
     if (isNaN(birthDate.getTime()) || birthDate.getDate() !== day || birthDate.getMonth() !== month || birthDate.getFullYear() !== year) {
         setSaveError(t('userInfo_error_invalidDobFormat'));
         return false;
@@ -309,14 +314,14 @@ const UserInformationContent = ({ onBack }) => {
     return true;
   };
   
-  // Guardar datos del usuario en Firebase
   const handleSaveChanges = async () => {
+    setSaveSuccess(false);
+    setSaveError('');
     if (!validateForm()) {
       return;
     }
     
     setIsSaving(true);
-    setSaveSuccess(false);
     try {
       const user = auth.currentUser;
       if (user) {
@@ -328,15 +333,171 @@ const UserInformationContent = ({ onBack }) => {
           genero,
           pais: paisSeleccionado,
           ciudad: ciudadSeleccionada,
-          telefono: `${codigoPais}${numeroTelefono}`
+          telefono: `${codigoPais}${numeroTelefono}`,
         }, { merge: true });
         setSaveSuccess(true);
+        setTimeout(() => setSaveSuccess(false), 3000);
       }
     } catch (err) {
       console.error("Error guardando datos:", err);
       setSaveError(t('userInfo_error_saveFailed'));
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  function onImageLoadForCropper(e) {
+    const { naturalWidth, naturalHeight } = e.currentTarget;
+    const initialCrop = centerCrop(
+      makeAspectCrop(
+        {
+          unit: '%',
+          width: 50,
+        },
+        aspect,
+        naturalWidth,
+        naturalHeight
+      ),
+      naturalWidth,
+      naturalHeight
+    );
+    setCrop(initialCrop);
+  }
+
+  const handleFileSelect = (event) => {
+    setProfilePicError('');
+    setProfilePicSuccessMessage('');
+
+    if (event.target.files && event.target.files.length > 0) {
+      const file = event.target.files[0];
+      if (!file.type.startsWith('image/')) {
+        setProfilePicError(t('settings_profilePic_error_invalidFile'));
+        return;
+      }
+      const reader = new FileReader();
+      reader.addEventListener('load', () => {
+        setImageSrcForCropper(reader.result?.toString() || '');
+        setShowCropModal(true);
+      });
+      reader.readAsDataURL(file);
+      event.target.value = null;
+    }
+  };
+
+  const handleCancelProfilePicUpdateAndCloseModal = () => {
+    setProfilePicError('');
+    setProfilePicSuccessMessage('');
+    setImageSrcForCropper(null);
+    setShowCropModal(false);
+    setCrop(undefined);
+    setCompletedCrop(null);
+  };
+
+  function getCroppedImg(image, cropData, fileName) { 
+    return new Promise((resolve, reject) => {
+      const canvas = document.createElement('canvas');
+      const scaleX = image.naturalWidth / image.width;
+      const scaleY = image.naturalHeight / image.height;
+      canvas.width = cropData.width;
+      canvas.height = cropData.height;
+      const ctx = canvas.getContext('2d');
+
+      ctx.drawImage(
+        image,
+        cropData.x * scaleX,
+        cropData.y * scaleY,
+        cropData.width * scaleX,
+        cropData.height * scaleY,
+        0,
+        0,
+        cropData.width,
+        cropData.height
+      );
+
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            reject(new Error('Canvas is empty'));
+            return;
+          }
+          blob.name = fileName;
+          resolve(blob);
+        },
+        'image/jpeg',
+        0.95
+      );
+    });
+  }
+
+  const handleCropImageAndInitiateUpload = async () => {
+    if (!completedCrop || !imgRefForCropper.current) {
+      setProfilePicError(t('settings_cropImage_error_noSelection'));
+      return;
+    }
+    
+    try {
+      setIsUploadingProfilePic(true);
+      setProfilePicError('');
+      setProfilePicSuccessMessage('');
+      const croppedBlob = await getCroppedImg(
+        imgRefForCropper.current, 
+        completedCrop, 
+        'profileImage.jpeg'
+      );
+      
+      if (croppedBlob) {
+        await handleProfilePicUpload(croppedBlob);
+        handleCancelProfilePicUpdateAndCloseModal(); 
+      } else {
+        setProfilePicError(t('settings_cropImage_error_failed'));
+      }
+    } catch (error) {
+      console.error("Error cropping image:", error);
+      setProfilePicError(t('settings_cropImage_error_failed') + ': ' + error.message);
+    } finally {
+      setIsUploadingProfilePic(false);
+    }
+  };
+
+  const handleProfilePicUpload = async (imageBlob) => {
+    if (!currentUser) {
+      setProfilePicError(t('settings_profilePic_error_mustLogin'));
+      return;
+    }
+    if (!imageBlob) {
+      setProfilePicError(t('settings_profilePic_error_noFileSelected'));
+      return;
+    }
+
+    setIsUploadingProfilePic(true); 
+    setProfilePicError('');
+    setProfilePicSuccessMessage('');
+    const fileExtension = imageBlob.type.split('/')[1] || 'jpeg';
+    const fileName = `profileImage_${currentUser.uid}.${fileExtension}`;
+    const storagePath = `profilePictures/${currentUser.uid}/${fileName}`;
+    const imageStorageRef = ref(storage, storagePath); 
+
+    try {
+      await uploadBytes(imageStorageRef, imageBlob);
+      const downloadURL = await getDownloadURL(imageStorageRef);
+
+      await updateProfile(auth.currentUser, { photoURL: downloadURL }); 
+      const userDocRef = doc(db, 'users', currentUser.uid);
+      await updateDoc(userDocRef, { photoURL: downloadURL });
+
+      setProfileImageUrl(downloadURL);
+      if (typeof reloadUserDetails === 'function') { 
+         reloadUserDetails(); 
+      }
+      setProfilePicSuccessMessage(t('settings_profilePic_success_updated'));
+      setTimeout(() => setProfilePicSuccessMessage(''), 3000);
+      setSaveError(''); 
+      setSaveSuccess(false);
+    } catch (error) {
+      console.error("Error uploading profile picture:", error);
+      setProfilePicError(t('settings_profilePic_error_uploadFailed') + (error.message ? `: ${error.message}` : ''));
+    } finally {
+      setIsUploadingProfilePic(false);
     }
   };
 
@@ -349,9 +510,7 @@ const UserInformationContent = ({ onBack }) => {
         <h1 className="text-2xl font-semibold text-white">{t('userInfo_title')}</h1>
       </div>
 
-      {/* Formulario */}
       <div className="space-y-6 flex-1 overflow-y-auto pr-2" style={{ scrollbarWidth: 'thin', scrollbarColor: '#555 #333' }}>
-        {/* Nombre y Apellido */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label htmlFor="nombre" className="block text-sm font-medium text-gray-300 mb-1">{t('userInfo_label_firstName')}</label>
@@ -377,7 +536,6 @@ const UserInformationContent = ({ onBack }) => {
           </div>
         </div>
 
-        {/* Fecha de Nacimiento y Género */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="relative">
             <label htmlFor="fechaNacimiento" className="block text-sm font-medium text-gray-300 mb-1">{t('userInfo_label_dob')}</label>
@@ -408,7 +566,6 @@ const UserInformationContent = ({ onBack }) => {
           </div>
         </div>
 
-        {/* País y Ciudad */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label htmlFor="pais" className="block text-sm font-medium text-gray-300 mb-1">{t('userInfo_label_country')}</label>
@@ -447,7 +604,6 @@ const UserInformationContent = ({ onBack }) => {
           </div>
         </div>
 
-        {/* Teléfono */}
         <div>
           <label htmlFor="telefono" className="block text-sm font-medium text-gray-300 mb-1">{t('userInfo_label_phone')}</label>
           <div className="flex">
@@ -466,33 +622,72 @@ const UserInformationContent = ({ onBack }) => {
               type="tel" 
               id="telefono" 
               value={numeroTelefono}
-              onChange={(e) => setNumeroTelefono(e.target.value.replace(/[^0-9]/g, ''))}
+              onChange={handlePhoneChange}
               placeholder={t('userInfo_placeholder_phoneNumber')}
               className="w-2/3 md:w-3/4 p-3 bg-[#2c2c2c] border border-l-0 border-[#444] rounded-r-lg text-white focus:ring-cyan-500 focus:border-cyan-500"
             />
           </div>
         </div>
 
-        {/* Error y Success messages */}
+        <div className="mt-6 pt-6 border-t border-gray-700">
+            <label className="block text-sm font-medium text-gray-300 mb-2">{t('settings_item_profilePicture')}</label>
+            <div className="flex flex-col items-center space-y-4">
+                <img 
+                    src={profileImageUrl || '/default-avatar.png'} 
+                    alt={t('settings_profilePic_alt')} 
+                    className="w-32 h-32 rounded-full object-cover border-2 border-cyan-500"
+                    onError={(e) => { e.target.onerror = null; e.target.src='/default-avatar.png'; }} 
+                />
+                
+                {profilePicSuccessMessage && (
+                    <div className="text-green-400 text-sm text-center py-2">{profilePicSuccessMessage}</div>
+                )}
+                {profilePicError && (
+                    <div className="text-red-400 text-sm text-center flex items-center justify-center py-2">
+                    <AlertTriangle size={16} className="mr-1" /> {profilePicError}
+                    </div>
+                )}
+
+                <input
+                    id="profilePicInputUserInfo"
+                    name="profilePicInputUserInfo"
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleFileSelect}
+                />
+                <button
+                    type="button"
+                    onClick={() => document.getElementById('profilePicInputUserInfo').click()}
+                    disabled={isUploadingProfilePic}
+                    className="px-4 py-2 border border-cyan-500 text-sm font-medium rounded-md text-cyan-400 bg-slate-700 hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-cyan-500 disabled:opacity-50"
+                >
+                    {isUploadingProfilePic ? 
+                        <><Loader size={16} className="animate-spin mr-2" /> {t('settings_profilePic_uploading') || 'Uploading...'}</> :
+                        t('settings_button_changePicture')
+                    }
+                </button>
+            </div>
+        </div>
+
         {saveError && (
-          <div className="flex items-center p-3 bg-red-500 bg-opacity-20 border border-red-500 rounded-lg text-red-400">
+          <div className="flex items-center p-3 mt-4 bg-red-500 bg-opacity-20 border border-red-500 rounded-lg text-red-400">
             <AlertTriangle size={20} className="mr-2" />
             <span>{saveError}</span>
           </div>
         )}
         {saveSuccess && (
-          <div className="flex items-center p-3 bg-green-500 bg-opacity-20 border border-green-500 rounded-lg text-green-400">
+          <div className="flex items-center p-3 mt-4 bg-green-500 bg-opacity-20 border border-green-500 rounded-lg text-green-400">
             <Save size={20} className="mr-2" />
             <span>{t('userInfo_success_saved')}</span>
           </div>
         )}
       </div>
 
-      {/* Botón Guardar Cambios */}
       <div className="mt-8 pt-6 border-t border-gray-700">
         <button 
           onClick={handleSaveChanges} 
-          disabled={isSaving}
+          disabled={isSaving || isUploadingProfilePic}
           className="w-full flex items-center justify-center p-3 bg-gradient-to-r from-[#0F7490] to-[#0A5A72] hover:opacity-90 transition text-white rounded-lg text-lg font-semibold disabled:opacity-50"
         >
           {isSaving ? (
@@ -502,6 +697,70 @@ const UserInformationContent = ({ onBack }) => {
           )}
         </button>
       </div>
+
+      {showCropModal && imageSrcForCropper && (
+        <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50 p-4 transition-opacity duration-300 ease-out" style={{ backdropFilter: 'blur(4px)' }}>
+          <div className="bg-slate-900 p-6 rounded-lg shadow-xl max-w-lg w-full transform transition-all duration-300 ease-out scale-95 opacity-0 animate-modalFadeInScaleUp">
+            <h3 className="text-xl leading-6 font-semibold text-white mb-5 text-center">
+              {t('settings_cropImage_title')}
+            </h3>
+            <div className="flex justify-center mb-5">
+              <ReactCrop
+                crop={crop}
+                onChange={(_, percentCrop) => setCrop(percentCrop)} 
+                onComplete={(c) => setCompletedCrop(c)} 
+                aspect={aspect} 
+                minWidth={100}
+                minHeight={100}
+                circularCrop={false} 
+                className="max-h-[60vh]"
+              >
+                <img
+                  ref={imgRefForCropper} 
+                  alt="Crop preview"
+                  src={imageSrcForCropper} 
+                  style={{ maxHeight: '60vh', objectFit: 'contain' }}
+                  onLoad={onImageLoadForCropper} 
+                />
+              </ReactCrop>
+            </div>
+            {profilePicError && <p className="mb-3 text-sm text-red-500 text-center">{profilePicError}</p>}
+            <div className="mt-6 flex flex-col sm:flex-row-reverse gap-3">
+              <button
+                type="button"
+                className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-6 py-3 bg-cyan-600 text-base font-medium text-white hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-cyan-500 sm:text-sm transition-colors duration-150"
+                onClick={handleCropImageAndInitiateUpload} 
+                disabled={isUploadingProfilePic} 
+              >
+                {isUploadingProfilePic ? t('settings_cropImage_button_cropping') : t('settings_cropImage_button_crop')}
+              </button>
+              <button
+                type="button"
+                className="w-full inline-flex justify-center rounded-md border border-gray-600 shadow-sm px-6 py-3 bg-slate-800 text-base font-medium text-gray-300 hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-cyan-500 sm:text-sm transition-colors duration-150"
+                onClick={handleCancelProfilePicUpdateAndCloseModal} 
+                disabled={isUploadingProfilePic} 
+              >
+                {t('settings_cropImage_button_cancel')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      <style jsx global>{`
+        @keyframes modalFadeInScaleUp {
+          from {
+            opacity: 0;
+            transform: scale(0.95);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+        .animate-modalFadeInScaleUp {
+          animation: modalFadeInScaleUp 0.3s forwards ease-out;
+        }
+      `}</style>
     </div>
   );
 };

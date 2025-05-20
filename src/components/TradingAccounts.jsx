@@ -5,6 +5,11 @@ import { collection, query, where, onSnapshot, getDoc } from 'firebase/firestore
 import { useAuth } from '../contexts/AuthContext';
 import { getTranslator } from '../utils/i18n';
 
+// Constants for standardizing phase values across the application
+const PHASE_ONE_STEP = 'ONE_STEP';
+const PHASE_TWO_STEP = 'TWO_STEP';
+const PHASE_REAL = 'REAL';
+
 const TradingAccounts = ({ setSelectedOption, setSelectedAccount }) => {
   const { currentUser, language } = useAuth();
   const t = getTranslator(language);
@@ -12,29 +17,143 @@ const TradingAccounts = ({ setSelectedOption, setSelectedAccount }) => {
   const [userAccounts, setUserAccounts] = useState([]);
   const [isLoadingAccounts, setIsLoadingAccounts] = useState(true);
   
+  // Tab configuration with exact filter values matching TradingChallenge.jsx
   const tabs = [
-    { key: 'tradingAccounts_tab_phase1', dataFilter: 'ONE STEP' },
-    { key: 'tradingAccounts_tab_phase2', dataFilter: 'TWO STEP' },
-    { key: 'tradingAccounts_tab_realAccount', dataFilter: 'REAL' }
+    { key: 'tradingAccounts_tab_phase1', dataFilter: 'phase1' },
+    { key: 'tradingAccounts_tab_phase2', dataFilter: 'phase2' },
+    { key: 'tradingAccounts_tab_realAccount', dataFilter: 'real' }
   ];
 
   const [activeTab, setActiveTab] = useState(tabs[0].key);
-
   const currentDataFilter = tabs.find(tab => tab.key === activeTab)?.dataFilter || tabs[0].dataFilter;
 
+  // Get the exact translated phase label for comparison
+  const oneStepLabel = t('home_account_oneStepLabel');
+  const twoStepLabel = t('home_account_twoStepLabel');
+
+  const getCorrectedChallengeAmountForDisplay = (account) => {
+    let currentAmount = account.challengeAmountNumber;
+
+    if (typeof currentAmount !== 'number' || isNaN(currentAmount)) {
+      if (account.challengeAmountString) {
+        try {
+          // Using the parsing logic from TradingChallenge.jsx for consistency
+          let valueString = account.challengeAmountString.replace(/[$\\s]/g, '');
+          valueString = valueString.replace(/\\./g, '').replace(/,/g, '.');
+          
+          const parsedFromString = parseFloat(valueString);
+          if (!isNaN(parsedFromString)) {
+            currentAmount = parsedFromString;
+          } else {
+            return NaN; 
+          }
+        } catch (e) {
+          return NaN; 
+        }
+      } else {
+        return NaN; 
+      }
+    }
+
+    if (currentAmount < 1000 && account.challengeAmountString) {
+      const stringAmount = account.challengeAmountString;
+      let reParsedValString = stringAmount.replace(/[$\\s]/g, '');
+      reParsedValString = reParsedValString.replace(/\\./g, '').replace(/,/g, '.');
+      const reParsedVal = parseFloat(reParsedValString);
+      
+      if (!isNaN(reParsedVal) && reParsedVal > currentAmount) {
+        return reParsedVal;
+      }
+    }
+
+    if (currentAmount > 0 && currentAmount < 1000) {
+      return currentAmount * 1000;
+    }
+    
+    return currentAmount;
+  };
+
+  // Simple helper function to determine if an account is one_step or two_step
+  const getAccountPhaseType = (account) => {
+    // For debugging - print complete account data with all properties
+    console.log("Account phase data:", account.id, {
+      phase: account.challengePhase, 
+      type: account.challengeType,
+      numberOfPhases: account.numberOfPhases,
+      allProperties: Object.keys(account)
+    });
+    
+    // First check if challengePhase exactly matches various known values
+    if (account.challengePhase) {
+      // Log the exact phase value for debugging
+      console.log(`Account ${account.id} has challengePhase:`, account.challengePhase);
+      
+      // Check for Spanish version (1 FASE/2 FASES)
+      if (account.challengePhase === '1 FASE') return 'phase1';
+      if (account.challengePhase === '2 FASES') return 'phase2';
+      
+      // Check for English version (ONE STEP/TWO STEPS)
+      if (account.challengePhase === 'ONE STEP') return 'phase1';
+      if (account.challengePhase === 'TWO STEPS') return 'phase2';
+      
+      // Handle OLD_FORMAT with underscore
+      if (account.challengePhase === 'ONE_STEP') return 'phase1';
+      if (account.challengePhase === 'TWO_STEP') return 'phase2';
+      
+      // More general matching based on the content
+      const phase = account.challengePhase.toLowerCase();
+      if (phase.includes('2') || phase.includes('two')) {
+        return 'phase2';
+      }
+      // Must check this AFTER the '2' check to prevent '2 FASES' from matching '1'
+      if (phase.includes('1') || phase.includes('one') || 
+          phase.includes('fase') && !phase.includes('2')) {
+        return 'phase1';
+      }
+    } else {
+      console.log(`Account ${account.id} has no challengePhase, using challengeType:`, account.challengeType);
+    }
+    
+    // Check challengeType for accounts without challengePhase
+    if (account.challengeType === 'two_step' || account.challengeType === 'Swing') {
+      return 'phase2';
+    }
+    if (account.challengeType === 'one_step' || account.challengeType === 'Estándar') {
+      return 'phase1';
+    }
+    
+    // Log for accounts where we need to fall back to numberOfPhases
+    if (account.numberOfPhases) {
+      console.log(`Account ${account.id} using numberOfPhases fallback:`, account.numberOfPhases);
+    } else {
+      console.log(`Account ${account.id} has no reliable phase indicator, defaulting to phase1`);
+    }
+    
+    // Default fallback - assign based on challengeType or numberOfPhases
+    // Most accounts are one-step if not specified otherwise
+    return account.numberOfPhases === 2 ? 'phase2' : 'phase1';
+  };
+
+  // Filter based on account status and properly determined type
   const filteredAccounts = userAccounts.filter(account => {
-    if (currentDataFilter === 'REAL') {
+    // Real accounts tab - show only approved accounts
+    if (currentDataFilter === 'real') {
       return account.status === 'Aprobada' || account.status === 'Approved';
     }
-    if (currentDataFilter === 'ONE STEP') {
-      return (account.challengeType === 'one_step' || account.challengeType === 'Estándar') && 
-             account.status !== 'Aprobada' && account.status !== 'Approved';
+    
+    // Don't show approved accounts in phase tabs
+    if (account.status === 'Aprobada' || account.status === 'Approved') {
+      return false;
     }
-    if (currentDataFilter === 'TWO STEP') {
-      return (account.challengeType === 'two_step' || account.challengeType === 'Swim') && 
-             account.status !== 'Aprobada' && account.status !== 'Approved';
-    }
-    return false;
+
+    // Match the account phase type with the current tab filter
+    const accountPhaseType = getAccountPhaseType(account);
+    
+    // Log filtering result for debugging
+    console.log(`Filtering account ${account.id}: ${accountPhaseType} vs ${currentDataFilter}`, 
+      {matches: accountPhaseType === currentDataFilter});
+    
+    return accountPhaseType === currentDataFilter;
   });
 
   useEffect(() => {
@@ -54,23 +173,9 @@ const TradingAccounts = ({ setSelectedOption, setSelectedAccount }) => {
       const accountsData = [];
       querySnapshot.forEach((doc) => {
         const data = doc.data();
-        let challengeType = data.challengeType;
-        
-        // Asegurar compatibilidad con cuentas existentes
-        if (!challengeType) {
-          challengeType = data.numberOfPhases === 2 ? 'two_step' : 'one_step';
-        }
-        
-        // Determinar la fase del desafío
-        const challengePhase = challengeType === 'two_step' || challengeType === 'Swim' 
-          ? 'TWO STEP' 
-          : 'ONE STEP';
-        
         accountsData.push({ 
           id: doc.id, 
-          ...data,
-          challengeType,
-          challengePhase
+          ...data
         });
       });
       console.log('Accounts loaded:', accountsData);
@@ -115,9 +220,23 @@ const TradingAccounts = ({ setSelectedOption, setSelectedAccount }) => {
         return status;
     }
   };
+
+  // Helper to get display phase label for the UI
+  const getPhaseDisplayLabel = (account) => {
+    // Get the account type (phase1 or phase2)
+    const accountType = getAccountPhaseType(account);
+    
+    // For already set labels, use them directly
+    if (account.challengePhase) {
+      return account.challengePhase;
+    }
+    
+    // Otherwise, get translated labels based on the determined account type
+    return accountType === 'phase1' ? oneStepLabel : twoStepLabel;
+  };
   
   return (
-    <div className="flex flex-col p-4 border border-[#333] rounded-3xl bg-[#232323] text-white min-h-screen">
+    <div className="flex flex-col p-4 border border-[#333] rounded-3xl bg-[#232323] text-white">
       {/* Tab Navigation */}
       <div className="flex space-x-2 mb-6">
         {tabs.map((tab) => (
@@ -155,7 +274,15 @@ const TradingAccounts = ({ setSelectedOption, setSelectedAccount }) => {
                 </div>
                 <div>
                   <div className="font-medium text-lg">
-                    {account.challengePhase} CHALLENGE {account.challengeAmount?.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                    {getPhaseDisplayLabel(account)} {t('home_account_challengeLabel')} {
+                      (() => {
+                        const correctedAmount = getCorrectedChallengeAmountForDisplay(account);
+                        if (typeof correctedAmount === 'number' && !isNaN(correctedAmount)) {
+                          return correctedAmount.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                        }
+                        return t('home_account_amountNotAvailable');
+                      })()
+                    }
                   </div>
                   <div className="text-gray-400 text-sm">
                     {t('tradingAccounts_serverTypeLabel')} {account.serverType}

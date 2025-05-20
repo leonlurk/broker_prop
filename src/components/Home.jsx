@@ -5,8 +5,12 @@ import NotificationsModal from './NotificationsModal';
 import { ChevronDown, Calendar, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext'; // Importar el contexto de autenticación
 import { db } from '../firebase/config';
-import { collection, query, where, onSnapshot, limit } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, limit, orderBy } from 'firebase/firestore';
 import { getTranslator } from '../utils/i18n'; // Import the new getTranslator
+
+// Constants for standardizing phase values across the application
+const PHASE_ONE_STEP = 'ONE_STEP';
+const PHASE_TWO_STEP = 'TWO_STEP';
 
 const fondoTarjetaUrl = "/fondoTarjeta2.png";
 
@@ -21,6 +25,92 @@ const Home = ({ onViewDetails, onSettingsClick, setSelectedOption }) => {
 
   const t = getTranslator(language); // Get the translator function for the current language
 
+  // Simple helper function to determine if an account is one_step or two_step
+  const getAccountPhaseType = (account) => {
+    // Check existing properties in order of reliability
+    if (account.challengeType === 'one_step' || account.challengeType === 'Estándar') 
+      return 'one_step';
+    if (account.challengeType === 'two_step' || account.challengeType === 'Swing') 
+      return 'two_step';
+    
+    // Handle older accounts with challengePhase
+    if (account.challengePhase) {
+      const phase = account.challengePhase.toLowerCase();
+      if (phase.includes('one') || phase.includes('1') || phase.includes('fase'))
+        return 'one_step';
+      if (phase.includes('two') || phase.includes('2'))
+        return 'two_step';
+    }
+    
+    // Default fallback based on numberOfPhases
+    return account.numberOfPhases === 2 ? 'two_step' : 'one_step';
+  };
+
+  // Helper to get display phase label for UI 
+  const getPhaseDisplayLabel = (account) => {
+    // Print complete account data for debugging
+    console.log("Account phase for display:", account.id, {
+      phase: account.challengePhase,
+      type: account.challengeType,
+      numberOfPhases: account.numberOfPhases,
+      allProperties: Object.keys(account)
+    });
+    
+    // Check if account has a challengePhase - use it directly if it exists
+    if (account.challengePhase) {
+      console.log(`Using explicit challengePhase for ${account.id}:`, account.challengePhase);
+      
+      // Spanish formats
+      if (account.challengePhase === '1 FASE' || 
+          account.challengePhase === '2 FASES') {
+        return account.challengePhase;
+      }
+      
+      // English formats 
+      if (account.challengePhase === 'ONE STEP' || 
+          account.challengePhase === 'TWO STEPS') {
+        return account.challengePhase;
+      }
+      
+      // Legacy format with underscore
+      if (account.challengePhase === 'ONE_STEP') {
+        return t('home_account_oneStepLabel');
+      }
+      if (account.challengePhase === 'TWO_STEP') {
+        return t('home_account_twoStepLabel');
+      }
+
+      // For any other value, try to determine from the content
+      const phase = account.challengePhase.toLowerCase();
+      if (phase.includes('two') || phase.includes('2')) {
+        return t('home_account_twoStepLabel');
+      }
+      if (phase.includes('one') || phase.includes('1') || phase.includes('fase')) {
+        return t('home_account_oneStepLabel');
+      }
+    } else {
+      console.log(`No challengePhase for ${account.id}, falling back to challengeType:`, account.challengeType);
+    }
+    
+    // Fall back to determining from challengeType (for accounts without challengePhase)
+    if (account.challengeType === 'two_step' || account.challengeType === 'Swing') {
+      return t('home_account_twoStepLabel');
+    }
+    if (account.challengeType === 'one_step' || account.challengeType === 'Estándar') {
+      return t('home_account_oneStepLabel');
+    }
+    
+    // Another fallback based on numberOfPhases if that exists
+    if (account.numberOfPhases === 2) {
+      console.log(`Using numberOfPhases fallback for ${account.id}:`, account.numberOfPhases);
+      return t('home_account_twoStepLabel');
+    }
+    
+    // Ultimate fallback - if no reliable info, default to ONE STEP (most common)
+    console.log(`No reliable phase info for ${account.id}, defaulting to ONE STEP`);
+    return t('home_account_oneStepLabel');
+  };
+
   // useEffect for fetching dashboard accounts MUST be called before any conditional returns
   useEffect(() => {
     if (!currentUser) {
@@ -34,6 +124,7 @@ const Home = ({ onViewDetails, onSettingsClick, setSelectedOption }) => {
       collection(db, 'tradingAccounts'), 
       where('userId', '==', currentUser.uid),
       // where('status', '==', 'Activa'), // You might want to filter by status
+      orderBy('createdAt', 'desc'),
       limit(3) // Show up to 3 accounts on the dashboard
     );
 
@@ -111,7 +202,50 @@ const Home = ({ onViewDetails, onSettingsClick, setSelectedOption }) => {
 
   const formatBalance = (value) => {
     if (typeof value !== 'number') return '$0,000.00';
+    
+    // Verificamos si el valor debería ser tratado como miles
+    // Si el desafío es por montos grandes (típicamente $5000+) pero el balance es mucho menor
+    // es probable que el valor esté en miles y necesite ser corregido
+    // Por ejemplo, $200 para un desafío de $200.000 debería mostrarse como $200,000.00
+    console.log(`Formatting balance value: ${value}`);
+    
+    // Si el valor es demasiado pequeño para ser un saldo real de trading, multiplicamos por 1000
+    // Típicamente los saldos reales deberían estar en miles o decenas de miles
+    if (value > 0 && value < 1000) {
+      value = value * 1000;
+      console.log(`Adjusted balance value to: ${value}`);
+    }
+    
     return `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  };
+
+  // Helper para obtener el monto del desafío en el formato correcto
+  const getChallengeAmount = (account) => {
+    const amount = account.challengeAmountNumber;
+    
+    // Si el valor es demasiado pequeño (< 1000) pero la cadena sugiere un valor mayor
+    // Esto ocurre cuando, por ejemplo, "$200.000" se convierte incorrectamente a 200
+    if (amount < 1000 && account.challengeAmountString) {
+      const stringAmount = account.challengeAmountString;
+      if (stringAmount.includes('.')) {
+        // Intenta corregir el valor basado en la cadena original
+        const correctedAmount = parseFloat(stringAmount.replace(/[$\s]/g, '').replace(/\./g, '').replace(/,/g, '.'));
+        if (!isNaN(correctedAmount) && correctedAmount > amount) {
+          console.log(`Corrected challenge amount from ${amount} to ${correctedAmount}`);
+          return correctedAmount;
+        }
+      }
+    }
+    
+    // Si después de los intentos anteriores el monto sigue siendo pequeño (menor a 1000),
+    // asumimos que está en miles y multiplicamos por 1000
+    if (amount > 0 && amount < 1000) {
+      const scaledAmount = amount * 1000;
+      console.log(`Scaled up challenge amount from ${amount} to ${scaledAmount}`);
+      return scaledAmount;
+    }
+    
+    return amount;
   };
 
   console.log('[Home.jsx] Rendering with language:', language);
@@ -156,7 +290,10 @@ const Home = ({ onViewDetails, onSettingsClick, setSelectedOption }) => {
       onClick={toggleUserInfo}
       className="focus:outline-none bg-transparent p-1 hover:ring-1 hover:ring-cyan-400 rounded-full transition-all duration-200"
     >
-      <img src="/Perfil.png" alt="Avatar" className="w-8 h-8 md:w-12 md:h-12 rounded-full" 
+      <img 
+        src={currentUser?.photoURL || "/Perfil.png"} 
+        alt="Avatar" 
+        className="w-8 h-8 md:w-12 md:h-12 rounded-full object-cover" 
         onError={(e) => {
           e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%23555'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='20' fill='white'%3ES%3C/text%3E%3C/svg%3E";
         }}
@@ -248,60 +385,76 @@ const Home = ({ onViewDetails, onSettingsClick, setSelectedOption }) => {
         {!isLoadingDashboardAccounts && dashboardAccounts.length === 0 && (
           <p className="text-center py-4">No tienes cuentas activas para mostrar en el dashboard.</p>
         )}
+        {console.log('[Home.jsx] Dashboard Accounts Data:', dashboardAccounts)}
         {!isLoadingDashboardAccounts && dashboardAccounts.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 flex-grow">
-            {dashboardAccounts.map((account) => (
-              <div key={account.id} className="bg-gradient-to-br from-[#232323] to-[#2d2d2d] p-5 rounded-3xl border border-[#333] flex flex-col h-[300px] md:h-[320px] max-w-lg">
-                <div className="flex justify-between items-start mb-4">
-                  <h3 className="font-medium text-xl md:text-2xl">
-                    ONE STEP<br />
-                    CHALLENGE {account.challengeAmount?.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                  </h3>
-                  <span className="text-gray-400 text-sm">#{account.accountNumber}</span>
-                </div>
+            {dashboardAccounts.map((account) => {
+              const amount = getChallengeAmount(account);
+              let displayAmount;
+              if (typeof amount === 'number' && !isNaN(amount)) {
+                displayAmount = amount.toLocaleString('en-US', {
+                  style: 'currency',
+                  currency: 'USD',
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 0
+                });
+              } else {
+                displayAmount = t('home_account_amountNotAvailable');
+              }
 
-                <div className="mb-4">
-                  <p className="text-gray-400 text-sm">Balance Actual</p>
-                  <p className="text-2xl font-medium">{formatBalance(account.balanceActual)}</p>
-                </div>
+              return (
+                <div key={account.id} className="bg-gradient-to-br from-[#232323] to-[#2d2d2d] p-5 rounded-3xl border border-[#333] flex flex-col h-[300px] md:h-[320px] max-w-lg">
+                  <div className="flex justify-between items-start mb-4">
+                    <h3 className="font-medium text-xl md:text-2xl">
+                      {getPhaseDisplayLabel(account)}<br />
+                      {t('home_account_challengeLabel')} {displayAmount}
+                    </h3>
+                    <span className="text-gray-400 text-sm">#{account.accountNumber}</span>
+                  </div>
 
-                <div className="grid grid-cols-3 gap-4 text-sm mb-6">
-                  <div>
-                    <p className="text-gray-400">PNL Hoy</p>
-                    <p className={`${(account.pnlToday || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                      {(account.pnlToday || 0) >= 0 ? '+' : ''}{((account.pnlToday || 0) / (account.balanceActual || 1) * 100).toFixed(2)}%<br />
-                      {(account.pnlToday || 0) >= 0 ? '+' : ''}{formatBalance(account.pnlToday || 0)}
-                    </p>
+                  <div className="mb-4">
+                    <p className="text-gray-400 text-sm">Balance Actual</p>
+                    <p className="text-2xl font-medium">{formatBalance(amount)}</p>
                   </div>
-                  <div>
-                    <p className="text-gray-400">PNL 7 días</p>
-                    <p className={`${(account.pnl7Days || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                      {(account.pnl7Days || 0) >= 0 ? '+' : ''}{((account.pnl7Days || 0) / (account.balanceActual || 1) * 100).toFixed(2)}%<br />
-                      {(account.pnl7Days || 0) >= 0 ? '+' : ''}{formatBalance(account.pnl7Days || 0)}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-gray-400">PNL 30 días</p>
-                    <p className={`${(account.pnl30Days || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                      {(account.pnl30Days || 0) >= 0 ? '+' : ''}{((account.pnl30Days || 0) / (account.balanceActual || 1) * 100).toFixed(2)}%<br />
-                      {(account.pnl30Days || 0) >= 0 ? '+' : ''}{formatBalance(account.pnl30Days || 0)}
-                    </p>
-                  </div>
-                </div>
 
-                <div className="flex justify-center">
-                  <button 
-                    className="border border-cyan-500 border-opacity-50 text-white py-1.5 px-6 rounded-full hover:bg-gray-800 transition text-sm"
-                    style={{ outline: 'none' }}
-                    onClick={() => {
-                      onViewDetails && onViewDetails(account.id);
-                    }}
-                  >
-                    Ver Detalles
-                  </button>
+                  <div className="grid grid-cols-3 gap-4 text-sm mb-6">
+                    <div>
+                      <p className="text-gray-400">PNL Hoy</p>
+                      <p className={`${(account.pnlToday || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {(account.pnlToday || 0) >= 0 ? '+' : ''}{((account.pnlToday || 0) / (amount || 1) * 100).toFixed(2)}%<br />
+                        {(account.pnlToday || 0) >= 0 ? '+' : ''}{formatBalance(account.pnlToday || 0)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-gray-400">PNL 7 días</p>
+                      <p className={`${(account.pnl7Days || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {(account.pnl7Days || 0) >= 0 ? '+' : ''}{((account.pnl7Days || 0) / (amount || 1) * 100).toFixed(2)}%<br />
+                        {(account.pnl7Days || 0) >= 0 ? '+' : ''}{formatBalance(account.pnl7Days || 0)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-gray-400">PNL 30 días</p>
+                      <p className={`${(account.pnl30Days || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {(account.pnl30Days || 0) >= 0 ? '+' : ''}{((account.pnl30Days || 0) / (amount || 1) * 100).toFixed(2)}%<br />
+                        {(account.pnl30Days || 0) >= 0 ? '+' : ''}{formatBalance(account.pnl30Days || 0)}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-center">
+                    <button 
+                      className="border border-cyan-500 border-opacity-50 text-white py-1.5 px-6 rounded-full hover:bg-gray-800 transition text-sm"
+                      style={{ outline: 'none' }}
+                      onClick={() => {
+                        onViewDetails && onViewDetails(account.id);
+                      }}
+                    >
+                      Ver Detalles
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

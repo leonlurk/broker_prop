@@ -73,6 +73,7 @@ const NotificationsModal = ({ onClose }) => {
                         src={notification.icon} 
                         alt={notification.altIconText}
                         className="w-8 h-8"
+                        style={notification.altIconText === 'Trophy' ? { filter: 'grayscale(100%) brightness(170%) contrast(110%)' } : undefined}
                         onError={(e) => {
                           e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 24 24'%3E%3Cpath fill='%23888888' d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 16c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6zm0-10c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z'/%3E%3C/svg%3E";
                         }}

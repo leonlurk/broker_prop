@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ChevronDown, Copy, ArrowUpDown, Save, AlertTriangle, Loader, Lock, UserCheck, Link, ListChecks, CreditCard } from 'lucide-react';
+import { ChevronDown, Copy, ArrowUpDown, Save, AlertTriangle, Loader, Lock, UserCheck, Link, ListChecks, CreditCard, LockOpen } from 'lucide-react';
 import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { auth, db } from '../firebase/config';
 import { useAuth } from '../contexts/AuthContext';
 import { getTranslator } from '../utils/i18n';
 
-// Tier requirements (can be constants or fetched from config later)
+// Updated Tier requirements
 const TIER_REQUIREMENTS = {
-  1: 0, // Base Tier
-  2: 5, // Example: 5 referrals for Tier 2
-  3: 15 // Example: 15 referrals for Tier 3
+  1: 0,    // Base Tier (0-99 referrals)
+  2: 100,  // Tier 2 (100-199 referrals)
+  3: 200   // Tier 3 (200+ referrals)
 };
 
 // Tier commission details (example) - Will be initialized inside component for t function access
@@ -20,9 +20,9 @@ const TIER_REQUIREMENTS = {
 // };
 
 const determineTier = (referralCount) => {
-  if (referralCount >= TIER_REQUIREMENTS[3]) return 3;
-  if (referralCount >= TIER_REQUIREMENTS[2]) return 2;
-  return 1;
+  if (referralCount >= TIER_REQUIREMENTS[3]) return 3; // 200+
+  if (referralCount >= TIER_REQUIREMENTS[2]) return 2; // 100-199
+  return 1; // 0-99
 };
 
 const AfiliadosDashboard = () => {
@@ -258,20 +258,31 @@ const AfiliadosDashboard = () => {
             <section>
                 <h2 className="text-2xl font-semibold mb-4 text-gray-100">{t('afiliadosDashboard_panel_affiliateTiers')}</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {[1, 2, 3].map(tierNum => (
-                        <div key={tierNum} className={`p-5 rounded-xl border ${currentTier >= tierNum ? 'border-cyan-400 bg-[#2d2d2d]' : 'border-[#4A4A4A] bg-[#2d2d2d]' } space-y-1`}>
-                            <div className="flex justify-between items-center">
-                                <h3 className={`text-xl font-bold ${currentTier >= tierNum ? 'text-white' : 'text-gray-300'}`}>{t('afiliadosDashboard_panel_tierLabel', { tierNum })}</h3>
-                                {currentTier < tierNum && <Lock size={20} className="text-gray-500" />}
-              </div>
-                            <p className={`text-sm ${currentTier >= tierNum ? 'text-gray-200' : 'text-gray-400'}`}>{t(TIER_COMMISSIONS[tierNum].labelKey)}</p>
-                            <p className="text-xs text-gray-500">
-                                {TIER_REQUIREMENTS[tierNum + 1] !== undefined 
-                                    ? t('afiliadosDashboard_panel_tierRequirement', { count: TIER_REQUIREMENTS[tierNum+1] })
-                                    : t('afiliadosDashboard_panel_tierRequirementPlus', { count: TIER_REQUIREMENTS[tierNum] })}
-                            </p>
-                </div>
-                    ))}
+                    {[1, 2, 3].map(tierNum => {
+                        const isCurrentTierOrHigher = currentTier >= tierNum;
+                        const requirementText = () => {
+                            if (tierNum === 1) return t('afiliadosDashboard_panel_tierRequirementRange', { min: 0, max: 99 });
+                            if (tierNum === 2) return t('afiliadosDashboard_panel_tierRequirementRange', { min: 100, max: 199 });
+                            if (tierNum === 3) return t('afiliadosDashboard_panel_tierRequirementPlus', { count: 200 });
+                            return '';
+                        };
+
+                        return (
+                            <div key={tierNum} className={`p-5 rounded-xl border ${isCurrentTierOrHigher ? 'border-cyan-400 bg-[#2d2d2d]' : 'border-[#4A4A4A] bg-[#2d2d2d]' } space-y-1`}>
+                                <div className="flex justify-between items-center">
+                                    <h3 className={`text-xl font-bold ${isCurrentTierOrHigher ? 'text-white' : 'text-gray-300'}`}>{t('afiliadosDashboard_panel_tierLabel', { tierNum })}</h3>
+                                    {/* Show lock icon only if tier is not achieved */}
+                                    {!isCurrentTierOrHigher && <Lock size={20} className="text-gray-500" />}
+                                    {/* Show unlocked icon if the tier IS current/achieved */}
+                                    {isCurrentTierOrHigher && <LockOpen size={20} className="text-cyan-400" />}
+                                </div>
+                                <p className={`text-sm ${isCurrentTierOrHigher ? 'text-gray-200' : 'text-gray-400'}`}>{t(TIER_COMMISSIONS[tierNum].labelKey)}</p>
+                                <p className="text-xs text-gray-500">
+                                    {requirementText()}
+                                </p>
+                            </div>
+                        );
+                    })}
                 </div>
             </section>
 
@@ -285,6 +296,7 @@ const AfiliadosDashboard = () => {
                     <div className="text-center p-4">
                         <Lock size={36} className="text-gray-500 mb-3 mx-auto" />
                         <h3 className="text-xl font-semibold text-gray-300 mb-1">{t('afiliadosDashboard_panel_sectionLocked')}</h3>
+                        {/* Ensure this message correctly reflects the new Tier 3 requirement */}
                         <p className="text-sm text-gray-400">{t('afiliadosDashboard_panel_reachTierToUnlock', { tierNum: 3, count: TIER_REQUIREMENTS[3] })}</p>
                 </div>
                 )}

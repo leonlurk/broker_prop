@@ -4,30 +4,27 @@ import { ChevronDown, Calendar, Clock, AlertTriangle, Loader } from 'lucide-reac
 const Noticias = () => {
     // Fecha actual y rango
   const today = new Date();
-  console.log("Fecha actual:", today.toISOString());
-  
+  today.setHours(0, 0, 0, 0); // Normalize today to the start of the day
+
   const days = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes'];
 
-  // Obtener el día actual
-  const getDayName = () => {
-    const dayIndex = today.getDay();
-    const daysMap = {1: 'Lunes', 2: 'Martes', 3: 'Miercoles', 4: 'Jueves', 5: 'Viernes'};
-    return daysMap[dayIndex] || 'Lunes';
+  // Helper to get Monday of a given date's week
+  const getMonday = (d) => {
+    d = new Date(d);
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday (0)
+    return new Date(d.setDate(diff));
   };
   
-  const [activeDay, setActiveDay] = useState(getDayName());
+  const [currentViewMonday, setCurrentViewMonday] = useState(getMonday(today));
   
-  const [startDate, setStartDate] = useState(today.getDate());
-  const [endDate, setEndDate] = useState(new Date(today.getTime() + 4 * 24 * 60 * 60 * 1000).getDate());
-  const [currentYear, setCurrentYear] = useState(today.getFullYear());
-  const [currentMonth, setCurrentMonth] = useState(today.getMonth() + 1); // Mes en número (1-12)
-  
-  console.log("Estado inicial de fechas:", {
-    startDate,
-    endDate,
-    currentYear,
-    currentMonth
-  });
+  // Determine initial selected date
+  const initialDayIndex = today.getDay() >= 1 && today.getDay() <= 5 ? today.getDay() -1 : 0; // 0 for Mon, 1 for Tue, etc. Default to Mon if weekend.
+  const initialSelectedDate = new Date(currentViewMonday);
+  initialSelectedDate.setDate(currentViewMonday.getDate() + initialDayIndex);
+
+  const [selectedFullDate, setSelectedFullDate] = useState(initialSelectedDate);
+  const [activeDay, setActiveDay] = useState(days[initialDayIndex]); // 'Lunes', 'Martes', etc.
   
   // Estado para eventos económicos
   const [events, setEvents] = useState([]);
@@ -89,38 +86,18 @@ const Noticias = () => {
   useEffect(() => {
     const fetchFinancialNews = async () => {
       console.log("===== INICIANDO FETCH DE NOTICIAS =====");
-      console.log("Día activo:", activeDay);
+      console.log("Selected Full Date for Fetch:", selectedFullDate.toISOString());
       setIsLoading(true);
       setError(null);
       
       try {
-        // Formatear fechas para la API
-        const fromDate = new Date(currentYear, currentMonth - 1, startDate);
-        const toDate = new Date(currentYear, currentMonth - 1, endDate);
-        
-        const from = fromDate.toISOString().split('T')[0];
-        const to = toDate.toISOString().split('T')[0];
-        
-        console.log("Rango de fechas:", { from, to });
-        
-        // Usando la API de Finnhub para noticias financieras
-        const apiKey = 'cvs569hr01qvc2murvngcvs569hr01qvc2murvo0'; // Actualizada con tu API key
-        console.log("API Key:", apiKey);
-        
-// Determinar el día actual seleccionado para filtrar noticias
-const dayIndex = days.indexOf(activeDay);
-const startDate2 = new Date(today);
-startDate2.setDate(today.getDate() + dayIndex);
-const fromDateStr = startDate2.toISOString().split('T')[0];
+        const fromDateStr = selectedFullDate.toISOString().split('T')[0];
+        const toDateStr = fromDateStr; // Fetch for a single day
 
-// Calcular fecha final (una semana después)
-const endDate2 = new Date(startDate2);
-endDate2.setDate(startDate2.getDate() + 6); // 7 días en total
-const toDateStr = endDate2.toISOString().split('T')[0];
-
-console.log("Rango de fechas para API:", fromDateStr, "a", toDateStr);
-
-const apiUrl = `https://finnhub.io/api/v1/news?category=general&from=${fromDateStr}&to=${toDateStr}&token=${apiKey}`;
+        console.log("Rango de fechas para API (single day):", fromDateStr);
+        
+        const apiKey = 'cvs569hr01qvc2murvngcvs569hr01qvc2murvo0';
+        const apiUrl = `https://finnhub.io/api/v1/news?category=general&from=${fromDateStr}&to=${toDateStr}&token=${apiKey}`;
         
         console.log("URL de la API:", apiUrl);
         
@@ -280,24 +257,18 @@ const apiUrl = `https://finnhub.io/api/v1/news?category=general&from=${fromDateS
       console.log("Limpiando intervalo");
       clearInterval(intervalId);
     };
-  }, [startDate, endDate, currentMonth, currentYear, activeDay]);
+  }, [selectedFullDate]); // Depend on selectedFullDate
 
-  // Efecto para actualizar el rango de fechas cuando se cambia el día activo
+  // Effect to update selectedFullDate when activeDay (tab) changes
   useEffect(() => {
-    console.log("Actualizando rango de fechas por cambio de día activo:", activeDay);
     const dayIndex = days.indexOf(activeDay);
     if (dayIndex !== -1) {
-      const targetDate = new Date(today);
-      targetDate.setDate(today.getDate() + dayIndex);
-      
-      console.log("Nueva fecha objetivo:", targetDate.toISOString());
-      
-      setStartDate(targetDate.getDate());
-      setEndDate(targetDate.getDate());
-      setCurrentMonth(targetDate.getMonth() + 1);
-      setCurrentYear(targetDate.getFullYear());
+      const newSelectedDate = new Date(currentViewMonday);
+      newSelectedDate.setDate(currentViewMonday.getDate() + dayIndex);
+      setSelectedFullDate(newSelectedDate);
+      console.log("ActiveDay changed. New SelectedFullDate:", newSelectedDate.toISOString());
     }
-  }, [activeDay]);
+  }, [activeDay, currentViewMonday]);
 
   // Efecto para actualizar el reloj en tiempo real
   useEffect(() => {
@@ -436,7 +407,7 @@ const apiUrl = `https://finnhub.io/api/v1/news?category=general&from=${fromDateS
   console.log("Render del componente Noticias");
 
   return (
-    <div className="flex flex-col border border-[#333] rounded-3xl min-h-screen bg-[#232323] text-white p-2 sm:p-4">
+    <div className="flex flex-col border border-[#333] rounded-3xl bg-[#232323] text-white p-2 sm:p-4">
       {/* Days of the week tabs - Scrollable on mobile */}
       <div className="flex space-x-2 mb-4 overflow-x-auto pb-2 scrollbar-thin">
         {days.map((day) => (
@@ -457,14 +428,10 @@ const apiUrl = `https://finnhub.io/api/v1/news?category=general&from=${fromDateS
       {/* Date selector - Stack on mobile */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center mb-6 gap-2 sm:gap-0">
         <div className="p-2 sm:p-3 text-base sm:text-xl bg-gradient-to-br from-[#232323] to-[#2d2d2d] rounded-full border border-[#333] text-white mr-0 sm:mr-4">
-          {activeDay === 'Lunes' ? 'El día de hoy' : activeDay}
+          {activeDay}
         </div>
         <div className="p-2 sm:p-3 text-base sm:text-xl bg-transparent text-white mr-0 sm:mr-auto">
-          {getMonthName(currentMonth - 1)} <span className="text-[#a0a0a0]">{startDate}</span> 
-          {startDate !== endDate && (
-            <> - {getMonthName(currentMonth - 1)} <span className="text-[#a0a0a0]">{endDate}</span></>
-          )}
-          , {currentYear}
+          {getMonthName(selectedFullDate.getMonth())} <span className="text-[#a0a0a0]">{selectedFullDate.getDate()}</span>, {selectedFullDate.getFullYear()}
         </div>
 
         <div className="relative">

@@ -84,7 +84,7 @@ const Descargas = () => {
 ];
 
   return (
-    <div className="flex flex-col min-h-screen border border-[#333] rounded-3xl bg-[#232323] text-white p-4 md:p-6">
+    <div className="flex flex-col border border-[#333] rounded-3xl bg-[#232323] text-white p-4 md:p-6">
       <div className="space-y-6">
         {platforms.map((platform) => (
           <div 

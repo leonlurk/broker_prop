@@ -5,13 +5,19 @@ import BillingPage from './BillingPage';
 import ChangePasswordModal from './ChangePasswordModal';
 import UpdateEmailModal from './UpdateEmailModal';
 import { auth, db } from '../firebase/config';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 import { getTranslator } from '../utils/i18n';
 
 const Settings = ({ onBack }) => {
   const { currentUser, language } = useAuth();
   const t = useMemo(() => getTranslator(language), [language]);
+
+  // DEBUGGING: Log language and a sample translation
+  useEffect(() => {
+    console.log('[Settings.jsx] Language from useAuth():', language);
+    console.log('[Settings.jsx] Sample translation for settings_cropImage_title:', t('settings_cropImage_title'));
+  }, [language, t]);
 
   const [expandedSection, setExpandedSection] = useState(null);
   const [showKYC, setShowKYC] = useState(false);

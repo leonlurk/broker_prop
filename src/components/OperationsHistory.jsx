@@ -1,24 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, Calendar, ArrowDown, ChevronDown, Copy, DollarSign, Loader, Save, AlertTriangle } from 'lucide-react';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, addDoc, collection, serverTimestamp, query, where, onSnapshot, orderBy } from 'firebase/firestore';
 import { auth, db } from '../firebase/config';
 
 const OperationsHistory = () => {
-  const allOperaciones = [
-    { estado: 'Terminado', fecha: '12/1/2025 14:48', numOrden: '73c5cd26-21a8-4c03', tipo: 'Purchase - 5K Standard', metodo: 'Criptomoneda', cantidad: '$280.00' },
-    { estado: 'Pendiente', fecha: '11/1/2025 10:22', numOrden: '82d6fe37-32b9-5d14', tipo: 'Purchase - 10K Standard', metodo: 'Tarjeta', cantidad: '$390.00' },
-    { estado: 'Vencido', fecha: '10/1/2025 09:17', numOrden: '91e7fg48-43c0-6e25', tipo: 'Purchase - 25K Standard', metodo: 'Criptomoneda', cantidad: '$540.00' },
-    { estado: 'Terminado', fecha: '9/1/2025 16:33', numOrden: '61a3bc15-10a7-3b02', tipo: 'Purchase - 5K Standard', metodo: 'Tarjeta', cantidad: '$280.00' },
-    { estado: 'Pendiente', fecha: '8/1/2025 11:05', numOrden: '52b4cd27-22a9-4d04', tipo: 'Purchase - 50K Standard', metodo: 'Criptomoneda', cantidad: '$780.00' },
-    { estado: 'Vencido', fecha: '7/1/2025 15:41', numOrden: '43c5de38-33b0-5e15', tipo: 'Purchase - 10K Standard', metodo: 'Tarjeta', cantidad: '$390.00' },
-    { estado: 'Terminado', fecha: '6/1/2025 13:29', numOrden: '34d6ef49-44c1-6f26', tipo: 'Purchase - 25K Standard', metodo: 'Criptomoneda', cantidad: '$540.00' },
-    { estado: 'Pendiente', fecha: '5/1/2025 10:57', numOrden: '25e7fg50-55d2-7g37', tipo: 'Purchase - 5K Standard', metodo: 'Tarjeta', cantidad: '$280.00' },
-    { estado: 'Vencido', fecha: '4/1/2025 08:12', numOrden: '16f8gh61-66e3-8h48', tipo: 'Purchase - 50K Standard', metodo: 'Criptomoneda', cantidad: '$780.00' },
-    { estado: 'Terminado', fecha: '3/1/2025 14:46', numOrden: '07g9hi72-77f4-9i59', tipo: 'Purchase - 10K Standard', metodo: 'Tarjeta', cantidad: '$390.00' },
-    { estado: 'Pendiente', fecha: '2/1/2025 12:38', numOrden: '98h0ij83-88g5-0j60', tipo: 'Purchase - 25K Standard', metodo: 'Criptomoneda', cantidad: '$540.00' },
-  ];
-
-  const [operaciones, setOperaciones] = useState(allOperaciones);
+  const [operaciones, setOperaciones] = useState([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const [showSnackbar, setShowSnackbar] = useState(false);
   
   // Estados para los filtros
@@ -185,7 +172,7 @@ const renderCalendar = (isStartDate) => {
   const itemsPerPage = 5;
 
   // Estados para las ganancias y proceso de retiro
-  const [gananciaRetirable, setGananciaRetirable] = useState(0);
+  const [gananciaRetirable, setGananciaRetirable] = useState('$0.00');
   const [isLoading, setIsLoading] = useState(true);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
   const [withdrawSuccess, setWithdrawSuccess] = useState(false);
@@ -203,32 +190,35 @@ const renderCalendar = (isStartDate) => {
   
   // Simular carga de datos de ganancias desde una API
   useEffect(() => {
-    const fetchGanancias = async () => {
+    if (!auth.currentUser) {
+      setIsLoading(false);
+      setGananciaRetirable('$0.00'); // Default to string display
+      return;
+    }
+
       setIsLoading(true);
-      try {
-        // Simulación de llamada a API con un delay y valor aleatorio
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Generar una ganancia aleatoria entre 1000 y 10000
-        const randomGanancia = (Math.random() * 9000 + 1000).toFixed(2);
-        setGananciaRetirable(randomGanancia);
+    const userDocRef = doc(db, 'users', auth.currentUser.uid);
+
+    const unsubscribe = onSnapshot(userDocRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const userData = docSnap.data();
+        // Assume withdrawableBalance in Firestore is the display string e.g., "$1,234.56"
+        // or a status string like "Processing..."
+        setGananciaRetirable(userData.withdrawableBalance || '$0.00'); 
         setLastUpdate(new Date());
-      } catch (error) {
-        console.error('Error al cargar ganancias:', error);
-      } finally {
-        setIsLoading(false);
+      } else {
+        setGananciaRetirable('$0.00'); // Default display string
+        console.log("User document not found or no withdrawableBalance field.");
       }
-    };
-    
-    fetchGanancias();
-    
-    // Actualizar las ganancias cada 30 segundos (simula actualizaciones en tiempo real)
-    const intervalId = setInterval(() => {
-      fetchGanancias();
-    }, 5000);
-    
-    return () => clearInterval(intervalId);
-  }, []);
+      setIsLoading(false);
+    }, (error) => {
+      console.error('Error fetching withdrawable balance:', error);
+      setGananciaRetirable('Error'); // Display error string
+      setIsLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [auth.currentUser]);
   
   // Cargar la dirección de la wallet desde Firebase
   useEffect(() => {
@@ -264,7 +254,7 @@ const renderCalendar = (isStartDate) => {
   
   // Función para manejar el retiro de ganancias
   const handleWithdraw = async () => {
-    if (gananciaRetirable <= 0) {
+    if (typeof gananciaRetirable === 'string' && parseFloat(gananciaRetirable.replace(/[^\d.-]/g, '')) <= 0) {
       setWithdrawError('No hay ganancias disponibles para retirar');
       return;
     }
@@ -281,22 +271,31 @@ const renderCalendar = (isStartDate) => {
       // Simulación de proceso de retiro
       await new Promise(resolve => setTimeout(resolve, 2000));
       
+      const withdrawalAmount = parseFloat(gananciaRetirable.replace(/[^\d.-]/g, ''));
+      
       // Simulación de éxito con 80% de probabilidad
       if (Math.random() > 0.2) {
         setWithdrawSuccess(true);
-        setGananciaRetirable(0);
+        // Ganancia retirable will be updated by Firestore listener.
+        // We might need to trigger an update to the user's withdrawableBalance in Firestore here.
+        // For now, just visually reset if needed or rely on Firestore sync.
+        // setGananciaRetirable('$0.00'); // Or let Firestore update it.
         
-        // Agregar el retiro como una nueva operación
-        const newOperacion = {
-          estado: 'Pendiente',
-          fecha: new Date().toLocaleDateString('es-ES') + ' ' + new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
-          numOrden: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
-          tipo: 'Retiro de ganancias',
-          metodo: 'Criptomoneda',
-          cantidad: `$${parseFloat(gananciaRetirable).toFixed(2)}`
+        // Agregar el retiro como una nueva operación en Firestore
+        const newOperation = {
+          userId: auth.currentUser.uid,
+          timestamp: serverTimestamp(), // Firestore server timestamp
+          status: 'Pendiente', // Withdrawals start as Pendiente
+          orderNumber: `WD-${Date.now().toString()}`,
+          operationType: 'Withdrawal',
+          details: 'Retiro de ganancias',
+          paymentMethod: 'Criptomoneda', // Assuming crypto for now as per wallet context
+          amount: withdrawalAmount,
+          currency: 'USD',
         };
         
-        setOperaciones([newOperacion, ...operaciones]);
+        await addDoc(collection(db, 'operations'), newOperation);
+        console.log("Withdrawal operation logged successfully:", newOperation);
         
         // Resetear el estado de éxito después de 3 segundos
         setTimeout(() => {
@@ -307,6 +306,7 @@ const renderCalendar = (isStartDate) => {
         setWithdrawError('Error en la red de la blockchain. Intente nuevamente.');
       }
     } catch (error) {
+      console.error('Error al procesar el retiro:', error); // Log the actual error
       setWithdrawError('Error al procesar el retiro. Intente más tarde.');
     } finally {
       setIsWithdrawing(false);
@@ -361,7 +361,90 @@ const renderCalendar = (isStartDate) => {
 
   // Aplicar filtros cuando cambian
   useEffect(() => {
-    let filteredData = allOperaciones;
+    // This useEffect is for client-side filtering of the 'operaciones' state.
+    // The actual data fetching from Firestore will be in a separate useEffect.
+    // For now, let's assume 'allOperaciones' is the data fetched from Firestore
+    // and this filtering logic will apply to it.
+    // We'll need to adjust this if 'allOperaciones' is no longer a static array.
+
+    // If isLoadingHistory is true, or no user, don't filter yet.
+    if (isLoadingHistory || !auth.currentUser) {
+      setOperaciones([]); // Clear operations if loading or no user
+      return;
+    }
+
+    // The filtering logic will be applied to the 'fetchedOperaciones' from Firestore.
+    // This part needs to be connected to the Firestore data source.
+    // For now, I will comment out the direct dependency on 'allOperaciones'
+    // and assume the filtering will happen on the 'operaciones' state
+    // which will be populated by Firestore.
+
+    // The existing filtering logic is mostly fine, but it acts on `allOperaciones`
+    // which we are removing. We need to make sure this filtering runs *after* data is fetched.
+    // It's better to apply filters to the data that's already in the 'operaciones' state
+    // if that state is directly populated from Firestore and represents the complete unfiltered list initially.
+    // Or, keep a separate state for all fetched operations and then a filtered state.
+    // For simplicity, let's assume 'operaciones' will hold ALL user operations from Firestore
+    // and the filter props will trigger re-filtering on this list.
+    // This requires the Firestore fetching logic to set 'operaciones' to the full list first.
+
+    // The actual filtering logic based on searchQuery, fechaInicio, etc. 
+    // will be refactored to work with the Firestore-backed 'operaciones' state in the next step.
+    // For now, this useEffect will be responsible for re-triggering filtering when filter criteria change.
+    // The data it filters will come from the Firestore listener.
+
+  }, [searchQuery, fechaInicio, fechaFin, estadoFilter, metodoFilter, isLoadingHistory]); // Added isLoadingHistory
+
+
+  // Fetch operations from Firestore
+  useEffect(() => {
+    if (!auth.currentUser) {
+      setOperaciones([]);
+      setIsLoadingHistory(false);
+      return;
+    }
+
+    setIsLoadingHistory(true);
+    const q = query(
+      collection(db, 'operations'), 
+      where('userId', '==', auth.currentUser.uid),
+      orderBy('timestamp', 'desc')
+    );
+
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const fetchedOperations = [];
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        // Transform Firestore data to the structure expected by the table
+        fetchedOperations.push({
+          id: doc.id,
+          estado: data.status,
+          // Firestore timestamp to JS Date, then format. Handle null timestamps.
+          fecha: data.timestamp ? new Date(data.timestamp.seconds * 1000).toLocaleString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'N/A',
+          numOrden: data.orderNumber,
+          tipo: data.operationType === 'Purchase Challenge' ? data.details : data.operationType, // Use 'details' for purchase type, otherwise operationType
+          metodo: data.paymentMethod,
+          cantidad: `$${Number(data.amount).toFixed(2)}`,
+          // Add other fields from 'data' if needed for new columns or logic
+          rawDetails: data.details // keep raw details if needed for 'Cuenta' logic
+        });
+      });
+      setOperaciones(fetchedOperations); // This will be the full list for the user
+      setIsLoadingHistory(false);
+    }, (error) => {
+      console.error("Error fetching operations history: ", error);
+      setIsLoadingHistory(false);
+      // Optionally set an error state to display to the user
+    });
+
+    return () => unsubscribe(); // Cleanup listener on component unmount
+  }, [auth.currentUser]); // Re-run if user changes
+  
+  // This useEffect will now handle filtering on the 'operaciones' state populated by Firestore
+  useEffect(() => {
+    if (isLoadingHistory) return; // Don't filter if still loading
+
+    let filteredData = [...operaciones]; // Start with all fetched operations
     
     // Filtrar por búsqueda de número de orden
     if (searchQuery) {
@@ -384,6 +467,7 @@ const renderCalendar = (isStartDate) => {
     if (fechaInicio) {
       const fechaInicioObj = new Date(convertirFecha(fechaInicio));
       filteredData = filteredData.filter(op => {
+        if (!op.fecha || op.fecha === 'N/A') return false;
         const opFecha = new Date(convertirFecha(op.fecha.split(' ')[0]));
         return opFecha >= fechaInicioObj;
       });
@@ -393,14 +477,76 @@ const renderCalendar = (isStartDate) => {
     if (fechaFin) {
       const fechaFinObj = new Date(convertirFecha(fechaFin));
       filteredData = filteredData.filter(op => {
+        if (!op.fecha || op.fecha === 'N/A') return false;
         const opFecha = new Date(convertirFecha(op.fecha.split(' ')[0]));
         return opFecha <= fechaFinObj;
       });
     }
     
-    setOperaciones(filteredData);
-    setCurrentPage(1); // Resetear a la primera página cuando se aplican filtros
-  }, [searchQuery, fechaInicio, fechaFin, estadoFilter, metodoFilter]);
+    // If you want to keep the 'operaciones' state as the source of truth from Firestore,
+    // and have a separate state for *displaying* filtered operations:
+    // setFilteredDisplayOperaciones(filteredData);
+    // For now, I'll update 'setOperaciones' itself, but this means original sort order might be lost
+    // on subsequent non-filter-related re-renders if not handled carefully.
+    // A better approach is often: rawFirestoreData -> setRawOperaciones -> applyFilters -> setDisplayOperaciones
+    // For this iteration, let's assume the filtering is applied and the paginatedOperaciones
+    // will use the result of this filtering. We'll use a different state for the filtered results.
+
+    // To avoid modifying the 'operaciones' state directly by filters, create a new state for filtered operations
+    // This will be done in the next step if needed. For now, this filtering logic should be applied
+    // to derive `paginatedOperaciones`.
+
+    // The `paginatedOperaciones` should be derived from the result of these filters.
+    // Let's store the filtered result in a new state variable if we want to preserve `operaciones` as the raw list.
+    // For now, I will use a variable `currentDisplayOps` that `paginatedOperaciones` will use.
+    // This means `paginatedOperaciones` needs to be redefined to use this filtered set.
+
+  }, [searchQuery, fechaInicio, fechaFin, estadoFilter, metodoFilter, operaciones, isLoadingHistory]);
+
+
+  // Derived state for display after filtering
+  const [displayOperaciones, setDisplayOperaciones] = useState([]);
+
+  useEffect(() => {
+    if (isLoadingHistory) {
+      setDisplayOperaciones([]);
+      return;
+    }
+    let filteredData = [...operaciones]; // Start with all fetched operations from Firestore
+
+    if (searchQuery) {
+      filteredData = filteredData.filter(op => 
+        op.numOrden.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+    if (estadoFilter) {
+      filteredData = filteredData.filter(op => op.estado === estadoFilter);
+    }
+    if (metodoFilter) {
+      filteredData = filteredData.filter(op => op.metodo === metodoFilter);
+    }
+    if (fechaInicio) {
+      const fechaInicioObj = new Date(convertirFecha(fechaInicio));
+      filteredData = filteredData.filter(op => {
+        if (!op.fecha || op.fecha === 'N/A') return false;
+        const opFechaParts = op.fecha.split(' ')[0];
+        const opFecha = new Date(convertirFecha(opFechaParts));
+        return opFecha >= fechaInicioObj;
+      });
+    }
+    if (fechaFin) {
+      const fechaFinObj = new Date(convertirFecha(fechaFin));
+      filteredData = filteredData.filter(op => {
+        if (!op.fecha || op.fecha === 'N/A') return false;
+        const opFechaParts = op.fecha.split(' ')[0];
+        const opFecha = new Date(convertirFecha(opFechaParts));
+        return opFecha <= fechaFinObj;
+      });
+    }
+    setDisplayOperaciones(filteredData);
+    setCurrentPage(1); // Reset to first page on filter change
+  }, [searchQuery, fechaInicio, fechaFin, estadoFilter, metodoFilter, operaciones, isLoadingHistory]);
+
   
   // Función para convertir fecha de formato DD/MM/YYYY a MM/DD/YYYY para comparación
   const convertirFecha = (fecha) => {
@@ -413,14 +559,14 @@ const renderCalendar = (isStartDate) => {
   // Estado del color de cada fila
   const getEstadoColor = (estado) => {
     switch (estado) {
-      case 'Terminado':
-        return 'bg-green-900/30 text-green-500';
-      case 'Pendiente':
-        return 'bg-yellow-900/30 text-yellow-500';
-      case 'Vencido':
-        return 'bg-red-900/30 text-red-500';
+      case 'Terminado': // Corresponds to 'Approved' in TradingAccounts
+        return 'bg-gradient-to-br from-[#3a5311] to-[#2b2b2b]';
+      case 'Pendiente': // Should be yellow
+        return 'bg-gradient-to-br from-yellow-500 to-[#2b2b2b]'; // Changed to yellow gradient
+      case 'Vencido': // Corresponds to 'Lost' in TradingAccounts
+        return 'bg-gradient-to-br from-red-500/40 to-[#2b2b2b]';
       default:
-        return 'bg-gray-900/30 text-gray-500';
+        return 'bg-gradient-to-br from-gray-700 to-[#2b2b2b]';
     }
   };
 
@@ -439,13 +585,13 @@ const renderCalendar = (isStartDate) => {
   };
   
   // Obtener operaciones para la página actual
-  const paginatedOperaciones = operaciones.slice(
+  const paginatedOperaciones = displayOperaciones.slice( // Use displayOperaciones for pagination
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
   
   // Calcular número total de páginas
-  const totalPages = Math.ceil(operaciones.length / itemsPerPage);
+  const totalPages = Math.ceil(displayOperaciones.length / itemsPerPage); // Use displayOperaciones for total pages
   
   // Manejar cambio de página
   const handlePageChange = (page) => {
@@ -485,7 +631,7 @@ const renderCalendar = (isStartDate) => {
               {isLoading ? (
                 <span className="text-gray-400">Cargando...</span>
               ) : (
-                formatCurrency(gananciaRetirable)
+                gananciaRetirable // Display the string directly
               )}
             </p>
             {!isLoading && lastUpdate && (
@@ -873,37 +1019,72 @@ const renderCalendar = (isStartDate) => {
       {/* Tabla de operaciones - Contenedor separado */}
       <div className="bg-gradient-to-br from-[#232323] to-[#2d2d2d] rounded-xl border border-[#333] p-4 md:p-6 mb-6">
         {/* Cabecera de la tabla */}
-<div className="hidden md:grid grid-cols-6 items-center text-left text-gray-400 border-b border-gray-700 py-2 mb-2 gap-2">
-  <div className="font-medium px-2">Estado</div>
-  <div className="font-medium px-2">Fecha</div>
-  <div className="font-medium px-2 flex justify-between items-center">
-    <span>N° de orden</span>
+        <div className="hidden md:grid grid-cols-8 items-center text-left text-gray-300 border-b border-gray-700 py-3 mb-3 gap-2">
+          <div className="font-semibold text-sm px-2">Estado</div>
+          <div className="font-semibold text-sm px-2">Fecha De Solicitud</div>
+          <div className="font-semibold text-sm px-2">Tiempo De Pago</div>
+          <div className="font-semibold text-sm px-2 flex justify-between items-center">
+            <span>Hash</span>
     <div className="w-6"></div>
   </div>
-  <div className="font-medium px-2">Tipo de producto</div>
-  <div className="font-medium px-2">Método de pago</div>
-  <div className="font-medium px-2">Cantidad</div>
+          <div className="font-semibold text-sm px-2">Cuenta</div>
+          <div className="font-semibold text-sm px-2">Tipo De Producto</div>
+          <div className="font-semibold text-sm px-2">Cantidad</div>
+          <div className="font-semibold text-sm px-2">Retiros Totales</div>
 </div>
         
         {/* Tabla de operaciones - con mensaje si no hay resultados */}
         <div className="overflow-x-auto">
           {paginatedOperaciones.length > 0 ? (
-            paginatedOperaciones.map((op, index) => (
+            paginatedOperaciones.map((op, index) => {
+              const fechaParts = op.fecha.split(' ');
+              const fechaSolicitud = op.fecha !== 'N/A' ? fechaParts[0] : 'N/A';
+              const tiempoDePago = op.fecha !== 'N/A' && fechaParts.length > 1 ? fechaParts[1] : 'N/A';
+
+              let cuentaDisplay = op.tipo; // Default to operation type
+              // Use rawDetails for 'Cuenta' logic if it was preserved from Firestore data
+              const challengeDetails = op.rawDetails || op.tipo; 
+              const numOrdenSuffix = op.numOrden && op.numOrden.length > 4 ? op.numOrden.slice(-4) : op.numOrden || 'xxxx';
+              
+              if (op.tipo && op.tipo.startsWith('Purchase Challenge')) {
+                // Extract details like "5K Standard" from `challengeDetails` if possible
+                // Assuming `challengeDetails` holds something like "$5.000 Estándar"
+                const parts = typeof challengeDetails === 'string' ? challengeDetails.split(' ') : [];
+                if (parts.length >= 2) {
+                  cuentaDisplay = `${parts.slice(1).join(' ')} (${numOrdenSuffix})`; // e.g. "Estándar (c03)" or "5K Standard (c03)"
+                } else {
+                  cuentaDisplay = `${challengeDetails} (${numOrdenSuffix})`;
+                }
+              } else if (op.tipo === 'Withdrawal') {
+                cuentaDisplay = `Retiro Wallet (${numOrdenSuffix})`;
+              }
+
+              let retirosTotalesDisplay;
+              if (op.tipo === 'Withdrawal') {
+                retirosTotalesDisplay = op.cantidad;
+              } else {
+                retirosTotalesDisplay = '$0.00';
+              }
+
+              return (
               <div 
                 key={index} 
-                className={`grid grid-cols-1 md:grid-cols-6 border-b border-gray-800 ${getRowColor(op.estado)} py-2 md:py-3 gap-y-2 md:gap-y-0 md:gap-x-2 text-sm rounded-lg mb-2`}
+                  className={`grid grid-cols-1 md:grid-cols-8 border-b border-gray-800 ${getRowColor(op.estado)} py-2 md:py-3 gap-y-2 md:gap-y-0 md:gap-x-2 text-sm rounded-lg mb-2`}
               >
                 {/* Para móvil */}
                 <div className="md:hidden grid grid-cols-2 gap-2 px-2">
                   <div className="text-gray-400">Estado:</div>
-                  <div className={`px-2 py-1 rounded text-xs font-medium ${getEstadoColor(op.estado)} inline-block w-fit`}>
+                    <div className={`px-4 py-2 rounded-full text-xs font-medium text-white ${getEstadoColor(op.estado)} inline-block w-fit`}>
                     {op.estado}
                   </div>
                   
-                  <div className="text-gray-400">Fecha:</div>
-                  <div>{op.fecha}</div>
+                    <div className="text-gray-400">Fecha De Solicitud:</div>
+                    <div>{fechaSolicitud}</div>
                   
-                    <div className="text-gray-400">N° de orden:</div>
+                    <div className="text-gray-400">Tiempo De Pago:</div>
+                    <div>{tiempoDePago}</div>
+                    
+                    <div className="text-gray-400">Hash:</div>
                     <div className="flex items-center justify-between">
                       <span>{op.numOrden.substring(0, 10)}...</span>
                       <button 
@@ -915,23 +1096,27 @@ const renderCalendar = (isStartDate) => {
                       </button>
                     </div>
                   
-                  <div className="text-gray-400">Tipo:</div>
+                    <div className="text-gray-400">Cuenta:</div>
+                    <div>{cuentaDisplay}</div>
+                    
+                    <div className="text-gray-400">Tipo De Producto:</div>
                   <div>{op.tipo}</div>
-                  
-                  <div className="text-gray-400">Método:</div>
-                  <div>{op.metodo}</div>
                   
                   <div className="text-gray-400">Cantidad:</div>
                   <div className="font-medium">{op.cantidad}</div>
+
+                    <div className="text-gray-400">Retiros Totales:</div>
+                    <div>{retirosTotalesDisplay}</div>
                 </div>
                 
                 {/* Para desktop */}
                 <div className="hidden md:block px-2">
-                  <div className={`px-2 py-1 rounded text-xs font-medium ${getEstadoColor(op.estado)} inline-block`}>
+                    <div className={`px-4 py-2 rounded-full text-xs font-medium text-white ${getEstadoColor(op.estado)} inline-block`}>
                     {op.estado}
                   </div>
                 </div>
-                <div className="hidden md:block px-2">{op.fecha}</div>
+                  <div className="hidden md:block px-2">{fechaSolicitud}</div>
+                  <div className="hidden md:block px-2">{tiempoDePago}</div>
                     <div className="hidden md:flex items-center px-8 justify-between">
                       <span className="truncate">{op.numOrden}</span>
                       <button 
@@ -942,11 +1127,13 @@ const renderCalendar = (isStartDate) => {
                         <Copy size={12} className="text-gray-500" />
                       </button>
                     </div>
+                  <div className="hidden md:block px-2">{cuentaDisplay}</div>
                 <div className="hidden md:block px-2">{op.tipo}</div>
-                <div className="hidden md:block px-2">{op.metodo}</div>
                 <div className="hidden md:block px-2 font-medium">{op.cantidad}</div>
+                  <div className="hidden md:block px-2">{retirosTotalesDisplay}</div>
               </div>
-            ))
+              );
+            })
           ) : (
             <div className="text-center py-8 text-gray-400">
               No se encontraron operaciones con los filtros aplicados

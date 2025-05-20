@@ -492,6 +492,10 @@ export const translations = {
     es: "Requiere: {{count}}+ referidos",
     en: "Requires: {{count}}+ referrals",
   },
+  afiliadosDashboard_panel_tierRequirementRange: {
+    es: "Requiere: {{min}} - {{max}} referidos",
+    en: "Requires: {{min}} - {{max}} referrals",
+  },
   afiliadosDashboard_panel_fundedTradersTier3: {
     es: "Traders Fondeados (Tier 3)",
     en: "Funded Traders (Tier 3)",
@@ -740,8 +744,8 @@ export const translations = {
     en: "Standard",
   },
   tradingChallenge_button_swim: {
-    es: "Swim",
-    en: "Swim",
+    es: "Swing",
+    en: "Swing",
   },
   tradingChallenge_subtitle_complements: {
     es: "Selecciona el complemento ideal para tu estilo de trading",
@@ -762,6 +766,19 @@ export const translations = {
   tradingChallenge_leverage_info: {
     es: " (Apalancamiento 1:100)",
     en: " (Leverage 1:100)"
+  },
+  tradingChallenge_leverage_info_swing: {
+    es: " (Apalancamiento 1:30)",
+    en: " (Leverage 1:30)"
+  },
+  // Mensajes para opciones no aplicables según tipo de desafío
+  tradingChallenge_notApplicable: {
+    es: "No aplicable para desafíos de 1 fase",
+    en: "Not applicable for 1 phase challenges"
+  },
+  tradingChallenge_notApplicableP1: {
+    es: "No aplicable para desafíos de 2 fases",
+    en: "Not applicable for 2 phase challenges"
   },
   // Settings.jsx translations
   settings_error_loadingData: {
@@ -876,6 +893,39 @@ export const translations = {
     es: "Agregar método de pago",
     en: "Add payment method",
   },
+  // New Profile Picture settings translations
+  settings_item_profilePicture: {
+    es: "Foto de Perfil",
+    en: "Profile Picture",
+  },
+  settings_profilePic_alt: {
+    es: "Foto de perfil del usuario",
+    en: "User profile picture",
+  },
+  settings_button_changePicture: {
+    es: "Cambiar Foto",
+    en: "Change Picture",
+  },
+  settings_button_savePicture: {
+    es: "Guardar Foto",
+    en: "Save Picture",
+  },
+  settings_profilePic_error_invalidFile: {
+    es: "Archivo inválido. Por favor, selecciona una imagen.",
+    en: "Invalid file. Please select an image.",
+  },
+  settings_profilePic_error_noFileSelected: {
+    es: "No se ha seleccionado ningún archivo.",
+    en: "No file has been selected.",
+  },
+  settings_profilePic_error_uploadFailed: {
+    es: "Error al subir la imagen. Inténtalo de nuevo.",
+    en: "Error uploading image. Please try again.",
+  },
+  settings_profilePic_success_updated: {
+    es: "Foto de perfil actualizada con éxito.",
+    en: "Profile picture updated successfully.",
+  },
   // Sidebar.jsx translations
   sidebar_dashboard: {
     es: "Dashboard",
@@ -974,8 +1024,9 @@ export const translations = {
   calendar_day: { es: "Día", en: "Day" },
   calendar_month: { es: "Mes", en: "Month" },
   calendar_year: { es: "Año", en: "Year" },
-  calendar_select_day: { es: "--", en: "--" },
-  calendar_select_year: { es: "----", en: "----" },
+  calendar_select_day: { es: "Día", en: "Day" },
+  calendar_select_month: { es: "Mes", en: "Month" },
+  calendar_select_year: { es: "Año", en: "Year" },
   userInfo_label_firstName: { es: "Nombre", en: "First Name" },
   userInfo_label_lastName: { es: "Apellido", en: "Last Name" },
   userInfo_label_dob: { es: "Fecha de Nacimiento", en: "Date of Birth" },
@@ -999,6 +1050,7 @@ export const translations = {
   gender_other: { es: "Otro", en: "Other" },
   gender_preferNotToSay: { es: "Prefiero no decirlo", en: "Prefer not to say" },
   common_back: { es: "Volver", en: "Back" }, // Assuming common key
+  common_accept: { es: "Aceptar", en: "Accept" },
   userInfo_button_saveChanges: { es: "Guardar Cambios", en: "Save Changes" },
   userInfo_button_saving: { es: "Guardando...", en: "Saving..." },
   userInfo_error_saveFailed: { es: "Error al guardar los datos. Por favor, inténtelo de nuevo.", en: "Error saving data. Please try again." },
@@ -1009,6 +1061,7 @@ export const translations = {
     es: "¡Datos guardados con éxito!",
     en: "Data saved successfully!",
   },
+  settings_profilePic_uploading: { es: "Subiendo...", en: "Uploading..."},
 
   // Date formatting keys
   date_short_sunday: { es: "Dom", en: "Sun" },
@@ -1077,6 +1130,36 @@ export const translations = {
     en: "Amount Risked",
   },
   
+  // New keys for PipCalculator.jsx instrument search and favorites
+  pipCalculator_placeholder_selectInstrument: {
+    es: "Seleccionar instrumento",
+    en: "Select instrument",
+  },
+  pipCalculator_placeholder_searchInstrument: {
+    es: "Buscar instrumento...",
+    en: "Search instrument...",
+  },
+  pipCalculator_tooltip_removeFromFavorites: {
+    es: "Quitar de favoritos",
+    en: "Remove from favorites",
+  },
+  pipCalculator_tooltip_addToFavorites: {
+    es: "Añadir a favoritos",
+    en: "Add to favorites",
+  },
+  pipCalculator_noResultsFound: {
+    es: "No se encontraron instrumentos",
+    en: "No instruments found",
+  },
+  pipCalculator_favorites_heading: {
+    es: "Favoritos",
+    en: "Favorites",
+  },
+  pipCalculator_allInstruments_heading: {
+    es: "Todos los Instrumentos",
+    en: "All Instruments",
+  },
+  
   // Modal.jsx translations
   modal_close_aria_label: {
     es: "Cerrar modal",
@@ -1090,7 +1173,7 @@ export const translations = {
   tradingDashboard_greetingPrefix: { es: "Hola, ", en: "Hello, " },
   tradingDashboard_defaultUserName: { es: "Usuario", en: "User" },
   tradingDashboard_avatarAlt: { es: "Avatar", en: "Avatar" },
-  tradingDashboard_currentAccountInfo: { es: "Actualmente, tienes una cuenta de {accountSize}", en: "You currently have a {accountSize} account" },
+  tradingDashboard_currentAccountInfo: { es: "Actualmente, tienes una cuenta de {{accountSize}}", en: "You currently have a {{accountSize}} account" },
   tradingDashboard_initialBalanceLabel: { es: "Balance Inicial:", en: "Initial Balance:" },
   tradingDashboard_planTypeLabel: { es: "Tipo de plan:", en: "Plan Type:" },
   tradingDashboard_accountTypeLabel: { es: "Tipo de cuenta:", en: "Account Type:" },
@@ -1148,6 +1231,24 @@ export const translations = {
   tradingDashboard_minimumLabel: { es: "Mínimo", en: "Minimum" },
   tradingDashboard_currentResultLabel: { es: "Resultado actual", en: "Current Result" },
   tradingDashboard_profitTargetTitle: { es: "Objetivo de ganancias", en: "Profit Target" },
+  tradingDashboard_daysLabel: { es: "Días", en: "Days" },
+  tradingDashboard_loadingMessage: { es: "Cargando datos de la cuenta...", en: "Loading account data..." },
+  tradingDashboard_accountNotFound: { es: "No se pudieron cargar los detalles de la cuenta.", en: "Account details could not be loaded." },
+  tradingDashboard_operationType_sell: { es: "Vender", en: "Sell" },
+  tradingDashboard_status_unknown: { es: "Desconocido", en: "Unknown" },
+  tradingDashboard_iconAlt_copy: { es: "Copiar", en: "Copy" },
+  tradingDashboard_iconAlt_visibility: { es: "Visibilidad", en: "Visibility" },
+  tradingDashboard_loading_charts: { es: "Cargando gráficos...", en: "Loading charts..." },
+  tradingDashboard_daily: { es: "Diario", en: "Daily" },
+  tradingDashboard_weekly: { es: "Semanal", en: "Weekly" },
+  tradingDashboard_monthly: { es: "Mensual", en: "Monthly" },
+  tradingDashboard_no_data: { es: "No hay datos disponibles", en: "No data available" },
+  tradingDashboard_profit_target_explanation: { es: "Objetivo a alcanzar para aprobar la fase", en: "Target to reach to pass the phase" },
+  tradingDashboard_daily_loss_explanation: { es: "Límite máximo de pérdida diaria", en: "Maximum daily loss limit" },
+  tradingDashboard_global_loss_explanation: { es: "Límite máximo de pérdida total", en: "Maximum total loss limit" },
+  tradingDashboard_min_days_explanation: { es: "Días mínimos de trading requeridos", en: "Minimum trading days required" },
+  tradingDashboard_iconAlt_lightning: { es: "Rayo", en: "Lightning" },
+  tradingDashboard_iconAlt_shield: { es: "Escudo", en: "Shield" },
 
   // CertificateComponent.jsx translations
   certificate_button_challengeSuccess: {
@@ -1200,5 +1301,87 @@ export const translations = {
   billing_modal_downloadPdfButton: { es: "Descargar PDF", en: "Download PDF" },
   // common_cancel is already available as settings_button_cancel: { es: "Cancelar", en: "Cancel" }
 
-  // Add more translations here as we go through other components
+  // Home.jsx - Dashboard Account Card
+  home_account_oneStepLabel: {
+    es: "1 FASE",
+    en: "ONE STEP",
+  },
+  home_account_twoStepLabel: {
+    es: "2 FASES",
+    en: "TWO STEPS",
+  },
+  home_account_challengeLabel: {
+    es: "DESAFÍO",
+    en: "CHALLENGE",
+  },
+  home_account_amountNotAvailable: {
+    es: "Monto N/D",
+    en: "Amount N/A",
+  },
+
+  // Payment Method Options for TradingChallenge.jsx
+  paymentMethod_crypto: {
+    es: "Criptomonedas",
+    en: "Cryptocurrencies",
+  },
+  paymentMethod_card: {
+    es: "Tarjeta de Débito/Crédito",
+    en: "Debit/Credit Card",
+  },
+
+  // Added translations for profile image cropping functionality
+  settings_cropImage_title: {
+    es: "Recortar Imagen",
+    en: "Crop Your Image",
+  },
+  settings_cropImage_button_crop: {
+    es: "Recortar",
+    en: "Crop & Save",
+  },
+  settings_cropImage_button_cancel: {
+    es: "Cancelar",
+    en: "Cancel",
+  },
+  settings_cropImage_button_cropping: {
+    es: "Recortando...",
+    en: "Cropping...",
+  },
+
+  // Added for admin contact in modals
+  settings_modal_contactAdminForChange: {
+    es: "Para cambiar tu {{item}}, por favor contacta a nuestro equipo de soporte en admin@example.com.",
+    en: "To change your {{item}}, please contact our support team at admin@example.com."
+  },
+  settings_label_password: {
+    es: "contraseña",
+    en: "password"
+  },
+  settings_label_email: {
+    es: "correo electrónico",
+    en: "email"
+  },
+
+  // Country names for phone codes and general use
+  country_argentina: { es: "Argentina", en: "Argentina" },
+  country_uruguay: { es: "Uruguay", en: "Uruguay" },
+  country_chile: { es: "Chile", en: "Chile" },
+  country_brazil: { es: "Brasil", en: "Brazil" },
+  country_paraguay: { es: "Paraguay", en: "Paraguay" },
+  country_peru: { es: "Perú", en: "Peru" },
+  country_ecuador: { es: "Ecuador", en: "Ecuador" },
+  country_colombia: { es: "Colombia", en: "Colombia" },
+  country_venezuela: { es: "Venezuela", en: "Venezuela" },
+  country_mexico: { es: "México", en: "Mexico" },
+
+  // Headers for Operations Summary Table in TradingDashboard.jsx - Figma design
+  tradingDashboard_tableHeader_fechaApertura: { es: "Fecha De Apertura", en: "Open Date" },
+  tradingDashboard_tableHeader_instrumento: { es: "Instrumento", en: "Instrument" },
+  tradingDashboard_tableHeader_precioApertura: { es: "Precio De Apertura", en: "Open Price" },
+  tradingDashboard_tableHeader_stopLoss: { es: "Stop Loss", en: "Stop Loss" },
+  tradingDashboard_tableHeader_takeProfit: { es: "Take Profit", en: "Take Profit" },
+  tradingDashboard_tableHeader_idPosicion: { es: "ID De Posición", en: "Position ID" },
+  tradingDashboard_tableHeader_lotaje: { es: "Lotaje", en: "Lot Size" },
+  tradingDashboard_tableHeader_fechaCierre: { es: "Fecha De Cierre", en: "Close Date" },
+  tradingDashboard_tableHeader_precioCierre: { es: "Precio De Cierre", en: "Close Price" },
+  tradingDashboard_tableHeader_resultado: { es: "Resultado", en: "Result" }
 }; 

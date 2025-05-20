@@ -5,11 +5,16 @@ import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 import { getTranslator } from '../utils/i18n';
 
+// Constants for standardizing phase values across the application
+const PHASE_ONE_STEP = 'ONE_STEP';
+const PHASE_TWO_STEP = 'TWO_STEP';
+
 export default function TradingChallengeUI() {
   const { currentUser, language } = useAuth();
   const t = getTranslator(language);
 
   const [challengeAmount, setChallengeAmount] = useState('$5.000');
+  // Estándar = 1 FASE (ONE STEP), Swing = 2 FASES (TWO STEPS)
   const [challengeType, setChallengeType] = useState('Estándar');
   
   // New states for complement selections
@@ -17,6 +22,7 @@ export default function TradingChallengeUI() {
   const [selectedProfitTargetP2, setSelectedProfitTargetP2] = useState('5%');  // Default
   const [selectedProfitSplit, setSelectedProfitSplit] = useState('80%');    // Default
   const [activePhaseForProfitTargetBonus, setActivePhaseForProfitTargetBonus] = useState('P1'); // New state, P1 is active by default
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('crypto'); // New state for payment method, default to crypto
 
   const [price, setPrice] = useState(''); // Will be calculated by useEffect
   const [isPurchasing, setIsPurchasing] = useState(false);
@@ -69,7 +75,25 @@ export default function TradingChallengeUI() {
   }, [challengeAmount, selectedProfitTargetP1, selectedProfitTargetP2, selectedProfitSplit, activePhaseForProfitTargetBonus]);
 
   const parseCurrencyToNumber = (currencyString) => {
-    return parseFloat(currencyString.replace(/[^\d.-]/g, ''));
+    // Primero quitamos el símbolo de moneda y cualquier espacio
+    let valueString = currencyString.replace(/[$\s]/g, '');
+    
+    // En el formato español/latinoamericano, el punto se usa como separador de miles
+    // y la coma como separador decimal: $200.000,00
+    // Quitamos todos los puntos y reemplazamos comas por puntos para formato numérico
+    valueString = valueString.replace(/\./g, '').replace(/,/g, '.');
+    
+    // Convertir a número con parseFloat
+    const numericValue = parseFloat(valueString);
+    
+    // Comprobar si el número se pudo convertir correctamente
+    if (isNaN(numericValue)) {
+      console.error(`Error parsing currency value: ${currencyString}`);
+      return 0; // Valor por defecto en caso de error
+    }
+    
+    console.log(`Parsed currency: ${currencyString} -> ${numericValue}`);
+    return numericValue;
   };
 
   const handlePurchaseChallenge = async () => {
@@ -79,20 +103,68 @@ export default function TradingChallengeUI() {
     }
     setIsPurchasing(true);
     try {
+      // CRITICAL FIX: Make sure to explicitly determine challenge type to avoid bugs
+      console.log("Raw challengeType selected:", challengeType);
+      
+      // Instead of relying on a variable, directly use the challenge type for the check
+      const isOneStep = challengeType === 'Estándar'; 
+      const challengeTypeValue = isOneStep ? 'one_step' : 'two_step';
+      
+      // CLEAR DEBUG - Get exact translation strings
+      const oneStepDisplay = t('home_account_oneStepLabel');
+      const twoStepDisplay = t('home_account_twoStepLabel');
+      
+      // DIRECT ASSIGNMENT instead of variable-based assignment to avoid errors
+      let challengePhaseValue;
+      if (challengeType === 'Estándar') {
+        challengePhaseValue = oneStepDisplay; // "1 FASE" in Spanish
+      } else if (challengeType === 'Swing') {
+        challengePhaseValue = twoStepDisplay; // "2 FASES" in Spanish
+      } else {
+        // Fallback just in case
+        challengePhaseValue = isOneStep ? oneStepDisplay : twoStepDisplay;
+      }
+      
+      // Detailed logging for verification
+      console.log("Creating new account with:", {
+        selectedChallengeType: challengeType,
+        phase: challengePhaseValue,
+        type: challengeTypeValue,
+        language: language,
+        isOneStep: isOneStep,
+        oneStepTranslation: oneStepDisplay,
+        twoStepTranslation: twoStepDisplay,
+        numberOfPhases: isOneStep ? 1 : 2
+      });
+      
+      const currentAccountNumber = Date.now().toString();
+      const purchasePriceNumber = parseCurrencyToNumber(price);
+
+      // Store the appropriate display phase directly
       const accountData = {
         userId: currentUser.uid,
-        challengeType: challengeType === 'Estándar' ? 'one_step' : 'two_step',
+        challengeType: challengeTypeValue,
+        // Store the original challenge type selection (Estándar or Swing)
+        originalChallengeType: challengeType,
+        // Also store in accountType and accountStyle for better compatibility
+        accountType: challengeType.toLowerCase(),
+        accountStyle: challengeType.toLowerCase(),
+        // Store the translated phase label for direct display
+        challengePhase: challengePhaseValue,
+        // Include the numberOfPhases property for backwards compatibility
+        numberOfPhases: isOneStep ? 1 : 2,
         challengeAmountString: challengeAmount,
-        challengeAmountNumber: parseCurrencyToNumber(challengeAmount),
+        // Log the challengeAmount before parsing to debug the value
+        challengeAmountNumber: (console.log(`About to parse challengeAmount: "${challengeAmount}"`), parseCurrencyToNumber(challengeAmount)),
         selectedProfitTargetP1: selectedProfitTargetP1,
         selectedProfitTargetP2: selectedProfitTargetP2,
         selectedProfitSplit: selectedProfitSplit,
         priceString: price,
-        priceNumber: parseCurrencyToNumber(price),
-        status: 'Activa',
+        priceNumber: purchasePriceNumber,
+        status: 'Activa', // Status of the trading account
         createdAt: serverTimestamp(),
         serverType: 'MT5',
-        accountNumber: Date.now().toString(),
+        accountNumber: currentAccountNumber,
         pnlToday: 0,
         pnl7Days: 0,
         pnl30Days: 0,
@@ -100,6 +172,24 @@ export default function TradingChallengeUI() {
       };
 
       const docRef = await addDoc(collection(db, 'tradingAccounts'), accountData);
+      console.log("Account created successfully:", docRef.id, accountData);
+
+      // Now, add a corresponding entry to the 'operations' collection
+      const operationData = {
+        userId: currentUser.uid,
+        timestamp: serverTimestamp(),
+        status: 'Terminado', // Assuming purchase completion for operation history
+        orderNumber: currentAccountNumber,
+        operationType: 'Purchase Challenge',
+        details: `${challengeAmount} ${challengeType}`, // e.g., "$5.000 Estándar"
+        paymentMethod: selectedPaymentMethod === 'crypto' ? 'Criptomoneda' : 'Tarjeta',
+        amount: purchasePriceNumber,
+        currency: 'USD',
+        relatedAccountId: docRef.id // Optional: link to the trading account
+      };
+      await addDoc(collection(db, 'operations'), operationData);
+      console.log("Operation logged successfully for account:", docRef.id, operationData);
+
       alert(t('tradingChallenge_alert_purchaseSuccess', { accountId: docRef.id }));
     } catch (error) {
       console.error("Error al comprar el desafío: ", error);
@@ -132,9 +222,12 @@ export default function TradingChallengeUI() {
               <div className="flex items-center mb-4">
                 <h2 className="text-xl md:text-2xl font-medium flex-1">
                   {t('tradingChallenge_label_challengeType')}
-                  <span className="text-sm text-gray-400 font-normal">{t('tradingChallenge_leverage_info')}</span>
+                  <span className="text-sm text-gray-400 font-normal">
+                    {challengeType === 'Estándar' 
+                      ? t('tradingChallenge_leverage_info') 
+                      : t('tradingChallenge_leverage_info_swing')}
+                  </span>
                 </h2>
-                <HelpCircle size={16} className="text-gray-400" />
               </div>
               <div className="flex space-x-3 md:space-x-4 mb-4 md:mb-6">
                 <button 
@@ -144,17 +237,16 @@ export default function TradingChallengeUI() {
                   {t('tradingChallenge_button_standard', 'Estándar')}
                 </button>
                 <button 
-                  className={`text-white px-6 py-2 rounded-full text-sm focus:outline-none bg-[#2c2c2c] border ${challengeType === 'Swim' ? 'border-cyan-500' : 'border-gray-700 hover:border-gray-600'}`}
-                  onClick={() => setChallengeType('Swim')}
+                  className={`text-white px-6 py-2 rounded-full text-sm focus:outline-none bg-[#2c2c2c] border ${challengeType === 'Swing' ? 'border-cyan-500' : 'border-gray-700 hover:border-gray-600'}`}
+                  onClick={() => setChallengeType('Swing')}
                 >
-                  {t('tradingChallenge_button_swim', 'Swim')}
+                  {t('tradingChallenge_button_swim', 'Swing')}
                 </button>
               </div>
               
               {/* Monto del desafío Section */}
               <div className="flex items-center mb-3 md:mb-4">
                 <h2 className="text-lg md:text-xl font-medium flex-1">{t('tradingChallenge_label_challengeAmount', 'Tamaño De Cuenta')}</h2>
-                <Info size={16} className="text-gray-400" />
               </div>
               <div className="grid grid-cols-3 gap-2 md:gap-3 mb-2">
                 <button 
@@ -201,46 +293,71 @@ export default function TradingChallengeUI() {
               <div className="mb-3">
                 <div className="flex items-center mb-2">
                   <h2 className="text-xl md:text-2xl font-medium flex-1">{t('tradingChallenge_label_complements')}</h2>
-                  <Info size={16} className="text-gray-400" />
                 </div>
                 <p className="text-white font-thin text-xs md:text-sm mb-4 md:mb-6">
                   {t('tradingChallenge_subtitle_complements', 'Selecciona complementos por tipo de trader')}
                 </p>
 
-                {/* Profit Target Fase 1 options */}
-                <div className="mb-6 md:mb-8">
-                  <h3 className="text-lg font-medium mb-3">{t('tradingChallenge_label_profitTargetP1', 'Profit Target Fase 1')}</h3>
+                {/* Profit Target Fase 1 options - sólo para Estándar (1 FASE) */}
+                <div className={`mb-6 md:mb-8 ${challengeType === 'Swing' ? 'opacity-50' : ''}`}>
+                  <h3 className="text-lg font-medium mb-3">
+                    {t('tradingChallenge_label_profitTargetP1', 'Profit Target Fase 1')}
+                    {challengeType === 'Swing' && (
+                      <span className="text-sm text-gray-400 ml-2">
+                        {t('tradingChallenge_notApplicableP1', 'No aplicable para desafíos de 2 fases')}
+                      </span>
+                    )}
+                  </h3>
                   <div className="flex flex-wrap gap-2 md:gap-3">
                     {profitTargetP1Options.map(option => (
-                  <button 
+                      <button 
                         key={option.value}
                         className={`flex-1 text-center px-4 py-2 rounded-full text-sm border focus:outline-none bg-[#2c2c2c] hover:bg-[#3a3a3a] ${activePhaseForProfitTargetBonus === 'P1' && selectedProfitTargetP1 === option.value ? 'border-cyan-500' : 'border-gray-700 hover:border-gray-600'}`}
-                        onClick={() => { setSelectedProfitTargetP1(option.value); setActivePhaseForProfitTargetBonus('P1'); }}
-                  >
-                        <div className="font-medium">{option.text}</div>
-                        {option.priceText && <div className="text-xs text-gray-400">{option.priceText}</div>}
-                  </button>
-                    ))}
-                  </div>
-                  </div>
-                  
-                {/* Profit Target Fase 2 options */}
-                <div className="mb-6 md:mb-8">
-                  <h3 className="text-lg font-medium mb-3">{t('tradingChallenge_label_profitTargetP2', 'Profit Target Fase 2')}</h3>
-                  <div className="flex flex-wrap gap-2 md:gap-3">
-                    {profitTargetP2Options.map(option => (
-                      <button
-                        key={option.value}
-                        className={`flex-1 text-center px-4 py-2 rounded-full text-sm border focus:outline-none bg-[#2c2c2c] hover:bg-[#3a3a3a] ${activePhaseForProfitTargetBonus === 'P2' && selectedProfitTargetP2 === option.value ? 'border-cyan-500' : 'border-gray-700 hover:border-gray-600'}`}
-                        onClick={() => { setSelectedProfitTargetP2(option.value); setActivePhaseForProfitTargetBonus('P2'); }}
+                        onClick={() => { 
+                          if (challengeType !== 'Swing') {
+                            setSelectedProfitTargetP1(option.value); 
+                            setActivePhaseForProfitTargetBonus('P1');
+                          }
+                        }}
+                        disabled={challengeType === 'Swing'}
                       >
                         <div className="font-medium">{option.text}</div>
                         {option.priceText && <div className="text-xs text-gray-400">{option.priceText}</div>}
                       </button>
                     ))}
                   </div>
+                </div>
+                
+                {/* Profit Target Fase 2 options - sólo para Swing (2 FASES) */}
+                <div className={`mb-6 md:mb-8 ${challengeType === 'Estándar' ? 'opacity-50' : ''}`}>
+                  <h3 className="text-lg font-medium mb-3">
+                    {t('tradingChallenge_label_profitTargetP2', 'Profit Target Fase 2')}
+                    {challengeType === 'Estándar' && (
+                      <span className="text-sm text-gray-400 ml-2">
+                        {t('tradingChallenge_notApplicable', 'No aplicable para desafíos de 1 fase')}
+                      </span>
+                    )}
+                  </h3>
+                  <div className="flex flex-wrap gap-2 md:gap-3">
+                    {profitTargetP2Options.map(option => (
+                      <button
+                        key={option.value}
+                        className={`flex-1 text-center px-4 py-2 rounded-full text-sm border focus:outline-none bg-[#2c2c2c] hover:bg-[#3a3a3a] ${activePhaseForProfitTargetBonus === 'P2' && selectedProfitTargetP2 === option.value ? 'border-cyan-500' : 'border-gray-700 hover:border-gray-600'}`}
+                        onClick={() => { 
+                          if (challengeType !== 'Estándar') {
+                            setSelectedProfitTargetP2(option.value); 
+                            setActivePhaseForProfitTargetBonus('P2');
+                          }
+                        }}
+                        disabled={challengeType === 'Estándar'}
+                      >
+                        <div className="font-medium">{option.text}</div>
+                        {option.priceText && <div className="text-xs text-gray-400">{option.priceText}</div>}
+                      </button>
+                    ))}
                   </div>
-                  
+                </div>
+                
                 {/* Profit Split options */}
                 <div className="mb-6 md:mb-10">
                   <h3 className="text-lg font-medium mb-3">{t('tradingChallenge_label_profitSplit', 'Profit Split')}</h3>
@@ -294,9 +411,18 @@ export default function TradingChallengeUI() {
             
             <div className="mb-6 md:mb-10">
               <h2 className="text-base md:text-lg font-medium mb-3">{t('tradingChallenge_label_paymentMethod')}</h2>
-              <div className="flex items-center justify-between bg-[#2c2c2c] border border-gray-700 rounded-lg px-4 py-3 cursor-pointer hover:border-cyan-600">
-                <span className="text-sm text-gray-400">{t('tradingChallenge_placeholder_select')}</span>
-                <ChevronDown size={16} className="text-gray-400" />
+              <div className="relative">
+                <select
+                  className="w-full bg-[#2c2c2c] border border-gray-700 rounded-lg px-4 py-3 cursor-pointer hover:border-cyan-600 appearance-none text-sm focus:outline-none focus:border-cyan-500"
+                  value={selectedPaymentMethod}
+                  onChange={(e) => setSelectedPaymentMethod(e.target.value)}
+                >
+                  <option value="crypto">{t('paymentMethod_crypto')}</option>
+                  <option value="card">{t('paymentMethod_card')}</option>
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
+                  <ChevronDown size={16} />
+                </div>
               </div>
             </div>
             

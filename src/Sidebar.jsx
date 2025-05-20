@@ -136,7 +136,7 @@ const Sidebar = ({ selectedOption, setSelectedOption, onLogout }) => {
                     <img 
                         src="/logo.png" 
                         alt={t('sidebar_alt_agmLogo')} 
-                        className="w-24 h-auto"
+                        className="w-20 h-auto"
                         onError={(e) => {
                             e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Crect width='64' height='64' fill='%23333333'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='16' fill='white'%3EAGM%3C/text%3E%3C/svg%3E";
                         }}
