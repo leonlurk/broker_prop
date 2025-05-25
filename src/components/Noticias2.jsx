@@ -1,30 +1,59 @@
-import React, { useState, useEffect } from 'react';
-import { ChevronDown, Calendar, Clock, AlertTriangle, Loader } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { ChevronDown, Calendar, Clock, AlertTriangle, Loader, Globe } from 'lucide-react';
+import { translations } from '../translations';
+import { useAuth } from '../contexts/AuthContext';
+import { getTranslator } from '../utils/i18n';
 
 const Noticias = () => {
     // Fecha actual y rango
   const today = new Date();
   today.setHours(0, 0, 0, 0); // Normalize today to the start of the day
 
-  const days = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes'];
+  const { language } = useAuth();
+  const t = getTranslator(language);
+
+  // Memoize translated days array
+  const days = useMemo(() => [
+    t('news_weekday_monday'),
+    t('news_weekday_tuesday'),
+    t('news_weekday_wednesday'),
+    t('news_weekday_thursday'),
+    t('news_weekday_friday')
+  ], [language]); // Re-create when language changes
+
+  const isWeekend = today.getDay() === 0 || today.getDay() === 6; // 0 es domingo, 6 es sábado
 
   // Helper to get Monday of a given date's week
   const getMonday = (d) => {
     d = new Date(d);
     const day = d.getDay();
-    const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday (0)
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
     return new Date(d.setDate(diff));
   };
   
+  // Helper to get last Friday's date
+  const getLastFriday = () => {
+    const lastFriday = new Date(today);
+    while (lastFriday.getDay() !== 5) { // 5 es viernes
+      lastFriday.setDate(lastFriday.getDate() - 1);
+    }
+    return lastFriday;
+  };
+
+  // Initialize states
   const [currentViewMonday, setCurrentViewMonday] = useState(getMonday(today));
   
-  // Determine initial selected date
-  const initialDayIndex = today.getDay() >= 1 && today.getDay() <= 5 ? today.getDay() -1 : 0; // 0 for Mon, 1 for Tue, etc. Default to Mon if weekend.
-  const initialSelectedDate = new Date(currentViewMonday);
-  initialSelectedDate.setDate(currentViewMonday.getDate() + initialDayIndex);
+  // Determine initial selected date and active day
+  const dayOfWeek = today.getDay(); // 0 for Sunday, 1 for Monday, ..., 6 for Saturday
+  let initialDayIndexResolved = isWeekend ? 4 : (dayOfWeek - 1); // 4 is Friday's index
+
+  const initialSelectedDate = isWeekend ? getLastFriday() : new Date(currentViewMonday);
+  if (!isWeekend) {
+    initialSelectedDate.setDate(currentViewMonday.getDate() + initialDayIndexResolved);
+  }
 
   const [selectedFullDate, setSelectedFullDate] = useState(initialSelectedDate);
-  const [activeDay, setActiveDay] = useState(days[initialDayIndex]); // 'Lunes', 'Martes', etc.
+  const [activeDay, setActiveDay] = useState(days[initialDayIndexResolved]); // 'Lunes', 'Martes', etc.
   
   // Estado para eventos económicos
   const [events, setEvents] = useState([]);
@@ -407,66 +436,85 @@ const Noticias = () => {
   console.log("Render del componente Noticias");
 
   return (
-    <div className="flex flex-col border border-[#333] rounded-3xl bg-[#232323] text-white p-2 sm:p-4">
+    <div className="flex flex-col border border-[#333] rounded-3xl bg-[#232323] text-white p-2 mobile-p-3 sm:p-4">
       {/* Days of the week tabs - Scrollable on mobile */}
-      <div className="flex space-x-2 mb-4 overflow-x-auto pb-2 scrollbar-thin">
+      <div className="flex flex-col space-y-2">
+        {isWeekend && (
+          <div className="text-amber-500 text-sm text-center bg-amber-500/10 py-2 px-4 rounded-lg">
+            {t('news_marketClosed')}
+          </div>
+        )}
+        <div className="flex space-x-1 xs:space-x-2 overflow-x-auto pb-2 scrollbar-thin">
         {days.map((day) => (
           <button
             key={day}
-            className={`px-4 sm:px-8 md:px-12 py-2 sm:py-3 rounded-full whitespace-nowrap focus:outline-none ${
-              activeDay === day 
+              className={`px-3 py-1.5 text-sm xs:px-4 xs:py-2 sm:text-base sm:px-8 md:px-12 sm:py-3 rounded-full whitespace-nowrap focus:outline-none transition-colors
+                ${isWeekend 
+                  ? 'bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] text-gray-500 cursor-not-allowed opacity-50' 
+                  : activeDay === day 
                 ? 'bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-cyan-500 text-white' 
-                : 'bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] text-gray-300 hover:bg-[#2a2a2a]'
+                    : 'bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] text-gray-300 hover:text-gray-100 hover:border-cyan-400'
             }`}
-            onClick={() => setActiveDay(day)}
+              onClick={() => !isWeekend && setActiveDay(day)}
+              disabled={isWeekend}
           >
             {day}
           </button>
         ))}
+        </div>
       </div>
 
-      {/* Date selector - Stack on mobile */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center mb-6 gap-2 sm:gap-0">
-        <div className="p-2 sm:p-3 text-base sm:text-xl bg-gradient-to-br from-[#232323] to-[#2d2d2d] rounded-full border border-[#333] text-white mr-0 sm:mr-4">
-          {activeDay}
+      {/* Date selector with market closed message */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center mb-4 sm:mb-6 gap-2 sm:gap-3">
+        <div className="p-2 text-sm xs:text-base sm:text-xl bg-gradient-to-br from-[#232323] to-[#2d2d2d] rounded-lg sm:rounded-full border border-[#333] text-white text-center sm:text-left mr-0 sm:mr-2">
+          {isWeekend ? (
+            <span className="text-gray-400">{t('news_marketClosed')}</span>
+          ) : (
+            activeDay
+          )}
         </div>
-        <div className="p-2 sm:p-3 text-base sm:text-xl bg-transparent text-white mr-0 sm:mr-auto">
+        <div className="p-2 text-sm xs:text-base sm:text-xl bg-transparent text-white text-center sm:text-left mr-0 sm:mr-auto whitespace-nowrap">
           {getMonthName(selectedFullDate.getMonth())} <span className="text-[#a0a0a0]">{selectedFullDate.getDate()}</span>, {selectedFullDate.getFullYear()}
+          {isWeekend && (
+            <div className="text-xs text-amber-500 mt-1">
+              {t('news_showingLastFridayData')} ({getLastFriday().getDate()} {getMonthName(getLastFriday().getMonth())})
+            </div>
+          )}
         </div>
 
-        <div className="relative">
+        <div className="relative w-full sm:w-auto">
           <div 
-            className="flex items-center p-2 sm:p-3 bg-gradient-to-br from-[#232323] to-[#2d2d2d] rounded-full border border-[#333] text-white w-full sm:w-auto justify-between sm:justify-start cursor-pointer"
+            className="flex items-center p-2 sm:p-3 bg-gradient-to-br from-[#232323] to-[#2d2d2d] rounded-lg sm:rounded-full border border-[#333] text-white w-full justify-between cursor-pointer"
             onClick={() => setShowTimeZoneMenu(!showTimeZoneMenu)}
           >
-            <div className="flex items-center">
+            <div className="flex items-center overflow-hidden">
               <img 
                 src="/pin.png" 
                 alt="Location Pin" 
-                className="w-6 h-6 sm:w-8 sm:h-8 mr-2"
+                className="w-5 h-5 xs:w-6 xs:h-6 sm:w-8 sm:h-8 mr-1.5 sm:mr-2 flex-shrink-0"
                 onError={(e) => {
                   e.target.onerror = null;
                   e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='white' d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z'/%3E%3C/svg%3E";
                 }}
               />
-              <span className="mr-2 text-sm sm:text-xl truncate">
+              <span className="mr-1 sm:mr-2 text-xs xs:text-sm sm:text-xl truncate">
                 {currentTime} {timeZone.split('/').pop().replace('_', ' ')}
               </span>
             </div>
-            <ChevronDown size={16} className={showTimeZoneMenu ? 'transform rotate-180' : ''} />
+            <ChevronDown size={16} className={`transform transition-transform duration-200 flex-shrink-0 ${showTimeZoneMenu ? 'rotate-180' : ''}`} />
           </div>
           
             {/* Menú de zonas horarias */}
             {showTimeZoneMenu && (
-              <div className="absolute top-full left-0 mt-1 z-10 bg-[#2d2d2d] border border-[#444] rounded-lg shadow-lg w-full sm:w-64 max-h-60 overflow-y-auto">
+              <div className="absolute top-full left-0 sm:left-auto sm:right-0 mt-1 z-20 bg-[#2d2d2d] border border-[#444] rounded-lg shadow-lg w-full sm:w-60 md:w-64 max-h-52 sm:max-h-60 overflow-y-auto scrollbar-thin">
                 {timeZones.map((zone) => (
                   <div 
                     key={zone} 
-                    className="p-2 hover:bg-[#3a3a3a] cursor-pointer text-sm flex justify-between items-center"
+                    className="p-2 hover:bg-[#3a3a3a] cursor-pointer text-xs sm:text-sm flex justify-between items-center"
                     onClick={() => changeTimeZone(zone)}
                   >
-                    <span>{zone.split('/').pop().replace('_', ' ')}</span>
-                    <span className="text-gray-400">{formatTimeForZone(zone)}</span>
+                    <span className="truncate">{zone.split('/').pop().replace('_', ' ')}</span>
+                    <span className="text-gray-400 ml-2 whitespace-nowrap">{formatTimeForZone(zone)}</span>
                   </div>
                 ))}
               </div>
@@ -475,173 +523,171 @@ const Noticias = () => {
       </div>
 
       {/* Filters - Stack on mobile */}
-      <div className="flex flex-col mb-6 gap-4">
+      <div className="flex flex-col mb-4 sm:mb-6 gap-3 sm:gap-4">
         {/* Impact filter */}
         <div>
-          <h3 className="text-gray-400 mb-2 text-xl">Filtrar por impacto</h3>
-          <div className="grid grid-cols-2 sm:flex sm:space-x-3 gap-2 sm:gap-0">
-            <label className="flex items-center space-x-2 cursor-pointer">
+          <h3 className="text-gray-400 mb-1.5 sm:mb-2 text-base sm:text-xl">{t('news_filter_impact')}</h3>
+          <div className="grid grid-cols-2 xs:grid-cols-2 sm:flex sm:flex-wrap gap-2 sm:gap-x-3 sm:gap-y-1.5">
+            <label className="flex items-center space-x-1.5 sm:space-x-2 cursor-pointer text-sm sm:text-base">
               <input 
                 type="checkbox" 
-                className="form-checkbox h-4 w-4 text-cyan-500 rounded bg-[#333] border-[#444]"
+                className="form-checkbox h-3.5 w-3.5 sm:h-4 sm:w-4 text-cyan-500 rounded bg-[#333] border-[#444] focus:ring-cyan-500"
                 checked={impactFilters.feriados}
                 onChange={() => toggleImpactFilter('feriados')}
               />
-              <span>Feriados</span>
+              <span>{t('news_impact_holidays')}</span>
             </label>
-            <label className="flex items-center space-x-2 cursor-pointer">
+            <label className="flex items-center space-x-1.5 sm:space-x-2 cursor-pointer text-sm sm:text-base">
               <input 
                 type="checkbox" 
-                className="form-checkbox h-4 w-4 text-cyan-500 rounded bg-[#333] border-[#444]"
+                className="form-checkbox h-3.5 w-3.5 sm:h-4 sm:w-4 text-cyan-500 rounded bg-[#333] border-[#444] focus:ring-cyan-500"
                 checked={impactFilters.bajo}
                 onChange={() => toggleImpactFilter('bajo')}
               />
-              <span>Bajo</span>
+              <span>{t('news_impact_low')}</span>
             </label>
-            <label className="flex items-center space-x-2 cursor-pointer">
+            <label className="flex items-center space-x-1.5 sm:space-x-2 cursor-pointer text-sm sm:text-base">
               <input 
                 type="checkbox" 
-                className="form-checkbox h-4 w-4 text-cyan-500 rounded bg-[#333] border-[#444]"
+                className="form-checkbox h-3.5 w-3.5 sm:h-4 sm:w-4 text-cyan-500 rounded bg-[#333] border-[#444] focus:ring-cyan-500"
                 checked={impactFilters.medio}
                 onChange={() => toggleImpactFilter('medio')}
               />
-              <span>Medio</span>
+              <span>{t('news_impact_medium')}</span>
             </label>
-            <label className="flex items-center space-x-2 cursor-pointer">
+            <label className="flex items-center space-x-1.5 sm:space-x-2 cursor-pointer text-sm sm:text-base">
               <input 
                 type="checkbox" 
-                className="form-checkbox h-4 w-4 text-cyan-500 rounded bg-[#333] border-[#444]"
+                className="form-checkbox h-3.5 w-3.5 sm:h-4 sm:w-4 text-cyan-500 rounded bg-[#333] border-[#444] focus:ring-cyan-500"
                 checked={impactFilters.alto}
                 onChange={() => toggleImpactFilter('alto')}
               />
-              <span>Alto</span>
+              <span>{t('news_impact_high')}</span>
             </label>
           </div>
         </div>
 
         {/* Visibility filter */}
         <div>
-          <h3 className="text-gray-400 mb-2">Filtrar por visibilidad</h3>
-          <div className="flex flex-col sm:flex-row sm:space-x-3 space-y-2 sm:space-y-0">
-            <label className="flex items-center space-x-2 cursor-pointer">
+          <h3 className="text-gray-400 mb-1.5 sm:mb-2 text-base sm:text-xl">{t('news_filter_visibility')}</h3>
+          <div className="flex flex-col space-y-1.5 sm:space-y-0 sm:flex-row sm:space-x-3">
+            <label className="flex items-center space-x-1.5 sm:space-x-2 cursor-pointer text-sm sm:text-base">
               <input 
                 type="checkbox" 
-                className="form-checkbox h-4 w-4 text-cyan-500 rounded bg-[#333] border-[#444]"
+                className="form-checkbox h-3.5 w-3.5 sm:h-4 sm:w-4 text-cyan-500 rounded bg-[#333] border-[#444] focus:ring-cyan-500"
                 checked={visibilityFilters.ocultarNoticias}
                 onChange={() => toggleVisibilityFilter('ocultarNoticias')}
               />
-              <span>Ocultar noticias pasadas</span>
+              <span>{t('news_filter_hidePastNews')}</span>
             </label>
-            <label className="flex items-center space-x-2 cursor-pointer">
+            <label className="flex items-center space-x-1.5 sm:space-x-2 cursor-pointer text-sm sm:text-base">
               <input 
                 type="checkbox" 
-                className="form-checkbox h-4 w-4 text-cyan-500 rounded bg-[#333] border-[#444]"
+                className="form-checkbox h-3.5 w-3.5 sm:h-4 sm:w-4 text-cyan-500 rounded bg-[#333] border-[#444] focus:ring-cyan-500"
                 checked={visibilityFilters.mostrarRestringidos}
                 onChange={() => toggleVisibilityFilter('mostrarRestringidos')}
               />
-              <span>Mostrar solo eventos restringidos</span>
+              <span>{t('news_filter_showRestrictedOnly')}</span>
             </label>
           </div>
         </div>
       </div>
 
       {/* Events table - Card view on mobile, table on desktop */}
-      <div className="p-2 sm:p-4 md:p-6 bg-gradient-to-br from-[#232323] to-[#2d2d2d] rounded-xl border border-[#333]">
+      <div className="bg-gradient-to-br from-[#232323] to-[#2d2d2d] rounded-xl border border-[#333]">
+        <div className="max-h-[60vh] overflow-y-auto scrollbar-thin">
         {isLoading ? (
-          <div className="flex justify-center items-center h-64">
-            <Loader size={40} className="animate-spin text-cyan-500" />
+            <div className="p-2 xs:p-3 sm:p-4 md:p-6 flex justify-center items-center h-48 sm:h-64">
+              <Loader size={32} smSize={40} className="animate-spin text-cyan-500" />
           </div>
         ) : error ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="text-red-400 flex items-center">
-              <AlertTriangle size={20} className="mr-2" />
-              {error}
+            <div className="p-2 xs:p-3 sm:p-4 md:p-6 flex flex-col justify-center items-center h-48 sm:h-64 text-center">
+              <AlertTriangle size={24} smSize={30} className="mr-0 mb-2 sm:mr-2 sm:mb-0 text-red-400" />
+              <span className="text-red-400 text-sm sm:text-base">{t('news_error_loading')}</span>
             </div>
-          </div>
         ) : filteredEvents.length === 0 ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="text-gray-400">
-              No hay eventos económicos para los filtros seleccionados
+            <div className="p-2 xs:p-3 sm:p-4 md:p-6 flex justify-center items-center h-48 sm:h-64">
+              <div className="text-gray-400 text-center text-sm sm:text-base">
+                {t('news_no_events')}
             </div>
           </div>
         ) : (
-
           <>
             {/* Desktop Table (hidden on mobile) */}
-            <div className="hidden md:block overflow-x-auto">
+              <div className="hidden md:block relative">
               <table className="w-full border-collapse">
-                <thead>
+                  <thead className="sticky top-0 bg-[#2d2d2d] shadow-lg">
                   <tr className="text-left border-b border-gray-700">
-                    <th className="py-4 px-3 font-medium">Descripcion</th>
-                    <th className="py-4 px-3 font-medium">Instrumento</th>
-                    <th className="py-4 px-3 font-medium">Fecha</th>
-                    <th className="py-4 px-3 font-medium">Actual</th>
-                    <th className="py-4 px-3 font-medium">Pronostico</th>
-                    <th className="py-4 px-3 font-medium">Previo</th>
-                    <th className="py-4 px-3 font-medium">Accion</th>
+                      <th className="p-6 font-medium text-sm lg:text-base whitespace-nowrap">Descripcion</th>
+                      <th className="p-6 font-medium text-sm lg:text-base whitespace-nowrap">Instrumento</th>
+                      <th className="p-6 font-medium text-sm lg:text-base whitespace-nowrap">Fecha</th>
+                      <th className="p-6 font-medium text-sm lg:text-base whitespace-nowrap">Actual</th>
+                      <th className="p-6 font-medium text-sm lg:text-base whitespace-nowrap">Pronostico</th>
+                      <th className="p-6 font-medium text-sm lg:text-base whitespace-nowrap">Previo</th>
+                      <th className="p-6 font-medium text-sm lg:text-base whitespace-nowrap">Accion</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredEvents.map((event, index) => (
                     <tr 
                       key={index}
-                      className={`border-b border-gray-800 ${event.highlighted ? 'bg-[#3d2c2e]' : ''}`}
+                        className={`border-b border-gray-800 hover:bg-opacity-5 hover:bg-gray-700 ${event.highlighted ? 'bg-[#3d2c2e]' : ''}`}
                     >
-                      <td className="py-4 px-3">
+                        <td className="p-6 text-sm lg:text-base">
                         <div className="flex flex-col">
                           <div className="flex items-center">
-                            <div className={`w-3 h-3 rounded-full mr-3 ${getImpactColor(event.color)}`}></div>
+                              <div className={`w-2.5 h-2.5 lg:w-3 lg:h-3 rounded-full mr-2 lg:mr-3 flex-shrink-0 ${getImpactColor(event.color)}`}></div>
                             <span className="line-clamp-2">{event.description}</span>
                           </div>
                           {event.highlighted && (
-                            <div className="flex items-center text-red-500 text-xs mt-1 ml-6">
-                              <AlertTriangle className="h-4 w-4 mr-1" />
-                              Evento Restringido
+                              <div className="flex items-center text-red-500 text-xs mt-1 ml-4 lg:ml-6">
+                                <AlertTriangle className="h-3.5 w-3.5 lg:h-4 lg:w-4 mr-1 flex-shrink-0" />
+                                {t('news_restricted_event')}
                             </div>
                           )}
                         </div>
                       </td>
 
-                      <td className="py-4 px-3">
+                        <td className="p-6 text-sm lg:text-base">
                         <div className="flex items-center">
-                          <div className="w-8 h-8 mr-2 flex items-center justify-center">
+                            <div className="w-6 h-4 lg:w-8 lg:h-5 mr-1.5 lg:mr-2 flex items-center justify-center flex-shrink-0">
                             <img 
                               src={getCountryFlag(event.instrument)} 
                               alt={event.instrument} 
-                              className="max-w-full max-h-full rounded" 
+                                className="max-w-full max-h-full rounded object-contain"
                               onError={(e) => {
                                 e.target.onerror = null; 
                                 e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 16'%3E%3Crect width='24' height='16' fill='%233C3B6E'/%3E%3C/svg%3E";
                               }}
                             />
                           </div>
-                          <span>{event.instrument}</span>
+                            <span className="whitespace-nowrap">{event.instrument}</span>
                         </div>
                       </td>
-                      <td className="py-4 px-3">
+                        <td className="p-6 text-sm lg:text-base whitespace-nowrap">
                         <div>
                           <div>{event.time} {event.date}</div>
                           {!event.isPast && (
                             <div className="text-xs text-gray-400 flex items-center">
-                              <Clock className="w-3 h-3 mr-1" />
+                                <Clock className="w-2.5 h-2.5 lg:w-3 lg:h-3 mr-1 flex-shrink-0" />
                               {event.timestamp}
                             </div>
                           )}
                           {event.isPast && (
-                            <div className="text-xs text-cyan-500 mt-1">Expirado</div>
+                              <div className="text-xs text-cyan-500 mt-1">{t('news_expired')}</div>
                           )}
                         </div>
                       </td>
-                      <td className="py-4 px-3">{event.actual}</td>
-                      <td className="py-4 px-3">{event.forecast}</td>
-                      <td className="py-4 px-3">{event.previous}</td>
-                      <td className="py-4 px-3">
+                        <td className="p-6 text-sm lg:text-base whitespace-nowrap">{t('news_actual')}: {event.actual}</td>
+                        <td className="p-6 text-sm lg:text-base whitespace-nowrap">{t('news_forecast')}: {event.forecast}</td>
+                        <td className="p-6 text-sm lg:text-base whitespace-nowrap">{t('news_previous')}: {event.previous}</td>
+                        <td className="p-6 text-sm lg:text-base">
                         <button 
-                          className="p-2 bg-transparent hover:bg-[#333] rounded-full transition-colors"
+                            className="p-1.5 lg:p-2 bg-transparent hover:bg-[#333] rounded-full transition-colors focus:outline-none"
                           onClick={() => addEventToCalendar(event)}
                           title="Añadir al calendario"
                         >
-                          <Calendar className="h-5 w-5 text-gray-400" />
+                            <Calendar className="h-4 w-4 lg:h-5 lg:w-5 text-gray-400" />
                         </button>
                       </td>
                     </tr>
@@ -651,81 +697,47 @@ const Noticias = () => {
             </div>
 
             {/* Mobile Cards View (hidden on desktop) */}
-            <div className="md:hidden space-y-4">
+              <div className="md:hidden space-y-3 sm:space-y-4">
               {filteredEvents.map((event, index) => (
                 <div 
                   key={index} 
-                  className={`p-3 rounded-lg border border-gray-800 ${event.highlighted ? 'bg-[#3d2c2e]' : ''}`}
+                    className={`p-3 rounded-lg border border-gray-800 hover:border-gray-700 ${event.highlighted ? 'bg-[#3d2c2e]' : 'bg-[#2b2b2b]'}`}
                 >
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="flex items-center">
-                      <div className={`w-3 h-3 rounded-full mr-2 ${getImpactColor(event.color)}`}></div>
-                      <span className="font-medium line-clamp-2">{event.description}</span>
+                    <div className="flex justify-between items-start mb-2 sm:mb-3">
+                      <div className="flex items-start mr-2">
+                        <div className={`w-2.5 h-2.5 rounded-full mr-2 mt-1 flex-shrink-0 ${getImpactColor(event.color)}`}></div>
+                        <span className="font-medium text-sm leading-snug line-clamp-3">{event.description}</span>
                     </div>
                     <button 
-                      className="p-1 bg-transparent hover:bg-[#333] rounded-full transition-colors"
+                        className="p-1 bg-transparent hover:bg-[#333] rounded-full transition-colors flex-shrink-0 focus:outline-none"
                       onClick={() => addEventToCalendar(event)}
                       title="Añadir al calendario"
                     >
-                      <Calendar className="h-5 w-5 text-gray-400" />
+                        <Calendar className="h-4 w-4 text-gray-400" />
                     </button>
                   </div>
 
                   {event.highlighted && (
-                    <div className="flex items-center text-red-500 text-xs mb-2">
-                      <AlertTriangle className="h-3 w-3 mr-1" />
-                      Evento Restringido
+                      <div className="flex items-center text-red-500 text-xs mb-2 ml-4.5">
+                        <AlertTriangle className="h-3 w-3 mr-1 flex-shrink-0" />
+                        {t('news_restricted_event')}
                     </div>
                   )}
 
-                  <div className="grid grid-cols-2 gap-y-2">
+                    <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 sm:gap-y-2 text-xs sm:text-sm pl-4.5">
                     <div>
-                      <div className="text-xs text-gray-400">Instrumento</div>
-                      <div className="flex items-center">
-                        <div className="w-5 h-3 mr-1 flex items-center justify-center">
-                          <img 
-                            src={getCountryFlag(event.instrument)} 
-                            alt={event.instrument} 
-                            className="max-w-full max-h-full rounded" 
-                            onError={(e) => {
-                              e.target.onerror = null; 
-                              e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 16'%3E%3Crect width='24' height='16' fill='%233C3B6E'/%3E%3C/svg%3E";
-                            }}
-                          />
-                        </div>
-                        <span>{event.instrument}</span>
-                      </div>
+                        <div className="text-gray-400">{t('news_actual')}</div>
+                        <div className="whitespace-nowrap">{event.actual}</div>
                     </div>
 
-                    <div>
-                      <div className="text-xs text-gray-400">Fecha</div>
                       <div>
-                        <div>{event.time} {event.date}</div>
-                        {!event.isPast && (
-                          <div className="text-xs text-gray-400 flex items-center">
-                            <Clock className="w-3 h-3 mr-1" />
-                            {event.timestamp}
-                          </div>
-                        )}
-                        {event.isPast && (
-                          <div className="text-xs text-cyan-500">Expirado</div>
-                        )}
-                      </div>
+                        <div className="text-gray-400">{t('news_forecast')}</div>
+                        <div className="whitespace-nowrap">{event.forecast}</div>
                     </div>
 
                     <div>
-                      <div className="text-xs text-gray-400">Actual</div>
-                      <div>{event.actual}</div>
-                    </div>
-
-                    <div>
-                      <div className="text-xs text-gray-400">Pronostico</div>
-                      <div>{event.forecast}</div>
-                    </div>
-
-                    <div>
-                      <div className="text-xs text-gray-400">Previo</div>
-                      <div>{event.previous}</div>
+                        <div className="text-gray-400">{t('news_previous')}</div>
+                        <div className="whitespace-nowrap">{event.previous}</div>
                     </div>
                   </div>
                 </div>
@@ -733,6 +745,7 @@ const Noticias = () => {
             </div>
           </>
         )}
+        </div>
       </div>
     </div>
   );

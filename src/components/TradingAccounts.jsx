@@ -225,27 +225,38 @@ const TradingAccounts = ({ setSelectedOption, setSelectedAccount }) => {
   const getPhaseDisplayLabel = (account) => {
     // Get the account type (phase1 or phase2)
     const accountType = getAccountPhaseType(account);
+    const amount = getCorrectedChallengeAmountForDisplay(account);
+    const formattedAmount = amount >= 1000 ? `${amount/1000}K` : amount;
     
-    // For already set labels, use them directly
+    // For already set labels, use them directly with amount
     if (account.challengePhase) {
-      return account.challengePhase;
+      if (account.challengePhase === '1 FASE' || account.challengePhase === 'ONE STEP' || account.challengePhase === 'ONE_STEP' ||
+          (account.challengeType === 'one_step' || account.challengeType === 'Estándar')) {
+        return `AGM Account Fase 1 ${formattedAmount}`;
+      }
+      if (account.challengePhase === '2 FASES' || account.challengePhase === 'TWO STEPS' || account.challengePhase === 'TWO_STEP' ||
+          (account.challengeType === 'two_step' || account.challengeType === 'Swing')) {
+        return `AGM Account Swing ${formattedAmount}`;
+      }
     }
     
-    // Otherwise, get translated labels based on the determined account type
-    return accountType === 'phase1' ? oneStepLabel : twoStepLabel;
+    // Otherwise, get translated labels based on the determined account type with amount
+    return accountType === 'phase1' 
+      ? `AGM Account Fase 1 ${formattedAmount}`
+      : `AGM Account Swing ${formattedAmount}`;
   };
   
   return (
-    <div className="flex flex-col p-4 border border-[#333] rounded-3xl bg-[#232323] text-white">
+    <div className="flex flex-col p-3 sm:p-4 border border-[#333] rounded-3xl bg-[#232323] text-white">
       {/* Tab Navigation */}
-      <div className="flex space-x-2 mb-6">
+      <div className="flex space-x-1 sm:space-x-2 mb-4 sm:mb-6 overflow-x-auto pb-2">
         {tabs.map((tab) => (
           <button
             key={tab.key}
-            className={`px-6 py-3 rounded-full focus:outline-none ${
+            className={`px-3 py-2 sm:px-6 sm:py-3 rounded-full focus:outline-none text-sm sm:text-base whitespace-nowrap ${
               activeTab === tab.key
                 ? 'border border-cyan-500 bg-gradient-to-br from-[#232323] to-[#2d2d2d]'
-                : 'border border-[#333] bg-gradient-to-br from-[#232323] to-[#2d2d2d]'
+                : 'border border-[#333] bg-gradient-to-br from-[#232323] to-[#2d2d2d] hover:border-cyan-400'
             }`}
             onClick={() => setActiveTab(tab.key)}
           >
@@ -265,26 +276,18 @@ const TradingAccounts = ({ setSelectedOption, setSelectedAccount }) => {
           {filteredAccounts.map((account) => (
             <div 
               key={account.id} 
-              className="p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] rounded-xl border border-[#333] flex items-center"
+              className="p-3 sm:p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] rounded-xl border border-[#333] flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4"
             >
               {/* Columna 1: Información de la cuenta (izquierda) */}
               <div className="flex items-center flex-1">
-                <div className="w-14 h-14 mr-4 flex items-center justify-center">
-                  <img src="/userchart.png" alt="Account Chart"/>
+                <div className="w-12 h-12 sm:w-14 sm:h-14 mr-3 sm:mr-4 flex items-center justify-center">
+                  <img src="/userchart.png" alt="Account Chart" className="w-full h-full"/>
                 </div>
                 <div>
-                  <div className="font-medium text-lg">
-                    {getPhaseDisplayLabel(account)} {t('home_account_challengeLabel')} {
-                      (() => {
-                        const correctedAmount = getCorrectedChallengeAmountForDisplay(account);
-                        if (typeof correctedAmount === 'number' && !isNaN(correctedAmount)) {
-                          return correctedAmount.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                        }
-                        return t('home_account_amountNotAvailable');
-                      })()
-                    }
+                  <div className="font-medium text-base sm:text-lg">
+                    {getPhaseDisplayLabel(account)}
                   </div>
-                  <div className="text-gray-400 text-sm">
+                  <div className="text-gray-400 text-xs sm:text-sm">
                     {t('tradingAccounts_serverTypeLabel')} {account.serverType}
                     <br />
                     {t('tradingAccounts_accountNumberLabel')} {account.accountNumber}
@@ -293,16 +296,16 @@ const TradingAccounts = ({ setSelectedOption, setSelectedAccount }) => {
               </div>
               
               {/* Columna 2: Estado (centro) */}
-              <div className="flex-1 text-center">
-                <span className={`inline-block px-6 py-3 rounded-full text-sm text-white ${getStatusBadgeClass(account.status)}`}>
+              <div className="flex-shrink-0 w-full sm:w-auto sm:flex-1 text-center sm:text-center">
+                <span className={`inline-block px-4 py-2 sm:px-6 sm:py-3 rounded-full text-xs sm:text-sm text-white ${getStatusBadgeClass(account.status)}`}>
                   {t(getStatusTranslationKey(account.status))}
                 </span>
               </div>
               
               {/* Columna 3: Botón (derecha) */}
-              <div className="flex-1 flex justify-end">
+              <div className="flex-shrink-0 w-full sm:w-auto sm:flex-1 flex sm:justify-end">
                 <button 
-                  className="px-4 py-2 rounded-full bg-[#232323] border border-[#333] hover:bg-[#2a2a2a] transition focus:outline-none"
+                  className="w-full sm:w-auto px-4 py-2 rounded-full bg-[#232323] border border-[#333] hover:bg-[#2a2a2a] transition focus:outline-none text-sm sm:text-base"
                   onClick={() => {
                     setSelectedAccount && setSelectedAccount(account.id);
                     setSelectedOption && setSelectedOption("Dashboard");

@@ -109,7 +109,7 @@ const Dashboard = ({ onLogout }) => {
   };
 
   return (
-    <div className="flex h-screen w-full bg-[#232323] overflow-hidden">
+    <div className="min-h-screen w-full bg-[#232323] relative overflow-x-hidden">
       {/* El Sidebar siempre está presente y funcional, independientemente de la subsección activa */}
       <Sidebar 
         selectedOption={selectedOption} 
@@ -121,7 +121,7 @@ const Dashboard = ({ onLogout }) => {
         }}
         onLogout={onLogout}
       />
-      <main className={`flex-1 overflow-y-auto w-full p-4 ${isMobile ? 'ml-0' : ''} transition-all duration-300`}>
+      <main className={`p-4 ${isMobile ? 'w-full ml-0' : 'ml-[300px] w-[calc(100%-300px)]'} transition-all duration-300 overflow-y-auto h-screen`}>
         <div>
           {renderContent()}
         </div>

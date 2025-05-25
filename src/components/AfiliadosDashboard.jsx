@@ -195,69 +195,69 @@ const AfiliadosDashboard = () => {
     switch (activeTab) {
       case 'panel':
         return (
-          <div className="space-y-8">
-            {/* Performance Metrics - Placeholder values for now */}
+          <div className="space-y-6 md:space-y-8">
+            {/* Performance Metrics */}
             <section>
-              <h2 className="text-2xl font-semibold mb-4 text-gray-100">{t('afiliadosDashboard_panel_performance')}</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-5 bg-gradient-to-br from-[#232323] to-[#2b2b2b] rounded-xl border border-[#4A4A4A]">
-                  <h3 className="text-md font-medium text-gray-400 mb-1">{t('afiliadosDashboard_panel_totalCommissions')}</h3>
-                  <p className="text-3xl font-bold text-white">$0.00</p>
+              <h2 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4 text-gray-100">{t('afiliadosDashboard_panel_performance')}</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
+                <div className="p-4 sm:p-5 bg-gradient-to-br from-[#232323] to-[#2b2b2b] rounded-xl border border-[#4A4A4A]">
+                  <h3 className="text-sm sm:text-md font-medium text-gray-400 mb-1">{t('afiliadosDashboard_panel_totalCommissions')}</h3>
+                  <p className="text-2xl sm:text-3xl font-bold text-white">$0.00</p>
                 </div>
-                <div className="p-5 bg-gradient-to-br from-[#232323] to-[#2b2b2b] rounded-xl border border-[#4A4A4A]">
-                  <h3 className="text-md font-medium text-gray-400 mb-1">{t('afiliadosDashboard_panel_paidReferrals')}</h3>
-                  <p className="text-3xl font-bold text-white">0</p>
+                <div className="p-4 sm:p-5 bg-gradient-to-br from-[#232323] to-[#2b2b2b] rounded-xl border border-[#4A4A4A]">
+                  <h3 className="text-sm sm:text-md font-medium text-gray-400 mb-1">{t('afiliadosDashboard_panel_paidReferrals')}</h3>
+                  <p className="text-2xl sm:text-3xl font-bold text-white">0</p>
                 </div>
-                <div className="p-5 bg-gradient-to-br from-[#232323] to-[#2b2b2b] rounded-xl border border-[#4A4A4A]">
-                  <h3 className="text-md font-medium text-gray-400 mb-1">{t('afiliadosDashboard_panel_conversion')}</h3>
-                  <p className="text-3xl font-bold text-white">0%</p>
+                <div className="p-4 sm:p-5 bg-gradient-to-br from-[#232323] to-[#2b2b2b] rounded-xl border border-[#4A4A4A]">
+                  <h3 className="text-sm sm:text-md font-medium text-gray-400 mb-1">{t('afiliadosDashboard_panel_conversion')}</h3>
+                  <p className="text-2xl sm:text-3xl font-bold text-white">0%</p>
                 </div>
               </div>
             </section>
 
             {/* Affiliate Link & Tier Info */}
-            <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 p-5 bg-gradient-to-br from-[#232323] to-[#2b2b2b] rounded-xl border border-[#4A4A4A] space-y-3">
-                <h3 className="text-lg font-semibold text-gray-100">{t('afiliadosDashboard_panel_yourAffiliateLink')}</h3>
-                <div className="flex items-center space-x-2">
-                  <input type="text" readOnly value={referralLink} className="w-full p-3 bg-gradient-to-br from-[#232323] to-[#2b2b2b] rounded-full border border-[#444] text-gray-300 text-sm truncate" />
-                  <button onClick={copyToClipboardHandler} className="p-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-full transition disabled:opacity-50" disabled={!referralLink}><Copy size={18} /></button>
+            <section className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+              <div className="lg:col-span-2 p-4 sm:p-5 bg-gradient-to-br from-[#232323] to-[#2b2b2b] rounded-xl border border-[#4A4A4A] space-y-2 sm:space-y-3">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-100">{t('afiliadosDashboard_panel_yourAffiliateLink')}</h3>
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
+                  <input type="text" readOnly value={referralLink} className="w-full p-2.5 sm:p-3 bg-gradient-to-br from-[#232323] to-[#2b2b2b] rounded-lg sm:rounded-full border border-[#444] text-gray-300 text-xs sm:text-sm truncate" />
+                  <button onClick={copyToClipboardHandler} className="self-center sm:self-auto p-2.5 sm:p-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg sm:rounded-full transition disabled:opacity-50 flex-shrink-0"><Copy size={18} /></button>
                 </div>
                 <p className="text-xs text-gray-500">{t('afiliadosDashboard_panel_shareLinkInstruction')}</p>
               </div>
-              <div className="p-5 bg-gradient-to-br from-[#232323] to-[#2b2b2b] rounded-xl border border-[#4A4A4A]">
-                <h3 className="text-lg font-semibold text-gray-100 mb-1">{t('afiliadosDashboard_panel_registeredReferrals')}</h3>
-                <p className="text-4xl font-bold text-white">{referralCount}</p>
+              <div className="p-4 sm:p-5 bg-gradient-to-br from-[#232323] to-[#2b2b2b] rounded-xl border border-[#4A4A4A]">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-100 mb-1">{t('afiliadosDashboard_panel_registeredReferrals')}</h3>
+                <p className="text-3xl sm:text-4xl font-bold text-white">{referralCount}</p>
               </div>
             </section>
             
             {/* Wallet Address */}
             <section>
-              <h2 className="text-2xl font-semibold mb-3 text-gray-100">{t('afiliadosDashboard_panel_paymentAddress')}</h2>
-              {successMessage && <div className="mb-3 p-3 bg-green-500/20 border border-green-500 text-green-300 rounded-full">{successMessage}</div>}
-              {error && <div className="mb-3 p-3 bg-red-500/20 border border-red-500 text-red-300 rounded-full flex items-center"><AlertTriangle size={18} className="mr-2"/>{error}</div>}
+              <h2 className="text-xl sm:text-2xl font-semibold mb-2 sm:mb-3 text-gray-100">{t('afiliadosDashboard_panel_paymentAddress')}</h2>
+              {successMessage && <div className="mb-3 p-2.5 sm:p-3 bg-green-500/20 border border-green-500 text-green-300 rounded-lg sm:rounded-full text-sm">{successMessage}</div>}
+              {error && <div className="mb-3 p-2.5 sm:p-3 bg-red-500/20 border border-red-500 text-red-300 rounded-lg sm:rounded-full flex items-center text-sm"><AlertTriangle size={18} className="mr-2 flex-shrink-0"/><span>{error}</span></div>}
               {isEditingWallet ? (
                 <div className="space-y-3">
-                  <input type="text" value={editWalletAddress} onChange={(e) => setEditWalletAddress(e.target.value)} placeholder={t('afiliadosDashboard_panel_walletPlaceholder')} className="w-full p-3 bg-gradient-to-br from-[#232323] to-[#2b2b2b] rounded-full border border-[#444] text-white focus:border-cyan-500 focus:ring-cyan-500" />
-                  <div className="flex gap-3">
-                    <button onClick={saveWalletAddressHandler} disabled={isSavingWallet} className="px-5 py-2.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg transition flex items-center justify-center disabled:opacity-70">
-                      {isSavingWallet ? <><Loader size={18} className="animate-spin mr-2" />{t('afiliadosDashboard_panel_savingButton')}</> : <><Save size={18} className="mr-2"/>{t('afiliadosDashboard_panel_saveButton')}</>}
+                  <input type="text" value={editWalletAddress} onChange={(e) => setEditWalletAddress(e.target.value)} placeholder={t('afiliadosDashboard_panel_walletPlaceholder')} className="w-full p-3 bg-gradient-to-br from-[#232323] to-[#2b2b2b] rounded-lg sm:rounded-full border border-[#444] text-white focus:border-cyan-500 focus:ring-cyan-500 text-sm" />
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                    <button onClick={saveWalletAddressHandler} disabled={isSavingWallet} className="w-full sm:w-auto px-4 py-2 sm:px-5 sm:py-2.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg transition flex items-center justify-center disabled:opacity-70 text-sm">
+                      {isSavingWallet ? <><Loader size={16} className="animate-spin mr-2 sm:size-18" />{t('afiliadosDashboard_panel_savingButton')}</> : <><Save size={16} className="mr-2 sm:size-18"/>{t('afiliadosDashboard_panel_saveButton')}</>}
                     </button>
-                    <button onClick={toggleEditWalletMode} className="px-5 py-2.5 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition">{t('afiliadosDashboard_panel_cancelButton')}</button>
+                    <button onClick={toggleEditWalletMode} className="w-full sm:w-auto px-4 py-2 sm:px-5 sm:py-2.5 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition text-sm">{t('afiliadosDashboard_panel_cancelButton')}</button>
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center justify-between p-3 bg-gradient-to-br from-[#232323] to-[#2b2b2b] rounded-full border border-[#444]">
-                  <span className="text-gray-300 truncate">{walletAddress || t('afiliadosDashboard_walletNotSet')}</span>
-                  <button onClick={toggleEditWalletMode} className="px-5 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-full transition text-sm">{t('afiliadosDashboard_panel_editButton')}</button>
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center sm:justify-between p-3 bg-gradient-to-br from-[#232323] to-[#2b2b2b] rounded-lg sm:rounded-full border border-[#444] space-y-2 sm:space-y-0">
+                  <span className="text-gray-300 truncate text-sm flex-grow sm:mr-3">{walletAddress || t('afiliadosDashboard_walletNotSet')}</span>
+                  <button onClick={toggleEditWalletMode} className="px-4 py-2 sm:px-5 sm:py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg sm:rounded-full transition text-xs sm:text-sm flex-shrink-0">{t('afiliadosDashboard_panel_editButton')}</button>
                 </div>
               )}
             </section>
 
             {/* Tiers Visual Display */}
             <section>
-                <h2 className="text-2xl font-semibold mb-4 text-gray-100">{t('afiliadosDashboard_panel_affiliateTiers')}</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <h2 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4 text-gray-100">{t('afiliadosDashboard_panel_affiliateTiers')}</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
                     {[1, 2, 3].map(tierNum => {
                         const isCurrentTierOrHigher = currentTier >= tierNum;
                         const requirementText = () => {
@@ -268,15 +268,15 @@ const AfiliadosDashboard = () => {
                         };
 
                         return (
-                            <div key={tierNum} className={`p-5 rounded-xl border ${isCurrentTierOrHigher ? 'border-cyan-400 bg-[#2d2d2d]' : 'border-[#4A4A4A] bg-[#2d2d2d]' } space-y-1`}>
+                            <div key={tierNum} className={`p-4 sm:p-5 rounded-xl border ${isCurrentTierOrHigher ? 'border-cyan-400 bg-[#2d2d2d]' : 'border-[#4A4A4A] bg-[#2d2d2d]' } space-y-1 sm:space-y-1.5`}>
                                 <div className="flex justify-between items-center">
-                                    <h3 className={`text-xl font-bold ${isCurrentTierOrHigher ? 'text-white' : 'text-gray-300'}`}>{t('afiliadosDashboard_panel_tierLabel', { tierNum })}</h3>
+                                    <h3 className={`text-lg sm:text-xl font-bold ${isCurrentTierOrHigher ? 'text-white' : 'text-gray-300'}`}>{t('afiliadosDashboard_panel_tierLabel', { tierNum })}</h3>
                                     {/* Show lock icon only if tier is not achieved */}
                                     {!isCurrentTierOrHigher && <Lock size={20} className="text-gray-500" />}
                                     {/* Show unlocked icon if the tier IS current/achieved */}
                                     {isCurrentTierOrHigher && <LockOpen size={20} className="text-cyan-400" />}
                                 </div>
-                                <p className={`text-sm ${isCurrentTierOrHigher ? 'text-gray-200' : 'text-gray-400'}`}>{t(TIER_COMMISSIONS[tierNum].labelKey)}</p>
+                                <p className={`text-xs sm:text-sm ${isCurrentTierOrHigher ? 'text-gray-200' : 'text-gray-400'}`}>{t(TIER_COMMISSIONS[tierNum].labelKey)}</p>
                                 <p className="text-xs text-gray-500">
                                     {requirementText()}
                                 </p>
@@ -288,16 +288,16 @@ const AfiliadosDashboard = () => {
 
              {/* Traders Fondeados Section - Placeholder */}
             <section>
-                <h2 className="text-2xl font-semibold mb-4 text-gray-100">{t('afiliadosDashboard_panel_fundedTradersTier3')}</h2>
-                <div className="relative rounded-xl border border-[#4A4A4A] bg-gradient-to-br from-[#232323] to-[#2b2b2b] min-h-[200px] flex items-center justify-center">
+                <h2 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4 text-gray-100">{t('afiliadosDashboard_panel_fundedTradersTier3')}</h2>
+                <div className="relative rounded-xl border border-[#4A4A4A] bg-gradient-to-br from-[#232323] to-[#2b2b2b] min-h-[150px] sm:min-h-[200px] flex items-center justify-center p-4">
                 {currentTier === 3 ? (
-                    <p className="text-gray-400">{t('afiliadosDashboard_panel_fundedTradersUnlocked')}</p>
+                    <p className="text-gray-400 text-center text-sm sm:text-base">{t('afiliadosDashboard_panel_fundedTradersUnlocked')}</p>
                 ) : (
-                    <div className="text-center p-4">
-                        <Lock size={36} className="text-gray-500 mb-3 mx-auto" />
-                        <h3 className="text-xl font-semibold text-gray-300 mb-1">{t('afiliadosDashboard_panel_sectionLocked')}</h3>
+                    <div className="text-center p-3 sm:p-4">
+                        <Lock size={36} className="text-gray-500 mb-2 sm:mb-3 mx-auto" />
+                        <h3 className="text-base sm:text-xl font-semibold text-gray-300 mb-1">{t('afiliadosDashboard_panel_sectionLocked')}</h3>
                         {/* Ensure this message correctly reflects the new Tier 3 requirement */}
-                        <p className="text-sm text-gray-400">{t('afiliadosDashboard_panel_reachTierToUnlock', { tierNum: 3, count: TIER_REQUIREMENTS[3] })}</p>
+                        <p className="text-xs sm:text-sm text-gray-400">{t('afiliadosDashboard_panel_reachTierToUnlock', { tierNum: 3, count: TIER_REQUIREMENTS[3] })}</p>
                 </div>
                 )}
                 </div>
@@ -308,32 +308,32 @@ const AfiliadosDashboard = () => {
       case 'referencias':
         return (
           <div className="space-y-4">
-             <h2 className="text-2xl font-semibold mb-4 text-gray-100">{t('afiliadosDashboard_referrals_title')}</h2>
+             <h2 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4 text-gray-100">{t('afiliadosDashboard_referrals_title')}</h2>
             {isLoadingReferencias && <div className="flex justify-center items-center p-6"><Loader size={32} className="animate-spin text-white"/></div>}
-            {!isLoadingReferencias && error && <div className="text-red-400 p-4 text-center">{error}</div>}
+            {!isLoadingReferencias && error && <div className="text-red-400 p-4 text-center text-sm sm:text-base">{error}</div>}
             {!isLoadingReferencias && !error && referenciasData.length === 0 && 
-                <p className="text-gray-400 text-center p-6">{t('afiliadosDashboard_referrals_noReferrals')}</p>
+                <p className="text-gray-400 text-center p-6 text-sm sm:text-base">{t('afiliadosDashboard_referrals_noReferrals')}</p>
             }
             {!isLoadingReferencias && !error && referenciasData.length > 0 && (
               <div className="overflow-x-auto bg-gradient-to-br from-[#232323] to-[#2b2b2b] rounded-xl border border-[#4A4A4A]">
-                <table className="min-w-full text-sm">
+                <table className="min-w-full text-xs sm:text-sm">
                   <thead className="border-b border-[#4A4A4A]">
                     <tr>
-                      <th className="px-4 py-3 text-left font-medium text-gray-300">{t('afiliadosDashboard_referrals_table_user')}</th>
-                      <th className="px-4 py-3 text-left font-medium text-gray-300">{t('afiliadosDashboard_referrals_table_email')}</th>
-                      <th className="px-4 py-3 text-left font-medium text-gray-300">{t('afiliadosDashboard_referrals_table_name')}</th>
-                      <th className="px-4 py-3 text-left font-medium text-gray-300">{t('afiliadosDashboard_referrals_table_country')}</th>
-                      <th className="px-4 py-3 text-left font-medium text-gray-300">{t('afiliadosDashboard_referrals_table_registeredDate')}</th>
+                      <th className="px-3 py-2 sm:px-4 sm:py-3 text-left font-medium text-gray-300 whitespace-nowrap">{t('afiliadosDashboard_referrals_table_user')}</th>
+                      <th className="px-3 py-2 sm:px-4 sm:py-3 text-left font-medium text-gray-300 whitespace-nowrap">{t('afiliadosDashboard_referrals_table_email')}</th>
+                      <th className="px-3 py-2 sm:px-4 sm:py-3 text-left font-medium text-gray-300 whitespace-nowrap">{t('afiliadosDashboard_referrals_table_name')}</th>
+                      <th className="px-3 py-2 sm:px-4 sm:py-3 text-left font-medium text-gray-300 whitespace-nowrap">{t('afiliadosDashboard_referrals_table_country')}</th>
+                      <th className="px-3 py-2 sm:px-4 sm:py-3 text-left font-medium text-gray-300 whitespace-nowrap">{t('afiliadosDashboard_referrals_table_registeredDate')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#4A4A4A]">
                     {referenciasData.map(ref => (
                       <tr key={ref.id} className="hover:bg-[#333]">
-                        <td className="px-4 py-3 text-gray-200">{ref.username || t('afiliadosDashboard_table_notAvailable')}</td>
-                        <td className="px-4 py-3 text-gray-200">{ref.email}</td>
-                        <td className="px-4 py-3 text-gray-200">{`${ref.firstName || ''} ${ref.lastName || ''}`.trim() || t('afiliadosDashboard_table_notAvailable')}</td>
-                        <td className="px-4 py-3 text-gray-200">{ref.country || t('afiliadosDashboard_table_notAvailable')}</td>
-                        <td className="px-4 py-3 text-gray-200">
+                        <td className="px-3 py-2 sm:px-4 sm:py-3 text-gray-200 whitespace-nowrap">{ref.username || t('afiliadosDashboard_table_notAvailable')}</td>
+                        <td className="px-3 py-2 sm:px-4 sm:py-3 text-gray-200 whitespace-nowrap">{ref.email}</td>
+                        <td className="px-3 py-2 sm:px-4 sm:py-3 text-gray-200 whitespace-nowrap">{`${ref.firstName || ''} ${ref.lastName || ''}`.trim() || t('afiliadosDashboard_table_notAvailable')}</td>
+                        <td className="px-3 py-2 sm:px-4 sm:py-3 text-gray-200 whitespace-nowrap">{ref.country || t('afiliadosDashboard_table_notAvailable')}</td>
+                        <td className="px-3 py-2 sm:px-4 sm:py-3 text-gray-200 whitespace-nowrap">
                           {ref.created_time ? new Date(ref.created_time.seconds * 1000).toLocaleDateString() : t('afiliadosDashboard_table_notAvailable')}
                         </td>
                       </tr>
@@ -348,13 +348,13 @@ const AfiliadosDashboard = () => {
       case 'pagos':
         return (
           <div className="space-y-4">
-            <h2 className="text-2xl font-semibold mb-4 text-gray-100">{t('afiliadosDashboard_payments_title')}</h2>
+            <h2 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4 text-gray-100">{t('afiliadosDashboard_payments_title')}</h2>
             {isLoadingPagos && <div className="flex justify-center"><Loader className="animate-spin text-white"/></div>}
-            {!isLoadingPagos && pagosData.length === 0 && <p className="text-gray-400">{t('afiliadosDashboard_payments_noPayments')}</p>}
-            {pagosData.length > 0 && <p>{t('afiliadosDashboard_payments_tablePlaceholder')}</p>}
+            {!isLoadingPagos && pagosData.length === 0 && <p className="text-gray-400 text-center text-sm sm:text-base">{t('afiliadosDashboard_payments_noPayments')}</p>}
+            {pagosData.length > 0 && <p className="text-center text-sm sm:text-base">{t('afiliadosDashboard_payments_tablePlaceholder')}</p>}
           </div>
         );
-      default: return <div className="text-center text-gray-400 p-6">{t('afiliadosDashboard_selectTabPrompt')}</div>;
+      default: return <div className="text-center text-gray-400 p-6 text-sm sm:text-base">{t('afiliadosDashboard_selectTabPrompt')}</div>;
     }
   };
 
@@ -365,28 +365,28 @@ const AfiliadosDashboard = () => {
   ];
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-[#232323] to-[#2b2b2b] text-white p-4 md:p-6 rounded-3xl border border-[#4A4A4A]">
-      <div className="flex space-x-1 mb-6">
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-[#232323] to-[#2b2b2b] text-white p-3 sm:p-4 md:p-6 rounded-3xl border border-[#4A4A4A]">
+      <div className="flex space-x-1 mb-4 sm:mb-6 overflow-x-auto pb-2">
         {tabConfig.map(tab => {
             const Icon = tab.icon;
             return (
         <button
                     key={tab.id}
-                    className={`flex items-center space-x-2 px-4 py-3 font-medium focus:outline-none transition-colors duration-150 rounded-full bg-gradient-to-br from-[#232323] to-[#2b2b2b] text-white
+                    className={`flex items-center space-x-2 px-3 py-2 sm:px-4 sm:py-3 font-medium focus:outline-none transition-colors duration-150 rounded-full bg-gradient-to-br from-[#232323] to-[#2b2b2b] text-sm sm:text-base whitespace-nowrap
                         ${activeTab === tab.id 
                             ? 'border border-cyan-500 text-white' 
-                            : 'text-gray-400 hover:text-gray-200'
+                            : 'text-gray-400 hover:text-gray-200 hover:border-cyan-400 border border-transparent'
                         }`}
                     onClick={() => handleTabClick(tab.id)}
                 >
-                    <Icon size={18} />
+                    <Icon size={16} className="sm:w-5 sm:h-5" />
                     <span>{t(tab.labelKey)}</span>
         </button>
             );
         })}
       </div>
       
-      <div className="bg-gradient-to-br from-[#232323] to-[#2b2b2b] p-4 md:p-6 rounded-xl border border-[#4A4A4A]">
+      <div className="bg-gradient-to-br from-[#232323] to-[#2b2b2b] p-3 sm:p-4 md:p-6 rounded-xl border border-[#4A4A4A]">
         {renderContent()}
       </div>
     </div>

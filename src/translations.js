@@ -1250,6 +1250,19 @@ export const translations = {
   tradingDashboard_iconAlt_lightning: { es: "Rayo", en: "Lightning" },
   tradingDashboard_iconAlt_shield: { es: "Escudo", en: "Shield" },
 
+  // Added missing keys for Operations Table title, button, and messages
+  tradingDashboard_operationsTableTitle: { es: "Operaciones", en: "Operations" },
+  tradingDashboard_downloadCsvButton: { es: "Descargar CSV", en: "Download CSV" },
+  tradingDashboard_noOperationsFound: { es: "No se encontraron operaciones.", en: "No operations found." },
+
+  // Added missing keys for Operations Table headers
+  tradingDashboard_tableHeader_ticket: { es: "Ticket", en: "Ticket" },
+  tradingDashboard_tableHeader_openTime: { es: "Tiempo Apertura", en: "Open Time" },
+  tradingDashboard_tableHeader_openPrice: { es: "Precio Apertura", en: "Open Price" },
+  tradingDashboard_tableHeader_closeTime: { es: "Tiempo Cierre", en: "Close Time" },
+  tradingDashboard_tableHeader_closePrice: { es: "Precio Cierre", en: "Close Price" },
+  tradingDashboard_tableHeader_profit: { es: "Ganancia/Pérdida", en: "Profit/Loss" },
+
   // CertificateComponent.jsx translations
   certificate_button_challengeSuccess: {
     es: "Superación de Challenge",
@@ -1383,5 +1396,99 @@ export const translations = {
   tradingDashboard_tableHeader_lotaje: { es: "Lotaje", en: "Lot Size" },
   tradingDashboard_tableHeader_fechaCierre: { es: "Fecha De Cierre", en: "Close Date" },
   tradingDashboard_tableHeader_precioCierre: { es: "Precio De Cierre", en: "Close Price" },
-  tradingDashboard_tableHeader_resultado: { es: "Resultado", en: "Result" }
+  tradingDashboard_tableHeader_resultado: { es: "Resultado", en: "Result" },
+
+  // News component translations
+  news_marketClosed: {
+    es: "Mercado cerrado",
+    en: "Market closed"
+  },
+  news_showingLastFridayData: {
+    es: "Mostrando datos del último viernes",
+    en: "Showing last Friday's data"
+  },
+  news_weekday_monday: {
+    es: "Lunes",
+    en: "Monday"
+  },
+  news_weekday_tuesday: {
+    es: "Martes",
+    en: "Tuesday"
+  },
+  news_weekday_wednesday: {
+    es: "Miercoles",
+    en: "Wednesday"
+  },
+  news_weekday_thursday: {
+    es: "Jueves",
+    en: "Thursday"
+  },
+  news_weekday_friday: {
+    es: "Viernes",
+    en: "Friday"
+  },
+  news_filter_impact: {
+    es: "Filtrar por impacto",
+    en: "Filter by impact"
+  },
+  news_filter_visibility: {
+    es: "Filtrar por visibilidad",
+    en: "Filter by visibility"
+  },
+  news_impact_holidays: {
+    es: "Feriados",
+    en: "Holidays"
+  },
+  news_impact_low: {
+    es: "Bajo",
+    en: "Low"
+  },
+  news_impact_medium: {
+    es: "Medio",
+    en: "Medium"
+  },
+  news_impact_high: {
+    es: "Alto",
+    en: "High"
+  },
+  news_filter_hidePastNews: {
+    es: "Ocultar noticias pasadas",
+    en: "Hide past news"
+  },
+  news_filter_showRestrictedOnly: {
+    es: "Mostrar solo eventos restringidos",
+    en: "Show restricted events only"
+  },
+  news_restricted_event: {
+    es: "Evento Restringido",
+    en: "Restricted Event"
+  },
+  news_expired: {
+    es: "Expirado",
+    en: "Expired"
+  },
+  news_actual: {
+    es: "Actual",
+    en: "Actual"
+  },
+  news_forecast: {
+    es: "Pronostico",
+    en: "Forecast"
+  },
+  news_previous: {
+    es: "Previo",
+    en: "Previous"
+  },
+  news_no_events: {
+    es: "No hay eventos económicos para los filtros seleccionados",
+    en: "No economic events for the selected filters"
+  },
+  news_loading: {
+    es: "Cargando...",
+    en: "Loading..."
+  },
+  news_error_loading: {
+    es: "Error al cargar las noticias",
+    en: "Error loading news"
+  }
 }; 
