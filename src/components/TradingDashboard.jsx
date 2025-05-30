@@ -534,505 +534,505 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
           </button>
         </div>
       </div>
-      {/* Header con saludo y detalles */}
-      <div className="p-3 sm:p-4 md:p-6 rounded-2xl relative bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] mb-4 md:mb-6">
-        <div className="flex flex-col lg:flex-row justify-between w-full gap-4 lg:gap-6">
-          {/* Left Side: User Info & Account Overview */}
-          <div className="flex items-start mb-3 lg:mb-0 lg:w-1/2">
-            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-[#333] rounded-full flex items-center justify-center text-xl sm:text-2xl mr-3 sm:mr-4 overflow-hidden flex-shrink-0">
-              <img 
-                src={currentUser?.photoURL || "/IconoPerfil.png"} 
-                alt={t('tradingDashboard_avatarAlt')} 
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="w-full">
-              <h1 className="text-lg sm:text-xl md:text-2xl font-semibold">{t('tradingDashboard_greetingPrefix')}{getUserName()}</h1>
-              <p className="text-xs sm:text-sm md:text-base text-gray-400">
-                {t('tradingDashboard_currentAccountInfo', { accountSize: formatCurrency(safeAccount.currentBalance) })}
-              </p>
-              
-              <div className="space-y-1.5 sm:space-y-2 mt-3 sm:mt-4 text-xs sm:text-sm">
-                <div className="flex items-center">
-                  <div className="mr-2 sm:mr-3">
-                    <img src="/lightning_ring.png" alt={t('tradingDashboard_iconAlt_lightning')} className="w-4 h-4 sm:w-5 md:w-6 sm:h-5 md:h-6" onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23333'/%3E%3Cpath d='M12 6L9 13H12V18L15 11H12V6Z' fill='white'/%3E%3C/svg%3E";
-                    }} />
-                  </div>
-                  <span className="text-gray-400 mr-1.5 sm:mr-2">{t('tradingDashboard_initialBalanceLabel')}</span>
-                  <span className="font-medium">{formatCurrency(safeAccount.initialChallengeAmount)}</span>
-                </div>
-                
-                <div className="flex items-center">
-                  <div className="mr-2 sm:mr-3">
-                    <img src="/lightning_ring.png" alt={t('tradingDashboard_iconAlt_lightning')} className="w-4 h-4 sm:w-5 md:w-6 sm:h-5 md:h-6" onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23333'/%3E%3Cpath d='M12 6L9 13H12V18L15 11H12V6Z' fill='white'/%3E%3C/svg%3E";
-                    }} />
-                  </div>
-                  <span className="text-gray-400 mr-1.5 sm:mr-2">{t('tradingDashboard_planTypeLabel')}</span>
-                  <span className="font-medium">{getPhaseDisplayLabel(account)}</span>
-                </div>
-                
-                <div className="flex items-center">
-                  <div className="mr-2 sm:mr-3">
-                    <img src="/lightning_ring.png" alt={t('tradingDashboard_iconAlt_lightning')} className="w-4 h-4 sm:w-5 md:w-6 sm:h-5 md:h-6" onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23333'/%3E%3Cpath d='M12 6L9 13H12V18L15 11H12V6Z' fill='white'/%3E%3C/svg%3E";
-                    }} />
-                  </div>
-                  <span className="text-gray-400 mr-1.5 sm:mr-2">{t('tradingDashboard_accountTypeLabel')}</span>
-                  <span className="font-medium">{getAccountTypeLabel(account)}</span>
-                </div>
+      {/* Container principal con borde y fondo */}
+      <div className="bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-2xl p-4 md:p-6 mb-4 md:mb-6 w-full flex flex-col gap-6">
+        {/* Header con saludo y detalles */}
+        <div className="rounded-2xl relative w-full mb-0 p-0 border-none bg-transparent">
+          <div className="flex flex-col lg:flex-row justify-between w-full gap-4 lg:gap-6">
+            {/* Left Side: User Info & Account Overview */}
+            <div className="flex items-start mb-3 lg:mb-0 lg:w-1/2">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-[#333] rounded-full flex items-center justify-center text-xl sm:text-2xl mr-3 sm:mr-4 overflow-hidden flex-shrink-0">
+                <img 
+                  src={currentUser?.photoURL || "/IconoPerfil.png"} 
+                  alt={t('tradingDashboard_avatarAlt')} 
+                  className="w-full h-full object-cover"
+                />
               </div>
-            </div>
-          </div>
-          
-          {/* Right Side: Account Details & Credentials */}
-          <div className="flex flex-col lg:w-1/2 lg:border-l lg:border-gray-700 lg:pl-6">
-            <div className="flex flex-wrap items-center mb-3 sm:mb-4 gap-2">
-              <div className="mr-2 sm:mr-3">
-                <img src="/Chield_check.png" alt={t('tradingDashboard_iconAlt_shield')} className="w-5 h-5 sm:w-6 sm:h-6" onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath d='M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z' fill='%23555'/%3E%3C/svg%3E";
-                }} />
-              </div>
-              <h3 className="text-base sm:text-lg md:text-xl font-medium mr-auto">{t('tradingDashboard_accountDetailsTitle')}</h3>
-              <div className={`${getStatusBadgeClass(account.status)} rounded-full py-1.5 px-4 sm:py-2 sm:px-6 text-xs sm:text-sm text-white whitespace-nowrap`}>
-                {getStatusTranslation(account.status)}
+              <div className="w-full">
+                <h1 className="text-lg sm:text-xl md:text-2xl font-semibold">{t('tradingDashboard_greetingPrefix')}{getUserName()}</h1>
+                <p className="text-xs sm:text-sm md:text-base text-gray-400">
+                  {t('tradingDashboard_currentAccountInfo', { accountSize: formatCurrency(safeAccount.currentBalance) })}
+                </p>
+                <div className="space-y-1.5 sm:space-y-2 mt-3 sm:mt-4 text-xs sm:text-sm">
+                  <div className="flex items-center">
+                    <div className="mr-2 sm:mr-3">
+                      <img src="/lightning_ring.png" alt={t('tradingDashboard_iconAlt_lightning')} className="w-4 h-4 sm:w-5 md:w-6 sm:h-5 md:h-6" onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23333'/%3E%3Cpath d='M12 6L9 13H12V18L15 11H12V6Z' fill='white'/%3E%3C/svg%3E";
+                      }} />
+                    </div>
+                    <span className="text-gray-400 mr-1.5 sm:mr-2">{t('tradingDashboard_initialBalanceLabel')}</span>
+                    <span className="font-medium">{formatCurrency(safeAccount.initialChallengeAmount)}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="mr-2 sm:mr-3">
+                      <img src="/lightning_ring.png" alt={t('tradingDashboard_iconAlt_lightning')} className="w-4 h-4 sm:w-5 md:w-6 sm:h-5 md:h-6" onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23333'/%3E%3Cpath d='M12 6L9 13H12V18L15 11H12V6Z' fill='white'/%3E%3C/svg%3E";
+                      }} />
+                    </div>
+                    <span className="text-gray-400 mr-1.5 sm:mr-2">{t('tradingDashboard_planTypeLabel')}</span>
+                    <span className="font-medium">{getPhaseDisplayLabel(account)}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="mr-2 sm:mr-3">
+                      <img src="/lightning_ring.png" alt={t('tradingDashboard_iconAlt_lightning')} className="w-4 h-4 sm:w-5 md:w-6 sm:h-5 md:h-6" onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23333'/%3E%3Cpath d='M12 6L9 13H12V18L15 11H12V6Z' fill='white'/%3E%3C/svg%3E";
+                      }} />
+                    </div>
+                    <span className="text-gray-400 mr-1.5 sm:mr-2">{t('tradingDashboard_accountTypeLabel')}</span>
+                    <span className="font-medium">{getAccountTypeLabel(account)}</span>
+                  </div>
+                </div>
               </div>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 w-full text-xs sm:text-sm">
-              <div className="border border-gray-700 rounded-md p-2 sm:p-2.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-400">{t('tradingDashboard_loginLabel')}</span>
-                  <div className="flex items-center">
-                    <span className="mr-1.5 sm:mr-2">{safeAccount.login}</span>
-                    <img src="/Copy.png" alt={t('tradingDashboard_iconAlt_copy', 'Copy')} className="w-3 h-3 sm:w-4 sm:h-4 cursor-pointer" onError={(e) => { // Added cursor-pointer
-                      e.target.onerror = null;
-                      e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath d='M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z' fill='%23555'/%3E%3C/svg%3E";
-                    }} />
-                  </div>
+            {/* Right Side: Account Details & Credentials */}
+            <div className="flex flex-col lg:w-1/2 lg:border-l lg:border-gray-700 lg:pl-6">
+              <div className="flex flex-wrap items-center mb-3 sm:mb-4 gap-2">
+                <div className="mr-2 sm:mr-3">
+                  <img src="/Chield_check.png" alt={t('tradingDashboard_iconAlt_shield')} className="w-5 h-5 sm:w-6 sm:h-6" onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath d='M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z' fill='%23555'/%3E%3C/svg%3E";
+                  }} />
+                </div>
+                <h3 className="text-base sm:text-lg md:text-xl font-medium mr-auto">{t('tradingDashboard_accountDetailsTitle')}</h3>
+                <div className={`${getStatusBadgeClass(account.status)} rounded-full py-1.5 px-4 sm:py-2 sm:px-6 text-xs sm:text-sm text-white whitespace-nowrap`}>
+                  {getStatusTranslation(account.status)}
                 </div>
               </div>
               
-              <div className="border border-gray-700 rounded-md p-2 sm:p-2.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-400">{t('tradingDashboard_investorPassLabel')}</span>
-                  <span className="text-gray-300 underline cursor-pointer">{t('tradingDashboard_setPasswordButton')}</span> {/* Added cursor-pointer */}
-                </div>
-              </div>
-              
-              <div className="border border-gray-700 rounded-md p-2 sm:p-2.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-400">{t('tradingDashboard_masterPassLabel')}</span>
-                  <div className="flex items-center">
-                    <span className="mr-1.5 sm:mr-2">{safeAccount.masterPassword}</span>
-                    <img src="/Visibilidad.png" alt={t('tradingDashboard_iconAlt_visibility', 'Visibility')} className="w-3 h-3 sm:w-4 sm:h-4 cursor-pointer" onError={(e) => { // Added cursor-pointer
-                      e.target.onerror = null;
-                      e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath d='M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z' fill='%23555'/%3E%3C/svg%3E";
-                    }} />
-                  </div>
-                </div>
-              </div>
-              
-              <div className="border border-gray-700 rounded-md p-2 sm:p-2.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-400">{t('tradingDashboard_mt5ServerLabel')}</span>
-                  <span className="">{safeAccount.serverType}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Sección de balance y métricas */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
-        <div className="lg:col-span-2 p-3 sm:p-4 md:p-6 bg-gradient-to-br from-[#232323] to-[#434242] border border-[#333] rounded-xl">
-          <div className="flex flex-wrap justify-between items-center mb-2 sm:mb-4 gap-2">
-            <h2 className="text-lg sm:text-xl md:text-3xl font-bold">{t('tradingDashboard_balanceChartTitle')}</h2>
-          </div>
-          <div className="flex flex-wrap items-center mb-4 sm:mb-6 gap-x-3 gap-y-1">
-            <span className="text-xl sm:text-2xl md:text-4xl font-bold mr-1 sm:mr-3">{formatCurrency(safeAccount.currentBalance)}</span>
-            <span className={`bg-green-800 bg-opacity-30 text-green-400 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-xs sm:text-sm whitespace-nowrap`}>{formatPercentage(safeAccount.balanceGrowth)}</span>
-          </div>
-          
-          <div className="w-full aspect-video sm:aspect-square max-h-[300px] sm:max-h-[400px] md:max-h-[500px]">
-            {balanceData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart
-                  data={balanceData}
-                  margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
-                >
-                  <defs>
-                    <linearGradient id="colorBalance" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#0a84ff" stopOpacity={0.2} />
-                      <stop offset="95%" stopColor="#0a84ff" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <XAxis 
-                    dataKey="name" 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{ fill: '#9CA3AF', fontSize: 12 }}
-                  />
-                  <YAxis 
-                    domain={['0', 'dataMax + 50000']}
-                    ticks={[0, 50000, 100000, 150000, 200000, 250000]} 
-                    tickFormatter={(value) => value === 0 ? '0k' : `${value/1000}k`}
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: '#9CA3AF', fontSize: 12 }}
-                    width={40}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="value"
-                    stroke="#06b6d4"
-                    strokeWidth={3}
-                    fillOpacity={1}
-                    fill="url(#colorBalance)"
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="flex items-center justify-center h-full">
-                <p className="text-gray-400">{t('tradingDashboard_loading_charts', 'Loading charts...')}</p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 gap-3 sm:gap-4">
-          <div className="p-3 sm:p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl">
-            <h2 className="text-base sm:text-lg md:text-xl font-bold mb-1 sm:mb-2">{t('tradingDashboard_profitLossWidgetTitle')}</h2>
-            <div className="flex flex-wrap items-center mb-0.5 sm:mb-1 gap-x-2 gap-y-1">
-              <span className="text-lg sm:text-xl md:text-2xl font-bold mr-1 sm:mr-3">{formatCurrency(safeAccount.profit)}</span>
-              <span className={`bg-green-800 bg-opacity-30 text-green-400 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-xs sm:text-sm whitespace-nowrap`}>{formatPercentage(safeAccount.profitGrowth)}</span>
-            </div>
-            <p className="text-xs sm:text-sm text-gray-400">{currentDate}</p>
-          </div> 
-          <div className="p-3 sm:p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl">
-            <div className="flex flex-col xs:flex-row justify-between items-start xs:items-center mb-1.5 sm:mb-2 gap-1 xs:gap-2">
-              <h2 className="text-base sm:text-lg md:text-xl font-bold whitespace-nowrap">{t('tradingDashboard_drawdownWidgetTitle')}</h2>
-              <div className="flex text-xs sm:text-sm flex-shrink-0">
-                <button 
-                  onClick={() => setDrawdownType('total')} 
-                  className={`px-2 py-1 sm:px-3 rounded-md transition-colors
-                    ${drawdownType === 'total' 
-                      ? 'bg-cyan-600 text-white' 
-                      : 'bg-transparent text-gray-400 hover:text-gray-200'
-                  }`}
-                >
-                  {t('tradingDashboard_drawdownTypeTotal')}
-                </button>
-                <div className="border-r border-gray-600 mx-1 h-3 sm:h-4 self-center"></div>
-                <button 
-                  onClick={() => setDrawdownType('daily')} 
-                  className={`px-2 py-1 sm:px-3 rounded-md transition-colors
-                    ${drawdownType === 'daily' 
-                      ? 'bg-cyan-600 text-white' 
-                      : 'bg-transparent text-gray-400 hover:text-gray-200'
-                  }`}
-                >
-                  {t('tradingDashboard_drawdownTypeDaily')}
-                </button>
-              </div>
-            </div>
-            <div className="flex flex-wrap items-center mb-0.5 sm:mb-1 gap-x-2 gap-y-1">
-              <span className="text-lg sm:text-xl md:text-2xl font-bold mr-1 sm:mr-3">
-                {drawdownType === 'daily' ? formatCurrency(safeAccount.dailyDrawdown) : formatCurrency(safeAccount.totalDrawdown)} 
-              </span>
-              <span className={`bg-green-800 bg-opacity-30 text-green-400 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-xs sm:text-sm whitespace-nowrap`}>
-                {drawdownType === 'daily' ? formatPercentage(safeAccount.dailyDrawdownPercentage) : formatPercentage(safeAccount.totalDrawdownPercentage)} 
-              </span>
-            </div>
-          </div>
-
-          <div className="p-3 sm:p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl">
-            <h2 className="text-base sm:text-lg md:text-xl font-bold mb-1 sm:mb-2">{t('tradingDashboard_tradingDaysWidgetTitle')}</h2>
-            <div className="text-lg sm:text-xl md:text-2xl font-bold">{safeAccount.tradingDays.current} {t('tradingDashboard_daysLabel')}</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Sección de métricas detalladas (Pérdida Promedio, Ganancia Promedio, etc.) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
-        {/* Pérdida Promedio Por Operación */}
-        <div className="p-3 sm:p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl flex justify-between items-center">
-          <div>
-            <h3 className="text-base sm:text-lg md:text-xl font-medium mb-0.5 sm:mb-1">{t('tradingDashboard_avgLossPerOperation')}</h3>
-            <div className="flex items-baseline">
-              <span className="text-lg sm:text-xl md:text-2xl font-bold mr-1.5 sm:mr-2">{formatCurrency(safeAccount.avgLossPerOperation)}</span>
-              <span className={`bg-red-800 bg-opacity-30 text-red-400 px-1.5 py-0.5 rounded text-2xs xs:text-xs`}>{formatPercentage(safeAccount.avgLossPercentage)}</span>
-            </div>
-          </div>
-          <div className="bg-[#2d2d2d] rounded-full ml-2 w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center">
-            <img src="/loss.png" alt={t('tradingDashboard_iconAlt_loss')} className="w-3/4 h-3/4 object-contain" onError={(e) => { e.target.onerror = null; e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23333'/%3E%3Cpath d='M7 17L17 7M17 7H11M17 7V13' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"; }} />
-          </div>
-        </div>
-
-        {/* Ganancia Promedio Por Operación */}
-        <div className="p-3 sm:p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl flex justify-between items-center">
-          <div>
-            <h3 className="text-base sm:text-lg md:text-xl font-medium mb-0.5 sm:mb-1">{t('tradingDashboard_avgProfitPerOperation')}</h3>
-            <div className="flex items-baseline">
-              <span className="text-lg sm:text-xl md:text-2xl font-bold mr-1.5 sm:mr-2">{formatCurrency(safeAccount.avgProfitPerOperation)}</span>
-              <span className={`text-green-400 px-1.5 py-0.5 rounded text-2xs xs:text-xs bg-green-800 bg-opacity-30`}>{formatPercentage(safeAccount.avgProfitPercentage)}</span>
-            </div>
-          </div>
-          <div className="bg-[#2d2d2d] rounded-full ml-2 w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center">
-            <img src="/gain.png" alt={t('tradingDashboard_iconAlt_coins')} className="w-3/4 h-3/4 object-contain" onError={(e) => { e.target.onerror = null; e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23333'/%3E%3Cpath d='M12 6L12 18M9 10L15 10M9 14L15 14' stroke='white' stroke-width='2'/%3E%3C/svg%3E"; }} />
-          </div>
-        </div>
-
-        {/* Lotaje Promedio Por Operación */}
-        <div className="p-3 sm:p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl flex justify-between items-center">
-          <div>
-            <h3 className="text-base sm:text-lg md:text-xl font-medium mb-0.5 sm:mb-1">{t('tradingDashboard_avgLotPerOperation')}</h3>
-            <span className="text-lg sm:text-xl md:text-2xl font-bold">{safeAccount.avgLotPerOperation.toFixed(2)}</span>
-          </div>
-          <div className="bg-[#2d2d2d] rounded-full ml-2 w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center">
-            <img src="/graph.png" alt={t('tradingDashboard_iconAlt_lot')} className="w-5/6 h-5/6 object-contain" onError={(e) => { e.target.onerror = null; e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23333'/%3E%3Cpath d='M4 12L12 4L20 12L12 20L4 12Z' stroke='white' stroke-width='2'/%3E%3Cpath d='M8 12L12 8L16 12L12 16L8 12Z' stroke='white' stroke-width='1.5'/%3E%3C/svg%3E"; }} />
-          </div>
-        </div>
-        
-        {/* Duración Promedio Por Operación */}
-        <div className="p-3 sm:p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl flex justify-between items-center">
-          <div>
-            <h3 className="text-base sm:text-lg md:text-xl font-medium mb-0.5 sm:mb-1">{t('tradingDashboard_avgTradeDuration')}</h3>
-            <span className="text-lg sm:text-xl md:text-2xl font-bold">{safeAccount.avgTradeDuration}</span>
-          </div>
-          <div className="bg-[#2d2d2d] rounded-full ml-2 w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center">
-            <img src="/clock.png" alt={t('tradingDashboard_iconAlt_clock')} className="w-3/4 h-3/4 object-contain" onError={(e) => { e.target.onerror = null; e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23333'/%3E%3Cpath d='M12 6v6l4 2' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"; }} />
-          </div>
-        </div>
-
-        {/* Relación Riesgo Beneficio */}
-        <div className="p-3 sm:p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl flex justify-between items-center">
-          <div>
-            <h3 className="text-base sm:text-lg md:text-xl font-medium mb-0.5 sm:mb-1">{t('tradingDashboard_riskRewardRatio')}</h3>
-            <span className="text-lg sm:text-xl md:text-2xl font-bold">{safeAccount.riskRewardRatio.toFixed(2)}:1</span>
-          </div>
-          <div className="bg-[#2d2d2d] rounded-full ml-2 w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center">
-            <img src="/victory.png" alt={t('tradingDashboard_iconAlt_ratio')} className="w-3/4 h-3/4 object-contain" onError={(e) => { e.target.onerror = null; e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23333'/%3E%3Cpath d='M12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.63L12 2L9.19 8.63L2 9.24L7.46 13.97L5.82 21L12 17.27Z' fill='white'/%3E%3C/svg%3E"; }} />
-          </div>
-        </div>
-
-        {/* Ratio De Ganancia */}
-        <div className="p-3 sm:p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl flex justify-between items-center">
-          <div>
-            <h3 className="text-base sm:text-lg md:text-xl font-medium mb-0.5 sm:mb-1">{t('tradingDashboard_winRate')}</h3>
-            <span className="text-lg sm:text-xl md:text-2xl font-bold">{safeAccount.winRate.toFixed(2)}%</span>
-          </div>
-          <div className="bg-[#2d2d2d] rounded-full ml-2 w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center">
-            <img src="/coins.png" alt={t('tradingDashboard_iconAlt_winRate')} className="w-3/4 h-3/4 object-contain" onError={(e) => { e.target.onerror = null; e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23333'/%3E%3Cpath d='M12 2A10 10 0 0 0 2 12A10 10 0 0 0 12 22A10 10 0 0 0 22 12A10 10 0 0 0 12 2M12 4V12H20A8 8 0 0 1 12 20V12H4A8 8 0 0 1 12 4Z' fill='white'/%3E%3C/svg%3E"; }} />
-          </div>
-        </div>
-      </div>
-
-      {/* Sección de Objetivos */}
-      <div className="p-3 sm:p-4 md:p-6 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl mb-4 sm:mb-6">
-        <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-3 sm:mb-4">{t('tradingDashboard_objectivesTitle')}</h2>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4 lg:mb-6">
-          {/* Daily Loss Limit Card */}
-          <div className="p-3 sm:p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl">
-            <div className="flex flex-wrap justify-between items-center mb-2 sm:mb-4 gap-1">
-              <h3 className="text-sm sm:text-base md:text-lg font-medium">{t('tradingDashboard_dailyLossLimitTitle')}</h3>
-              <span className={`px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-2xs xs:text-xs whitespace-nowrap ${
-                safeAccount.dailyDrawdown > safeAccount.maxLossLimit
-                  ? 'bg-red-800 bg-opacity-30 text-red-400'
-                  : safeAccount.dailyDrawdown > safeAccount.maxLossLimit * 0.7
-                  ? 'bg-yellow-800 bg-opacity-30 text-yellow-400'
-                  : 'bg-green-800 bg-opacity-30 text-green-400'
-              }`}>
-                {safeAccount.dailyDrawdown > safeAccount.maxLossLimit 
-                  ? t('tradingDashboard_status_lost')
-                  : safeAccount.dailyDrawdown > safeAccount.maxLossLimit * 0.7
-                  ? t('tradingDashboard_status_inProgress') 
-                  : t('tradingDashboard_status_surpassed')}
-              </span>
-            </div>
-            <div className="flex justify-between items-center mb-1 sm:mb-2 text-xs sm:text-sm">
-              <span className="text-gray-400">{t('tradingDashboard_maxLossLimitLabel')}</span>
-              <span>{formatCurrency(safeAccount.maxLossLimit)}</span>
-            </div>
-            <div className="flex justify-between items-center text-xs sm:text-sm">
-              <span className="text-gray-400">{t('tradingDashboard_allowedLossTodayLabel')}</span>
-              <span>{formatCurrency(safeAccount.allowedLossToday)}</span>
-            </div>
-            <div className="mt-2 text-2xs xs:text-xs text-gray-500">
-              {t('tradingDashboard_daily_loss_explanation')}
-            </div>
-          </div>
-          
-          {/* Global Loss Limit Card */}
-          <div className="p-3 sm:p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl">
-            <div className="flex flex-wrap justify-between items-center mb-2 sm:mb-4 gap-1">
-              <h3 className="text-sm sm:text-base md:text-lg font-medium">{t('tradingDashboard_globalLossLimitTitle')}</h3>
-              <span className={`px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-2xs xs:text-xs whitespace-nowrap ${
-                safeAccount.totalDrawdown > safeAccount.maxLossLimit
-                  ? 'bg-red-800 bg-opacity-30 text-red-400'
-                  : safeAccount.totalDrawdown > safeAccount.maxLossLimit * 0.7
-                  ? 'bg-yellow-800 bg-opacity-30 text-yellow-400'
-                  : 'bg-green-800 bg-opacity-30 text-green-400'
-              }`}>
-                {safeAccount.totalDrawdown > safeAccount.maxLossLimit 
-                  ? t('tradingDashboard_status_lost')
-                  : safeAccount.totalDrawdown > safeAccount.maxLossLimit * 0.7
-                  ? t('tradingDashboard_status_inProgress') 
-                  : t('tradingDashboard_status_surpassed')}
-              </span>
-            </div>
-            <div className="flex justify-between items-center mb-1 sm:mb-2 text-xs sm:text-sm">
-              <span className="text-gray-400">{t('tradingDashboard_maxLossLimitLabel')}</span>
-              <span>{formatCurrency(safeAccount.maxLossLimit)}</span>
-            </div>
-            <div className="flex justify-between items-center text-xs sm:text-sm">
-              <span className="text-gray-400">{t('tradingDashboard_allowedLossTodayLabel')}</span>
-              <span>{formatCurrency(safeAccount.allowedLossToday)}</span>
-            </div>
-            <div className="mt-2 text-2xs xs:text-xs text-gray-500">
-              {t('tradingDashboard_global_loss_explanation')}
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
-          {/* Min Trading Days Card */}
-          <div className="p-3 sm:p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl">
-            <div className="flex flex-wrap justify-between items-center mb-2 sm:mb-4 gap-1">
-              <h3 className="text-sm sm:text-base md:text-lg font-medium">{t('tradingDashboard_minTradingDaysTitle')}</h3>
-              <span className={`px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-2xs xs:text-xs whitespace-nowrap ${
-                safeAccount.tradingDays.current >= safeAccount.tradingDays.min
-                  ? 'bg-green-800 bg-opacity-30 text-green-400'
-                  : 'bg-yellow-800 bg-opacity-30 text-yellow-400'
-              }`}>
-                {safeAccount.tradingDays.current >= safeAccount.tradingDays.min
-                  ? t('tradingDashboard_status_surpassed')
-                  : t('tradingDashboard_status_inProgress')}
-              </span>
-            </div>
-            <div className="flex justify-between items-center mb-1 sm:mb-2 text-xs sm:text-sm">
-              <span className="text-gray-400">{t('tradingDashboard_minimumLabel')}</span>
-              <span>{safeAccount.tradingDays.min} {t('tradingDashboard_daysLabel')}</span>
-            </div>
-            <div className="flex justify-between items-center text-xs sm:text-sm">
-              <span className="text-gray-400">{t('tradingDashboard_currentResultLabel')}</span>
-              <span>{safeAccount.tradingDays.current} {t('tradingDashboard_daysLabel')}</span>
-            </div>
-            <div className="mt-2 text-2xs xs:text-xs text-gray-500">
-              {t('tradingDashboard_min_days_explanation')}
-            </div>
-          </div>
-          
-          {/* Profit Target Card */}
-          <div className="p-3 sm:p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl">
-            <div className="flex flex-wrap justify-between items-center mb-2 sm:mb-4 gap-1">
-              <h3 className="text-sm sm:text-base md:text-lg font-medium">{t('tradingDashboard_profitTargetTitle')}</h3>
-              <span className={`px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-2xs xs:text-xs whitespace-nowrap ${
-                safeAccount.currentProfit >= safeAccount.minProfitTarget
-                  ? 'bg-green-800 bg-opacity-30 text-green-400'
-                  : 'bg-yellow-800 bg-opacity-30 text-yellow-400'
-              }`}>
-                {safeAccount.currentProfit >= safeAccount.minProfitTarget
-                  ? t('tradingDashboard_status_surpassed')
-                  : t('tradingDashboard_status_inProgress')}
-              </span>
-            </div>
-            <div className="flex justify-between items-center mb-1 sm:mb-2 text-xs sm:text-sm">
-              <span className="text-gray-400">{t('tradingDashboard_minimumLabel')}</span>
-              <span>{formatCurrency(safeAccount.minProfitTarget)}</span>
-            </div>
-            <div className="flex justify-between items-center text-xs sm:text-sm">
-              <span className="text-gray-400">{t('tradingDashboard_currentResultLabel')}</span>
-              <span>{formatCurrency(safeAccount.currentProfit)}</span>
-            </div>
-            <div className="mt-2 text-2xs xs:text-xs text-gray-500">
-              {t('tradingDashboard_profit_target_explanation')}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Tabla de operaciones */}
-      <div className="p-3 sm:p-4 md:p-6 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl flex-1 flex flex-col">
-        <div className="flex flex-wrap justify-between items-center mb-3 sm:mb-4 gap-2">
-          <h2 className="text-base sm:text-lg md:text-xl font-bold">{t('tradingDashboard_operationsTableTitle')}</h2>
-          <button className="bg-cyan-600 hover:bg-cyan-700 text-white text-xs sm:text-sm py-1.5 px-3 sm:py-2 sm:px-4 rounded-md transition-colors flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-                          </svg>
-            {t('tradingDashboard_downloadCsvButton')}
-          </button>
-                        </div>
-
-        {isLoading && (
-          <div className="flex-1 flex items-center justify-center">
-            <p className="text-sm sm:text-base">{t('common_loading')}</p>
-                        </div>
-        )}
-        {error && (
-          <div className="flex-1 flex items-center justify-center">
-            <p className="text-red-500 text-sm sm:text-base">{t('common_errorLoadingData')}</p>
-                      </div>
-        )}
-        {!isLoading && !error && operationsData.length === 0 && (
-          <div className="flex-1 flex items-center justify-center">
-            <p className="text-sm sm:text-base">{t('tradingDashboard_noOperationsFound')}</p>
-                      </div>
-        )}
-
-        {!isLoading && !error && operationsData.length > 0 && (
-          <div className="overflow-x-auto flex-1">
-            <table className="min-w-full divide-y divide-gray-700">
-              <thead className="bg-[#2c2c2c]">
-                <tr>
-                  {[
-                    t('tradingDashboard_tableHeader_ticket'), 
-                    t('tradingDashboard_tableHeader_openTime'), 
-                    t('tradingDashboard_tableHeader_type'), 
-                    t('tradingDashboard_tableHeader_volume'), 
-                    t('tradingDashboard_tableHeader_symbol'), 
-                    t('tradingDashboard_tableHeader_openPrice'), 
-                    t('tradingDashboard_tableHeader_stopLoss'), 
-                    t('tradingDashboard_tableHeader_takeProfit'), 
-                    t('tradingDashboard_tableHeader_closeTime'), 
-                    t('tradingDashboard_tableHeader_closePrice'), 
-                    t('tradingDashboard_tableHeader_profit')
-                  ].map((header, index) => (
-                    <th key={index} scope="col" className="px-2 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-3 text-left text-2xs xs:text-xs sm:text-sm font-medium text-gray-300 uppercase tracking-wider whitespace-nowrap">
-                      {header}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="bg-[#333] divide-y divide-gray-600">
-                {operationsData.map((op, index) => (
-                  <tr key={index} className="hover:bg-[#3a3a3a] transition-colors">
-                    <td className="px-2 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-3 whitespace-nowrap text-2xs xs:text-xs sm:text-sm text-gray-200">{op.ticket}</td>
-                    <td className="px-2 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-3 whitespace-nowrap text-2xs xs:text-xs sm:text-sm text-gray-400">{formatOperationDate(op.openTime)}</td>
-                    <td className="px-2 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-3 whitespace-nowrap text-2xs xs:text-xs sm:text-sm text-gray-200">{op.type}</td>
-                    <td className="px-2 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-3 whitespace-nowrap text-2xs xs:text-xs sm:text-sm text-gray-200">{op.volume.toFixed(2)}</td>
-                    <td className="px-2 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-3 whitespace-nowrap text-2xs xs:text-xs sm:text-sm text-gray-200">{op.symbol}</td>
-                    <td className="px-2 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-3 whitespace-nowrap text-2xs xs:text-xs sm:text-sm text-gray-200">{formatCurrency(op.openPrice)}</td>
-                    <td className="px-2 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-3 whitespace-nowrap text-2xs xs:text-xs sm:text-sm text-gray-200">{formatCurrency(op.stopLoss)}</td>
-                    <td className="px-2 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-3 whitespace-nowrap text-2xs xs:text-xs sm:text-sm text-gray-200">{formatCurrency(op.takeProfit)}</td>
-                    <td className="px-2 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-3 whitespace-nowrap text-2xs xs:text-xs sm:text-sm text-gray-400">{formatOperationDate(op.closeTime)}</td>
-                    <td className="px-2 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-3 whitespace-nowrap text-2xs xs:text-xs sm:text-sm text-gray-200">{formatCurrency(op.closePrice)}</td>
-                    <td className={`px-2 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-3 whitespace-nowrap text-2xs xs:text-xs sm:text-sm ${op.profit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                      {formatCurrency(op.profit)}
-                  </td>
-                </tr>
-                ))}
-            </tbody>
-            </table>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 w-full text-xs sm:text-sm">
+                <div className="border border-gray-700 rounded-md p-2 sm:p-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-400">{t('tradingDashboard_loginLabel')}</span>
+                    <div className="flex items-center">
+                      <span className="mr-1.5 sm:mr-2">{safeAccount.login}</span>
+                      <img src="/Copy.png" alt={t('tradingDashboard_iconAlt_copy', 'Copy')} className="w-3 h-3 sm:w-4 sm:h-4 cursor-pointer" onError={(e) => { // Added cursor-pointer
+                        e.target.onerror = null;
+                        e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath d='M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z' fill='%23555'/%3E%3C/svg%3E";
+                      }} />
                     </div>
-            )}
+                  </div>
+                </div>
+                
+                <div className="border border-gray-700 rounded-md p-2 sm:p-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-400">{t('tradingDashboard_investorPassLabel')}</span>
+                    <span className="text-gray-300 underline cursor-pointer">{t('tradingDashboard_setPasswordButton')}</span> {/* Added cursor-pointer */}
+                  </div>
+                </div>
+                
+                <div className="border border-gray-700 rounded-md p-2 sm:p-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-400">{t('tradingDashboard_masterPassLabel')}</span>
+                    <div className="flex items-center">
+                      <span className="mr-1.5 sm:mr-2">{safeAccount.masterPassword}</span>
+                      <img src="/Visibilidad.png" alt={t('tradingDashboard_iconAlt_visibility', 'Visibility')} className="w-3 h-3 sm:w-4 sm:h-4 cursor-pointer" onError={(e) => { // Added cursor-pointer
+                        e.target.onerror = null;
+                        e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath d='M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z' fill='%23555'/%3E%3C/svg%3E";
+                      }} />
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="border border-gray-700 rounded-md p-2 sm:p-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-400">{t('tradingDashboard_mt5ServerLabel')}</span>
+                    <span className="">{safeAccount.serverType}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Sección de balance y métricas */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
+          <div className="lg:col-span-2 p-3 sm:p-4 md:p-6 bg-gradient-to-br from-[#232323] to-[#434242] border border-[#333] rounded-xl">
+            <div className="flex flex-wrap justify-between items-center mb-2 sm:mb-4 gap-2">
+              <h2 className="text-lg sm:text-xl md:text-3xl font-bold">{t('tradingDashboard_balanceChartTitle')}</h2>
+            </div>
+            <div className="flex flex-wrap items-center mb-4 sm:mb-6 gap-x-3 gap-y-1">
+              <span className="text-xl sm:text-2xl md:text-4xl font-bold mr-1 sm:mr-3">{formatCurrency(safeAccount.currentBalance)}</span>
+              <span className={`bg-green-800 bg-opacity-30 text-green-400 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-xs sm:text-sm whitespace-nowrap`}>{formatPercentage(safeAccount.balanceGrowth)}</span>
+            </div>
+            
+            <div className="w-full aspect-video sm:aspect-square max-h-[300px] sm:max-h-[400px] md:max-h-[500px]">
+              {balanceData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart
+                    data={balanceData}
+                    margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
+                  >
+                    <defs>
+                      <linearGradient id="colorBalance" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#0a84ff" stopOpacity={0.2} />
+                        <stop offset="95%" stopColor="#0a84ff" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <XAxis 
+                      dataKey="name" 
+                      axisLine={false} 
+                      tickLine={false} 
+                      tick={{ fill: '#9CA3AF', fontSize: 12 }}
+                    />
+                    <YAxis 
+                      domain={['0', 'dataMax + 50000']}
+                      ticks={[0, 50000, 100000, 150000, 200000, 250000]} 
+                      tickFormatter={(value) => value === 0 ? '0k' : `${value/1000}k`}
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: '#9CA3AF', fontSize: 12 }}
+                      width={40}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="value"
+                      stroke="#06b6d4"
+                      strokeWidth={3}
+                      fillOpacity={1}
+                      fill="url(#colorBalance)"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex items-center justify-center h-full">
+                  <p className="text-gray-400">{t('tradingDashboard_loading_charts', 'Loading charts...')}</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 sm:gap-4">
+            <div className="p-3 sm:p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl">
+              <h2 className="text-base sm:text-lg md:text-xl font-bold mb-1 sm:mb-2">{t('tradingDashboard_profitLossWidgetTitle')}</h2>
+              <div className="flex flex-wrap items-center mb-0.5 sm:mb-1 gap-x-2 gap-y-1">
+                <span className="text-lg sm:text-xl md:text-2xl font-bold mr-1 sm:mr-3">{formatCurrency(safeAccount.profit)}</span>
+                <span className={`bg-green-800 bg-opacity-30 text-green-400 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-xs sm:text-sm whitespace-nowrap`}>{formatPercentage(safeAccount.profitGrowth)}</span>
+              </div>
+              <p className="text-xs sm:text-sm text-gray-400">{currentDate}</p>
+            </div> 
+            <div className="p-3 sm:p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl">
+              <div className="flex flex-col xs:flex-row justify-between items-start xs:items-center mb-1.5 sm:mb-2 gap-1 xs:gap-2">
+                <h2 className="text-base sm:text-lg md:text-xl font-bold whitespace-nowrap">{t('tradingDashboard_drawdownWidgetTitle')}</h2>
+                <div className="flex text-xs sm:text-sm flex-shrink-0">
+                  <button 
+                    onClick={() => setDrawdownType('total')} 
+                    className={`px-2 py-1 sm:px-3 rounded-md transition-colors
+                      ${drawdownType === 'total' 
+                        ? 'bg-cyan-600 text-white' 
+                        : 'bg-transparent text-gray-400 hover:text-gray-200'
+                    }`}
+                  >
+                    {t('tradingDashboard_drawdownTypeTotal')}
+                  </button>
+                  <div className="border-r border-gray-600 mx-1 h-3 sm:h-4 self-center"></div>
+                  <button 
+                    onClick={() => setDrawdownType('daily')} 
+                    className={`px-2 py-1 sm:px-3 rounded-md transition-colors
+                      ${drawdownType === 'daily' 
+                        ? 'bg-cyan-600 text-white' 
+                        : 'bg-transparent text-gray-400 hover:text-gray-200'
+                      }`}
+                  >
+                    {t('tradingDashboard_drawdownTypeDaily')}
+                  </button>
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center mb-0.5 sm:mb-1 gap-x-2 gap-y-1">
+                <span className="text-lg sm:text-xl md:text-2xl font-bold mr-1 sm:mr-3">
+                  {drawdownType === 'daily' ? formatCurrency(safeAccount.dailyDrawdown) : formatCurrency(safeAccount.totalDrawdown)} 
+                </span>
+                <span className={`bg-green-800 bg-opacity-30 text-green-400 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-xs sm:text-sm whitespace-nowrap`}>
+                  {drawdownType === 'daily' ? formatPercentage(safeAccount.dailyDrawdownPercentage) : formatPercentage(safeAccount.totalDrawdownPercentage)} 
+                </span>
+              </div>
+            </div>
+
+            <div className="p-3 sm:p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl">
+              <h2 className="text-base sm:text-lg md:text-xl font-bold mb-1 sm:mb-2">{t('tradingDashboard_tradingDaysWidgetTitle')}</h2>
+              <div className="text-lg sm:text-xl md:text-2xl font-bold">{safeAccount.tradingDays.current} {t('tradingDashboard_daysLabel')}</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Sección de métricas detalladas (Pérdida Promedio, Ganancia Promedio, etc.) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
+          {/* Pérdida Promedio Por Operación */}
+          <div className="p-3 sm:p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl flex justify-between items-center">
+            <div>
+              <h3 className="text-base sm:text-lg md:text-xl font-medium mb-0.5 sm:mb-1">{t('tradingDashboard_avgLossPerOperation')}</h3>
+              <div className="flex items-baseline">
+                <span className="text-lg sm:text-xl md:text-2xl font-bold mr-1.5 sm:mr-2">{formatCurrency(safeAccount.avgLossPerOperation)}</span>
+                <span className={`bg-red-800 bg-opacity-30 text-red-400 px-1.5 py-0.5 rounded text-2xs xs:text-xs`}>{formatPercentage(safeAccount.avgLossPercentage)}</span>
+              </div>
+            </div>
+            <div className="bg-[#2d2d2d] rounded-full ml-2 w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center">
+              <img src="/loss.png" alt={t('tradingDashboard_iconAlt_loss')} className="w-3/4 h-3/4 object-contain" onError={(e) => { e.target.onerror = null; e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23333'/%3E%3Cpath d='M7 17L17 7M17 7H11M17 7V13' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"; }} />
+            </div>
+          </div>
+
+          {/* Ganancia Promedio Por Operación */}
+          <div className="p-3 sm:p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl flex justify-between items-center">
+            <div>
+              <h3 className="text-base sm:text-lg md:text-xl font-medium mb-0.5 sm:mb-1">{t('tradingDashboard_avgProfitPerOperation')}</h3>
+              <div className="flex items-baseline">
+                <span className="text-lg sm:text-xl md:text-2xl font-bold mr-1.5 sm:mr-2">{formatCurrency(safeAccount.avgProfitPerOperation)}</span>
+                <span className={`text-green-400 px-1.5 py-0.5 rounded text-2xs xs:text-xs bg-green-800 bg-opacity-30`}>{formatPercentage(safeAccount.avgProfitPercentage)}</span>
+              </div>
+            </div>
+            <div className="bg-[#2d2d2d] rounded-full ml-2 w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center">
+              <img src="/gain.png" alt={t('tradingDashboard_iconAlt_coins')} className="w-3/4 h-3/4 object-contain" onError={(e) => { e.target.onerror = null; e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23333'/%3E%3Cpath d='M12 6L12 18M9 10L15 10M9 14L15 14' stroke='white' stroke-width='2'/%3E%3C/svg%3E"; }} />
+            </div>
+          </div>
+
+          {/* Lotaje Promedio Por Operación */}
+          <div className="p-3 sm:p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl flex justify-between items-center">
+            <div>
+              <h3 className="text-base sm:text-lg md:text-xl font-medium mb-0.5 sm:mb-1">{t('tradingDashboard_avgLotPerOperation')}</h3>
+              <span className="text-lg sm:text-xl md:text-2xl font-bold">{safeAccount.avgLotPerOperation.toFixed(2)}</span>
+            </div>
+            <div className="bg-[#2d2d2d] rounded-full ml-2 w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center">
+              <img src="/graph.png" alt={t('tradingDashboard_iconAlt_lot')} className="w-5/6 h-5/6 object-contain" onError={(e) => { e.target.onerror = null; e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23333'/%3E%3Cpath d='M4 12L12 4L20 12L12 20L4 12Z' stroke='white' stroke-width='2'/%3E%3Cpath d='M8 12L12 8L16 12L12 16L8 12Z' stroke='white' stroke-width='1.5'/%3E%3C/svg%3E"; }} />
+            </div>
+          </div>
+          
+          {/* Duración Promedio Por Operación */}
+          <div className="p-3 sm:p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl flex justify-between items-center">
+            <div>
+              <h3 className="text-base sm:text-lg md:text-xl font-medium mb-0.5 sm:mb-1">{t('tradingDashboard_avgTradeDuration')}</h3>
+              <span className="text-lg sm:text-xl md:text-2xl font-bold">{safeAccount.avgTradeDuration}</span>
+            </div>
+            <div className="bg-[#2d2d2d] rounded-full ml-2 w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center">
+              <img src="/clock.png" alt={t('tradingDashboard_iconAlt_clock')} className="w-3/4 h-3/4 object-contain" onError={(e) => { e.target.onerror = null; e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23333'/%3E%3Cpath d='M12 6v6l4 2' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"; }} />
+            </div>
+          </div>
+
+          {/* Relación Riesgo Beneficio */}
+          <div className="p-3 sm:p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl flex justify-between items-center">
+            <div>
+              <h3 className="text-base sm:text-lg md:text-xl font-medium mb-0.5 sm:mb-1">{t('tradingDashboard_riskRewardRatio')}</h3>
+              <span className="text-lg sm:text-xl md:text-2xl font-bold">{safeAccount.riskRewardRatio.toFixed(2)}:1</span>
+            </div>
+            <div className="bg-[#2d2d2d] rounded-full ml-2 w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center">
+              <img src="/victory.png" alt={t('tradingDashboard_iconAlt_ratio')} className="w-3/4 h-3/4 object-contain" onError={(e) => { e.target.onerror = null; e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23333'/%3E%3Cpath d='M12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.63L12 2L9.19 8.63L2 9.24L7.46 13.97L5.82 21L12 17.27Z' fill='white'/%3E%3C/svg%3E"; }} />
+            </div>
+          </div>
+
+          {/* Ratio De Ganancia */}
+          <div className="p-3 sm:p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl flex justify-between items-center">
+            <div>
+              <h3 className="text-base sm:text-lg md:text-xl font-medium mb-0.5 sm:mb-1">{t('tradingDashboard_winRate')}</h3>
+              <span className="text-lg sm:text-xl md:text-2xl font-bold">{safeAccount.winRate.toFixed(2)}%</span>
+            </div>
+            <div className="bg-[#2d2d2d] rounded-full ml-2 w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center">
+              <img src="/coins.png" alt={t('tradingDashboard_iconAlt_winRate')} className="w-3/4 h-3/4 object-contain" onError={(e) => { e.target.onerror = null; e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23333'/%3E%3Cpath d='M12 2A10 10 0 0 0 2 12A10 10 0 0 0 12 22A10 10 0 0 0 22 12A10 10 0 0 0 12 2M12 4V12H20A8 8 0 0 1 12 20V12H4A8 8 0 0 1 12 4Z' fill='white'/%3E%3C/svg%3E"; }} />
+            </div>
+          </div>
+        </div>
+
+        {/* Sección de Objetivos */}
+        <div className="p-3 sm:p-4 md:p-6 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl mb-4 sm:mb-6">
+          <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-3 sm:mb-4">{t('tradingDashboard_objectivesTitle')}</h2>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4 lg:mb-6">
+            {/* Daily Loss Limit Card */}
+            <div className="p-3 sm:p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl">
+              <div className="flex flex-wrap justify-between items-center mb-2 sm:mb-4 gap-1">
+                <h3 className="text-sm sm:text-base md:text-lg font-medium">{t('tradingDashboard_dailyLossLimitTitle')}</h3>
+                <span className={`px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-2xs xs:text-xs whitespace-nowrap ${
+                  safeAccount.dailyDrawdown > safeAccount.maxLossLimit
+                    ? 'bg-red-800 bg-opacity-30 text-red-400'
+                    : safeAccount.dailyDrawdown > safeAccount.maxLossLimit * 0.7
+                    ? 'bg-yellow-800 bg-opacity-30 text-yellow-400'
+                    : 'bg-green-800 bg-opacity-30 text-green-400'
+                }`}>
+                  {safeAccount.dailyDrawdown > safeAccount.maxLossLimit 
+                    ? t('tradingDashboard_status_lost')
+                    : safeAccount.dailyDrawdown > safeAccount.maxLossLimit * 0.7
+                    ? t('tradingDashboard_status_inProgress') 
+                    : t('tradingDashboard_status_surpassed')}
+                </span>
+              </div>
+              <div className="flex justify-between items-center mb-1 sm:mb-2 text-xs sm:text-sm">
+                <span className="text-gray-400">{t('tradingDashboard_maxLossLimitLabel')}</span>
+                <span>{formatCurrency(safeAccount.maxLossLimit)}</span>
+              </div>
+              <div className="flex justify-between items-center text-xs sm:text-sm">
+                <span className="text-gray-400">{t('tradingDashboard_allowedLossTodayLabel')}</span>
+                <span>{formatCurrency(safeAccount.allowedLossToday)}</span>
+              </div>
+              <div className="mt-2 text-2xs xs:text-xs text-gray-500">
+                {t('tradingDashboard_daily_loss_explanation')}
+              </div>
+            </div>
+            
+            {/* Global Loss Limit Card */}
+            <div className="p-3 sm:p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl">
+              <div className="flex flex-wrap justify-between items-center mb-2 sm:mb-4 gap-1">
+                <h3 className="text-sm sm:text-base md:text-lg font-medium">{t('tradingDashboard_globalLossLimitTitle')}</h3>
+                <span className={`px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-2xs xs:text-xs whitespace-nowrap ${
+                  safeAccount.totalDrawdown > safeAccount.maxLossLimit
+                    ? 'bg-red-800 bg-opacity-30 text-red-400'
+                    : safeAccount.totalDrawdown > safeAccount.maxLossLimit * 0.7
+                    ? 'bg-yellow-800 bg-opacity-30 text-yellow-400'
+                    : 'bg-green-800 bg-opacity-30 text-green-400'
+                }`}>
+                  {safeAccount.totalDrawdown > safeAccount.maxLossLimit 
+                    ? t('tradingDashboard_status_lost')
+                    : safeAccount.totalDrawdown > safeAccount.maxLossLimit * 0.7
+                    ? t('tradingDashboard_status_inProgress') 
+                    : t('tradingDashboard_status_surpassed')}
+                </span>
+              </div>
+              <div className="flex justify-between items-center mb-1 sm:mb-2 text-xs sm:text-sm">
+                <span className="text-gray-400">{t('tradingDashboard_maxLossLimitLabel')}</span>
+                <span>{formatCurrency(safeAccount.maxLossLimit)}</span>
+              </div>
+              <div className="flex justify-between items-center text-xs sm:text-sm">
+                <span className="text-gray-400">{t('tradingDashboard_allowedLossTodayLabel')}</span>
+                <span>{formatCurrency(safeAccount.allowedLossToday)}</span>
+              </div>
+              <div className="mt-2 text-2xs xs:text-xs text-gray-500">
+                {t('tradingDashboard_global_loss_explanation')}
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
+            {/* Min Trading Days Card */}
+            <div className="p-3 sm:p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl">
+              <div className="flex flex-wrap justify-between items-center mb-2 sm:mb-4 gap-1">
+                <h3 className="text-sm sm:text-base md:text-lg font-medium">{t('tradingDashboard_minTradingDaysTitle')}</h3>
+                <span className={`px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-2xs xs:text-xs whitespace-nowrap ${
+                  safeAccount.tradingDays.current >= safeAccount.tradingDays.min
+                    ? 'bg-green-800 bg-opacity-30 text-green-400'
+                    : 'bg-yellow-800 bg-opacity-30 text-yellow-400'
+                }`}>
+                  {safeAccount.tradingDays.current >= safeAccount.tradingDays.min
+                    ? t('tradingDashboard_status_surpassed')
+                    : t('tradingDashboard_status_inProgress')}
+                </span>
+              </div>
+              <div className="flex justify-between items-center mb-1 sm:mb-2 text-xs sm:text-sm">
+                <span className="text-gray-400">{t('tradingDashboard_minimumLabel')}</span>
+                <span>{safeAccount.tradingDays.min} {t('tradingDashboard_daysLabel')}</span>
+              </div>
+              <div className="flex justify-between items-center text-xs sm:text-sm">
+                <span className="text-gray-400">{t('tradingDashboard_currentResultLabel')}</span>
+                <span>{safeAccount.tradingDays.current} {t('tradingDashboard_daysLabel')}</span>
+              </div>
+              <div className="mt-2 text-2xs xs:text-xs text-gray-500">
+                {t('tradingDashboard_min_days_explanation')}
+              </div>
+            </div>
+            
+            {/* Profit Target Card */}
+            <div className="p-3 sm:p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl">
+              <div className="flex flex-wrap justify-between items-center mb-2 sm:mb-4 gap-1">
+                <h3 className="text-sm sm:text-base md:text-lg font-medium">{t('tradingDashboard_profitTargetTitle')}</h3>
+                <span className={`px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-2xs xs:text-xs whitespace-nowrap ${
+                  safeAccount.currentProfit >= safeAccount.minProfitTarget
+                    ? 'bg-green-800 bg-opacity-30 text-green-400'
+                    : 'bg-yellow-800 bg-opacity-30 text-yellow-400'
+                }`}>
+                  {safeAccount.currentProfit >= safeAccount.minProfitTarget
+                    ? t('tradingDashboard_status_surpassed')
+                    : t('tradingDashboard_status_inProgress')}
+                </span>
+              </div>
+              <div className="flex justify-between items-center mb-1 sm:mb-2 text-xs sm:text-sm">
+                <span className="text-gray-400">{t('tradingDashboard_minimumLabel')}</span>
+                <span>{formatCurrency(safeAccount.minProfitTarget)}</span>
+              </div>
+              <div className="flex justify-between items-center text-xs sm:text-sm">
+                <span className="text-gray-400">{t('tradingDashboard_currentResultLabel')}</span>
+                <span>{formatCurrency(safeAccount.currentProfit)}</span>
+              </div>
+              <div className="mt-2 text-2xs xs:text-xs text-gray-500">
+                {t('tradingDashboard_profit_target_explanation')}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Tabla de operaciones */}
+        <div className="p-3 sm:p-4 md:p-6 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl flex-1 flex flex-col">
+          <div className="flex flex-wrap justify-between items-center mb-3 sm:mb-4 gap-2">
+            <h2 className="text-base sm:text-lg md:text-xl font-bold">{t('tradingDashboard_operationsTableTitle')}</h2>
+            <button className="bg-cyan-600 hover:bg-cyan-700 text-white text-xs sm:text-sm py-1.5 px-3 sm:py-2 sm:px-4 rounded-md transition-colors flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                          </svg>
+              {t('tradingDashboard_downloadCsvButton')}
+            </button>
+                          </div>
+
+          {isLoading && (
+            <div className="flex-1 flex items-center justify-center">
+              <p className="text-sm sm:text-base">{t('common_loading')}</p>
+                          </div>
+          )}
+          {error && (
+            <div className="flex-1 flex items-center justify-center">
+              <p className="text-red-500 text-sm sm:text-base">{t('common_errorLoadingData')}</p>
+                        </div>
+          )}
+          {!isLoading && !error && operationsData.length === 0 && (
+            <div className="flex-1 flex items-center justify-center">
+              <p className="text-sm sm:text-base">{t('tradingDashboard_noOperationsFound')}</p>
+                        </div>
+          )}
+
+          {!isLoading && !error && operationsData.length > 0 && (
+            <div className="overflow-x-auto flex-1">
+              <table className="min-w-full divide-y divide-gray-700">
+                <thead className="bg-[#2c2c2c]">
+                  <tr>
+                    {[
+                      t('tradingDashboard_tableHeader_ticket'), 
+                      t('tradingDashboard_tableHeader_openTime'), 
+                      t('tradingDashboard_tableHeader_type'), 
+                      t('tradingDashboard_tableHeader_volume'), 
+                      t('tradingDashboard_tableHeader_symbol'), 
+                      t('tradingDashboard_tableHeader_openPrice'), 
+                      t('tradingDashboard_tableHeader_stopLoss'), 
+                      t('tradingDashboard_tableHeader_takeProfit'), 
+                      t('tradingDashboard_tableHeader_closeTime'), 
+                      t('tradingDashboard_tableHeader_closePrice'), 
+                      t('tradingDashboard_tableHeader_profit')
+                    ].map((header, index) => (
+                      <th key={index} scope="col" className="px-2 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-3 text-left text-2xs xs:text-xs sm:text-sm font-medium text-gray-300 uppercase tracking-wider whitespace-nowrap">
+                        {header}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="bg-[#333] divide-y divide-gray-600">
+                  {operationsData.map((op, index) => (
+                    <tr key={index} className="hover:bg-[#3a3a3a] transition-colors">
+                      <td className="px-2 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-3 whitespace-nowrap text-2xs xs:text-xs sm:text-sm text-gray-200">{op.ticket}</td>
+                      <td className="px-2 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-3 whitespace-nowrap text-2xs xs:text-xs sm:text-sm text-gray-400">{formatOperationDate(op.openTime)}</td>
+                      <td className="px-2 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-3 whitespace-nowrap text-2xs xs:text-xs sm:text-sm text-gray-200">{op.type}</td>
+                      <td className="px-2 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-3 whitespace-nowrap text-2xs xs:text-xs sm:text-sm text-gray-200">{op.volume.toFixed(2)}</td>
+                      <td className="px-2 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-3 whitespace-nowrap text-2xs xs:text-xs sm:text-sm text-gray-200">{op.symbol}</td>
+                      <td className="px-2 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-3 whitespace-nowrap text-2xs xs:text-xs sm:text-sm text-gray-200">{formatCurrency(op.openPrice)}</td>
+                      <td className="px-2 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-3 whitespace-nowrap text-2xs xs:text-xs sm:text-sm text-gray-200">{formatCurrency(op.stopLoss)}</td>
+                      <td className="px-2 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-3 whitespace-nowrap text-2xs xs:text-xs sm:text-sm text-gray-200">{formatCurrency(op.takeProfit)}</td>
+                      <td className="px-2 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-3 whitespace-nowrap text-2xs xs:text-xs sm:text-sm text-gray-400">{formatOperationDate(op.closeTime)}</td>
+                      <td className="px-2 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-3 whitespace-nowrap text-2xs xs:text-xs sm:text-sm text-gray-200">{formatCurrency(op.closePrice)}</td>
+                      <td className={`px-2 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-3 whitespace-nowrap text-2xs xs:text-xs sm:text-sm ${op.profit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {formatCurrency(op.profit)}
+                    </td>
+                  </tr>
+                  ))}
+              </tbody>
+              </table>
+                      </div>
+              )}
+        </div>
       </div>
     </div>
   );

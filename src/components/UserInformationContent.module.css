@@ -1,0 +1,155 @@
+/* Seccion */
+.seccion {
+  position: absolute;
+  width: 1391px;
+  height: 1117px;
+  left: 337px;
+  top: 0px;
+}
+
+/* Content */
+.content {
+  box-sizing: border-box;
+  position: absolute;
+  width: 1371px;
+  height: 768px;
+  left: 10px;
+  top: 10px;
+  background: linear-gradient(122.63deg, rgba(34, 34, 34, 0.5) 0%, rgba(53, 53, 53, 0.5) 100%);
+  border: 1px solid #3C3C3C;
+  border-radius: 40px;
+}
+
+/* Informacion de usuario */
+.infoUsuario {
+  box-sizing: border-box;
+  position: absolute;
+  width: 1321px;
+  height: 639px;
+  left: 30px;
+  top: 106px;
+  background: linear-gradient(122.63deg, rgba(34, 34, 34, 0.5) 0%, rgba(53, 53, 53, 0.5) 100%);
+  border: 1px solid #3C3C3C;
+  border-radius: 40px;
+}
+
+/* Nombre (input grande) */
+.nombreInput {
+  box-sizing: border-box;
+  position: absolute;
+  width: 506px;
+  height: 80px;
+  left: 260px;
+  top: 236px;
+  background: linear-gradient(122.63deg, rgba(34, 34, 34, 0.5) 0%, rgba(53, 53, 53, 0.5) 100%);
+  border: 1px solid #3C3C3C;
+  border-radius: 40px;
+}
+
+/* Label Nombre (gris) */
+.labelNombreGris {
+  position: absolute;
+  width: 122px;
+  height: 21px;
+  left: 35px;
+  top: 30px;
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 400;
+  font-size: 30px;
+  line-height: 20px;
+  leading-trim: both;
+  text-edge: cap;
+  display: flex;
+  align-items: center;
+  letter-spacing: 0.1px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Label Nombre (blanco) */
+.labelNombreBlanco {
+  position: absolute;
+  width: 122px;
+  height: 21px;
+  left: 260px;
+  top: 185px;
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 400;
+  font-size: 30px;
+  line-height: 20px;
+  leading-trim: both;
+  text-edge: cap;
+  display: flex;
+  align-items: center;
+  letter-spacing: 0.1px;
+  color: #FFFFFF;
+}
+
+/* Input grande (ejemplo Argentina) */
+.inputGrande {
+  box-sizing: border-box;
+  position: absolute;
+  width: 746px;
+  height: 80px;
+  left: 20px;
+  top: 439px;
+  background: linear-gradient(122.63deg, rgba(34, 34, 34, 0.5) 0%, rgba(53, 53, 53, 0.5) 100%);
+  border: 1px solid #3C3C3C;
+  border-radius: 40px;
+}
+
+/* Label Argentina */
+.labelArgentina {
+  position: absolute;
+  width: 149px;
+  height: 21px;
+  left: 30px;
+  top: 30px;
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 400;
+  font-size: 30px;
+  line-height: 20px;
+  leading-trim: both;
+  text-edge: cap;
+  display: flex;
+  align-items: center;
+  letter-spacing: 0.1px;
+  color: #FFFFFF;
+}
+
+/* Boton Guardar Cambios */
+.botonGuardarCambios {
+  box-sizing: border-box;
+  position: absolute;
+  width: 326px;
+  height: 80px;
+  left: 952px;
+  top: 106px;
+  background: linear-gradient(122.63deg, rgba(34, 34, 34, 0.5) 0%, rgba(53, 53, 53, 0.5) 100%);
+  border: 1px solid #1CC4F9;
+  border-radius: 40px;
+}
+
+/* Guardar Cambios (texto) */
+.guardarCambiosTexto {
+  position: absolute;
+  width: 273px;
+  height: 21px;
+  left: 26px;
+  top: 29px;
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 400;
+  font-size: 30px;
+  line-height: 20px;
+  leading-trim: both;
+  text-edge: cap;
+  display: flex;
+  align-items: center;
+  letter-spacing: 0.1px;
+  color: #FFFFFF;
+}
+
+/* Otros estilos relevantes pueden agregarse siguiendo el mismo patrón... */ 
