@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { ChevronDown, Calendar, ArrowLeft, Save, Loader, AlertTriangle, Phone } from 'lucide-react';
+import { ChevronDown, Calendar, ArrowLeft, Save, Loader, AlertTriangle, Phone, Camera } from 'lucide-react';
 import { auth, db, storage } from '../firebase/config';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { updateProfile } from 'firebase/auth';
@@ -8,6 +8,269 @@ import { useAuth } from '../contexts/AuthContext';
 import { getTranslator } from '../utils/i18n';
 import ReactCrop, { centerCrop, makeAspectCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
+import styles from './UserInformationContent.module.css';
+
+const fallbackUserPhoto = 'https://randomuser.me/api/portraits/men/1.jpg';
+
+const fieldStyle = {
+  background: 'rgba(44,44,44,0.95)',
+  border: '1.5px solid #3C3C3C',
+  outline: 'none',
+  color: '#fff',
+  fontSize: 16,
+  paddingLeft: 20,
+  width: '100%',
+  height: 40,
+  borderRadius: 20,
+  fontFamily: 'Poppins',
+  fontWeight: 400,
+  boxSizing: 'border-box',
+  marginTop: 2,
+  marginBottom: 2,
+  transition: 'border 0.2s',
+};
+const labelStyle = {
+  fontFamily: 'Poppins',
+  fontWeight: 500,
+  fontSize: 15,
+  color: '#fff',
+  marginBottom: 2,
+  marginLeft: 4,
+  letterSpacing: 0.1,
+};
+const placeholderStyle = {
+  color: 'rgba(255,255,255,0.5)',
+  fontWeight: 400,
+  fontFamily: 'Poppins',
+  fontSize: 15,
+};
+const titleStyle = {
+  fontFamily: 'Poppins',
+  fontWeight: 600,
+  fontSize: 28,
+  color: '#fff',
+  display: 'flex',
+  alignItems: 'center',
+  height: '100%',
+  letterSpacing: 0.1,
+};
+const saveBtnStyle = {
+  position: 'absolute',
+  right: 23,
+  top: 20,
+  border: '1.5px solid #1CC4F9',
+  background: 'none',
+  color: '#fff',
+  fontFamily: 'Poppins',
+  fontSize: 15,
+  fontWeight: 500,
+  cursor: 'pointer',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  height: 38,
+  borderRadius: 19,
+  padding: '0 22px',
+  minWidth: 140,
+  boxShadow: '0 2px 8px 0 rgba(28,196,249,0.08)',
+  transition: 'box-shadow 0.2s',
+};
+
+// Lista completa de códigos internacionales de país
+const codigosPaisesFull = [
+  { pais: 'Afghanistan', codigo: '+93' },
+  { pais: 'Albania', codigo: '+355' },
+  { pais: 'Algeria', codigo: '+213' },
+  { pais: 'Andorra', codigo: '+376' },
+  { pais: 'Angola', codigo: '+244' },
+  { pais: 'Argentina', codigo: '+54' },
+  { pais: 'Armenia', codigo: '+374' },
+  { pais: 'Australia', codigo: '+61' },
+  { pais: 'Austria', codigo: '+43' },
+  { pais: 'Azerbaijan', codigo: '+994' },
+  { pais: 'Bahamas', codigo: '+1-242' },
+  { pais: 'Bahrain', codigo: '+973' },
+  { pais: 'Bangladesh', codigo: '+880' },
+  { pais: 'Barbados', codigo: '+1-246' },
+  { pais: 'Belarus', codigo: '+375' },
+  { pais: 'Belgium', codigo: '+32' },
+  { pais: 'Belize', codigo: '+501' },
+  { pais: 'Benin', codigo: '+229' },
+  { pais: 'Bhutan', codigo: '+975' },
+  { pais: 'Bolivia', codigo: '+591' },
+  { pais: 'Bosnia and Herzegovina', codigo: '+387' },
+  { pais: 'Botswana', codigo: '+267' },
+  { pais: 'Brazil', codigo: '+55' },
+  { pais: 'Brunei', codigo: '+673' },
+  { pais: 'Bulgaria', codigo: '+359' },
+  { pais: 'Burkina Faso', codigo: '+226' },
+  { pais: 'Burundi', codigo: '+257' },
+  { pais: 'Cambodia', codigo: '+855' },
+  { pais: 'Cameroon', codigo: '+237' },
+  { pais: 'Canada', codigo: '+1' },
+  { pais: 'Cape Verde', codigo: '+238' },
+  { pais: 'Central African Republic', codigo: '+236' },
+  { pais: 'Chad', codigo: '+235' },
+  { pais: 'Chile', codigo: '+56' },
+  { pais: 'China', codigo: '+86' },
+  { pais: 'Colombia', codigo: '+57' },
+  { pais: 'Comoros', codigo: '+269' },
+  { pais: 'Congo', codigo: '+242' },
+  { pais: 'Costa Rica', codigo: '+506' },
+  { pais: 'Croatia', codigo: '+385' },
+  { pais: 'Cuba', codigo: '+53' },
+  { pais: 'Cyprus', codigo: '+357' },
+  { pais: 'Czech Republic', codigo: '+420' },
+  { pais: 'Denmark', codigo: '+45' },
+  { pais: 'Djibouti', codigo: '+253' },
+  { pais: 'Dominica', codigo: '+1-767' },
+  { pais: 'Dominican Republic', codigo: '+1-809' },
+  { pais: 'Ecuador', codigo: '+593' },
+  { pais: 'Egypt', codigo: '+20' },
+  { pais: 'El Salvador', codigo: '+503' },
+  { pais: 'Equatorial Guinea', codigo: '+240' },
+  { pais: 'Eritrea', codigo: '+291' },
+  { pais: 'Estonia', codigo: '+372' },
+  { pais: 'Eswatini', codigo: '+268' },
+  { pais: 'Ethiopia', codigo: '+251' },
+  { pais: 'Fiji', codigo: '+679' },
+  { pais: 'Finland', codigo: '+358' },
+  { pais: 'France', codigo: '+33' },
+  { pais: 'Gabon', codigo: '+241' },
+  { pais: 'Gambia', codigo: '+220' },
+  { pais: 'Georgia', codigo: '+995' },
+  { pais: 'Germany', codigo: '+49' },
+  { pais: 'Ghana', codigo: '+233' },
+  { pais: 'Greece', codigo: '+30' },
+  { pais: 'Grenada', codigo: '+1-473' },
+  { pais: 'Guatemala', codigo: '+502' },
+  { pais: 'Guinea', codigo: '+224' },
+  { pais: 'Guinea-Bissau', codigo: '+245' },
+  { pais: 'Guyana', codigo: '+592' },
+  { pais: 'Haiti', codigo: '+509' },
+  { pais: 'Honduras', codigo: '+504' },
+  { pais: 'Hungary', codigo: '+36' },
+  { pais: 'Iceland', codigo: '+354' },
+  { pais: 'India', codigo: '+91' },
+  { pais: 'Indonesia', codigo: '+62' },
+  { pais: 'Iran', codigo: '+98' },
+  { pais: 'Iraq', codigo: '+964' },
+  { pais: 'Ireland', codigo: '+353' },
+  { pais: 'Israel', codigo: '+972' },
+  { pais: 'Italy', codigo: '+39' },
+  { pais: 'Jamaica', codigo: '+1-876' },
+  { pais: 'Japan', codigo: '+81' },
+  { pais: 'Jordan', codigo: '+962' },
+  { pais: 'Kazakhstan', codigo: '+7' },
+  { pais: 'Kenya', codigo: '+254' },
+  { pais: 'Kiribati', codigo: '+686' },
+  { pais: 'Kuwait', codigo: '+965' },
+  { pais: 'Kyrgyzstan', codigo: '+996' },
+  { pais: 'Laos', codigo: '+856' },
+  { pais: 'Latvia', codigo: '+371' },
+  { pais: 'Lebanon', codigo: '+961' },
+  { pais: 'Lesotho', codigo: '+266' },
+  { pais: 'Liberia', codigo: '+231' },
+  { pais: 'Libya', codigo: '+218' },
+  { pais: 'Liechtenstein', codigo: '+423' },
+  { pais: 'Lithuania', codigo: '+370' },
+  { pais: 'Luxembourg', codigo: '+352' },
+  { pais: 'Madagascar', codigo: '+261' },
+  { pais: 'Malawi', codigo: '+265' },
+  { pais: 'Malaysia', codigo: '+60' },
+  { pais: 'Maldives', codigo: '+960' },
+  { pais: 'Mali', codigo: '+223' },
+  { pais: 'Malta', codigo: '+356' },
+  { pais: 'Marshall Islands', codigo: '+692' },
+  { pais: 'Mauritania', codigo: '+222' },
+  { pais: 'Mauritius', codigo: '+230' },
+  { pais: 'Mexico', codigo: '+52' },
+  { pais: 'Micronesia', codigo: '+691' },
+  { pais: 'Moldova', codigo: '+373' },
+  { pais: 'Monaco', codigo: '+377' },
+  { pais: 'Mongolia', codigo: '+976' },
+  { pais: 'Montenegro', codigo: '+382' },
+  { pais: 'Morocco', codigo: '+212' },
+  { pais: 'Mozambique', codigo: '+258' },
+  { pais: 'Myanmar', codigo: '+95' },
+  { pais: 'Namibia', codigo: '+264' },
+  { pais: 'Nauru', codigo: '+674' },
+  { pais: 'Nepal', codigo: '+977' },
+  { pais: 'Netherlands', codigo: '+31' },
+  { pais: 'New Zealand', codigo: '+64' },
+  { pais: 'Nicaragua', codigo: '+505' },
+  { pais: 'Niger', codigo: '+227' },
+  { pais: 'Nigeria', codigo: '+234' },
+  { pais: 'North Korea', codigo: '+850' },
+  { pais: 'North Macedonia', codigo: '+389' },
+  { pais: 'Norway', codigo: '+47' },
+  { pais: 'Oman', codigo: '+968' },
+  { pais: 'Pakistan', codigo: '+92' },
+  { pais: 'Palau', codigo: '+680' },
+  { pais: 'Palestine', codigo: '+970' },
+  { pais: 'Panama', codigo: '+507' },
+  { pais: 'Papua New Guinea', codigo: '+675' },
+  { pais: 'Paraguay', codigo: '+595' },
+  { pais: 'Peru', codigo: '+51' },
+  { pais: 'Philippines', codigo: '+63' },
+  { pais: 'Poland', codigo: '+48' },
+  { pais: 'Portugal', codigo: '+351' },
+  { pais: 'Qatar', codigo: '+974' },
+  { pais: 'Romania', codigo: '+40' },
+  { pais: 'Russia', codigo: '+7' },
+  { pais: 'Rwanda', codigo: '+250' },
+  { pais: 'Saint Kitts and Nevis', codigo: '+1-869' },
+  { pais: 'Saint Lucia', codigo: '+1-758' },
+  { pais: 'Saint Vincent and the Grenadines', codigo: '+1-784' },
+  { pais: 'Samoa', codigo: '+685' },
+  { pais: 'San Marino', codigo: '+378' },
+  { pais: 'Sao Tome and Principe', codigo: '+239' },
+  { pais: 'Saudi Arabia', codigo: '+966' },
+  { pais: 'Senegal', codigo: '+221' },
+  { pais: 'Serbia', codigo: '+381' },
+  { pais: 'Seychelles', codigo: '+248' },
+  { pais: 'Sierra Leone', codigo: '+232' },
+  { pais: 'Singapore', codigo: '+65' },
+  { pais: 'Slovakia', codigo: '+421' },
+  { pais: 'Slovenia', codigo: '+386' },
+  { pais: 'Solomon Islands', codigo: '+677' },
+  { pais: 'Somalia', codigo: '+252' },
+  { pais: 'South Africa', codigo: '+27' },
+  { pais: 'South Korea', codigo: '+82' },
+  { pais: 'South Sudan', codigo: '+211' },
+  { pais: 'Spain', codigo: '+34' },
+  { pais: 'Sri Lanka', codigo: '+94' },
+  { pais: 'Sudan', codigo: '+249' },
+  { pais: 'Suriname', codigo: '+597' },
+  { pais: 'Sweden', codigo: '+46' },
+  { pais: 'Switzerland', codigo: '+41' },
+  { pais: 'Syria', codigo: '+963' },
+  { pais: 'Taiwan', codigo: '+886' },
+  { pais: 'Tajikistan', codigo: '+992' },
+  { pais: 'Tanzania', codigo: '+255' },
+  { pais: 'Thailand', codigo: '+66' },
+  { pais: 'Togo', codigo: '+228' },
+  { pais: 'Tonga', codigo: '+676' },
+  { pais: 'Trinidad and Tobago', codigo: '+1-868' },
+  { pais: 'Tunisia', codigo: '+216' },
+  { pais: 'Turkey', codigo: '+90' },
+  { pais: 'Turkmenistan', codigo: '+993' },
+  { pais: 'Tuvalu', codigo: '+688' },
+  { pais: 'Uganda', codigo: '+256' },
+  { pais: 'Ukraine', codigo: '+380' },
+  { pais: 'United Arab Emirates', codigo: '+971' },
+  { pais: 'United Kingdom', codigo: '+44' },
+  { pais: 'United States', codigo: '+1' },
+  { pais: 'Uruguay', codigo: '+598' },
+  { pais: 'Uzbekistan', codigo: '+998' },
+  { pais: 'Vanuatu', codigo: '+678' },
+  { pais: 'Vatican City', codigo: '+39' },
+  { pais: 'Venezuela', codigo: '+58' },
+  { pais: 'Vietnam', codigo: '+84' },
+  { pais: 'Yemen', codigo: '+967' },
+  { pais: 'Zambia', codigo: '+260' },
+  { pais: 'Zimbabwe', codigo: '+263' },
+];
 
 const UserInformationContent = ({ onBack }) => {
   const { currentUser, language, reloadUserDetails } = useAuth();
@@ -44,19 +307,6 @@ const UserInformationContent = ({ onBack }) => {
   const [showCropModal, setShowCropModal] = useState(false);
   const imgRefForCropper = useRef(null);
   const aspect = 1 / 1;
-  
-  const codigosPaises = [
-    { codigo: '+54', pais: t('country_argentina') || 'Argentina' },
-    { codigo: '+598', pais: t('country_uruguay') || 'Uruguay' },
-    { codigo: '+56', pais: t('country_chile') || 'Chile' },
-    { codigo: '+55', pais: t('country_brazil') || 'Brasil' },
-    { codigo: '+595', pais: t('country_paraguay') || 'Paraguay' },
-    { codigo: '+51', pais: t('country_peru') || 'Perú' },
-    { codigo: '+593', pais: t('country_ecuador') || 'Ecuador' },
-    { codigo: '+57', pais: t('country_colombia') || 'Colombia' },
-    { codigo: '+58', pais: t('country_venezuela') || 'Venezuela' },
-    { codigo: '+52', pais: t('country_mexico') || 'México' },
-  ];
   
   useEffect(() => {
     const fetchPaises = async () => {
@@ -123,7 +373,7 @@ const UserInformationContent = ({ onBack }) => {
             
             if (userData.telefono) {
               const fullPhone = userData.telefono;
-              const codigoEncontrado = codigosPaises.find(cp => 
+              const codigoEncontrado = codigosPaisesFull.find(cp => 
                 fullPhone.startsWith(cp.codigo)
               );
               
@@ -502,225 +752,222 @@ const UserInformationContent = ({ onBack }) => {
   };
 
   return (
-    <div className="p-4 md:p-6 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-3xl text-white min-h-screen flex flex-col">
-      <div className="flex items-center mb-6">
-        <button onClick={onBack} className="p-2 rounded-full hover:bg-gray-700 mr-3">
-          <ArrowLeft size={20} />
-        </button>
-        <h1 className="text-2xl font-semibold text-white">{t('userInfo_title')}</h1>
+    <div style={{ position: 'absolute', width: '100%', maxWidth: 1200, left: 0, top: 20, marginLeft: 337, boxShadow: '0 8px 32px 0 rgba(0,0,0,0.18)' }} className="bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-2xl p-4 md:p-6 mb-4 md:mb-6 w-full flex flex-col gap-6 relative bg-opacity-90">
+      {/* Botón volver tipo dashboard */}
+      <button
+        type="button"
+        onClick={onBack}
+        className="absolute top-8 left-8 z-20 flex items-center justify-center w-14 h-14 rounded-full border border-cyan-400 bg-[#232323] text-white hover:bg-cyan-900/20 transition shadow-lg"
+        style={{ boxShadow: '0 2px 8px 0 rgba(28,196,249,0.08)' }}
+        aria-label={t('common_back')}
+      >
+        <ChevronDown style={{ transform: 'rotate(90deg)' }} size={36} className="text-cyan-400" />
+      </button>
+      {/* Header: Título */}
+      <div className="mt-[100px] mb-6">
+        <h2 className="text-3xl font-semibold text-white text-left">{t('userInfo_title')}</h2>
       </div>
-
-      <div className="space-y-6 flex-1 overflow-y-auto pr-2" style={{ scrollbarWidth: 'thin', scrollbarColor: '#555 #333' }}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label htmlFor="nombre" className="block text-sm font-medium text-gray-300 mb-1">{t('userInfo_label_firstName')}</label>
-            <input 
-              type="text" 
-              id="nombre" 
-              value={nombre}
-              onChange={(e) => setNombre(e.target.value)}
-              placeholder={t('userInfo_placeholder_firstName')}
-              className="w-full p-3 bg-[#2c2c2c] border border-[#444] rounded-lg text-white focus:ring-cyan-500 focus:border-cyan-500"
+      {/* Foto de perfil y formulario */}
+      <div className="flex flex-row gap-8 items-start w-full">
+        {/* Foto de perfil */}
+        <div className="flex flex-col items-center justify-start pt-2">
+          <div className="relative">
+            <img
+              src={profileImageUrl || fallbackUserPhoto}
+              alt="Foto de perfil"
+              className="w-28 h-28 rounded-full object-cover border-4 border-[#232323] shadow-md"
             />
-          </div>
-          <div>
-            <label htmlFor="apellido" className="block text-sm font-medium text-gray-300 mb-1">{t('userInfo_label_lastName')}</label>
-            <input 
-              type="text" 
-              id="apellido" 
-              value={apellido}
-              onChange={(e) => setApellido(e.target.value)}
-              placeholder={t('userInfo_placeholder_lastName')}
-              className="w-full p-3 bg-[#2c2c2c] border border-[#444] rounded-lg text-white focus:ring-cyan-500 focus:border-cyan-500"
+            <button
+              type="button"
+              className="absolute bottom-2 right-2 bg-[#232323] border border-cyan-400 rounded-full p-2 flex items-center justify-center hover:bg-cyan-900/30 transition"
+              onClick={() => document.getElementById('profilePicInputUserInfo').click()}
+              aria-label={t('userInfo_button_changePhoto')}
+            >
+              <Camera size={20} className="text-cyan-400" />
+            </button>
+            <input
+              id="profilePicInputUserInfo"
+              name="profilePicInputUserInfo"
+              type="file"
+              className="hidden"
+              accept="image/*"
+              onChange={handleFileSelect}
             />
           </div>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="relative">
-            <label htmlFor="fechaNacimiento" className="block text-sm font-medium text-gray-300 mb-1">{t('userInfo_label_dob')}</label>
-            <div 
-              onClick={() => setShowCalendar(!showCalendar)} 
-              className="w-full p-3 bg-[#2c2c2c] border border-[#444] rounded-lg text-white flex justify-between items-center cursor-pointer"
-            >
-              <span>{fechaNacimiento || t('userInfo_placeholder_dob')}</span>
-              <Calendar size={20} className="text-gray-400" />
+        {/* Formulario */}
+        <form className="flex-1 w-full grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8" autoComplete="off" onSubmit={e => { e.preventDefault(); handleSaveChanges(); }}>
+          {/* Nombre */}
+          <div>
+            <input
+              type="text"
+              id="nombre"
+              value={nombre}
+              onChange={e => setNombre(e.target.value)}
+              placeholder={t('userInfo_placeholder_firstName')}
+              className="bg-[#232323]/80 border border-[#444] rounded-[28px] px-6 h-14 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-gray-500 w-full"
+            />
+          </div>
+          {/* Apellido */}
+          <div>
+            <input
+              type="text"
+              id="apellido"
+              value={apellido}
+              onChange={e => setApellido(e.target.value)}
+              placeholder={t('userInfo_placeholder_lastName')}
+              className="bg-[#232323]/80 border border-[#444] rounded-[28px] px-6 h-14 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-gray-500 w-full"
+            />
+          </div>
+          {/* Fecha de nacimiento */}
+          <div>
+            <div className="relative">
+              <input
+                type="text"
+                id="fechaNacimiento"
+                value={fechaNacimiento}
+                onClick={() => setShowCalendar(!showCalendar)}
+                placeholder={t('userInfo_placeholder_dob')}
+                className="bg-[#232323]/80 border border-[#444] rounded-[28px] px-6 h-14 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-gray-500 pr-10 cursor-pointer w-full"
+                readOnly
+              />
+              <Calendar size={20} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
             </div>
             {showCalendar && renderCalendar()}
           </div>
-          <div>
-            <label htmlFor="genero" className="block text-sm font-medium text-gray-300 mb-1">{t('userInfo_label_gender')}</label>
-            <select 
-              id="genero" 
-              value={genero} 
-              onChange={(e) => setGenero(e.target.value)}
-              className="w-full p-3 bg-[#2c2c2c] border border-[#444] rounded-lg text-white focus:ring-cyan-500 focus:border-cyan-500 appearance-none pr-8 bg-no-repeat"
-              style={{ backgroundImage: `url('data:image/svg+xml;utf8,<svg fill="gray" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>')`, backgroundPosition: 'right 0.75rem center', backgroundSize: '1.5em' }}
+          {/* Género */}
+          <div className="relative">
+            <select
+              id="genero"
+              value={genero}
+              onChange={e => setGenero(e.target.value)}
+              className="bg-[#232323]/80 border border-[#444] rounded-[28px] px-6 h-14 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-gray-500 w-full appearance-none"
             >
-              <option value="">{t('userInfo_placeholder_gender')}</option>
+              <option value="" className="text-gray-500">{t('userInfo_placeholder_gender')}</option>
               <option value="masculino">{t('gender_male')}</option>
               <option value="femenino">{t('gender_female')}</option>
               <option value="otro">{t('gender_other')}</option>
               <option value="prefiero_no_decirlo">{t('gender_preferNotToSay')}</option>
             </select>
+            <ChevronDown size={24} className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400" style={{paddingRight: 5}} />
           </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label htmlFor="pais" className="block text-sm font-medium text-gray-300 mb-1">{t('userInfo_label_country')}</label>
-            <select 
-              id="pais" 
-              value={paisSeleccionado} 
-              onChange={(e) => setPaisSeleccionado(e.target.value)}
-              className="w-full p-3 bg-[#2c2c2c] border border-[#444] rounded-lg text-white focus:ring-cyan-500 focus:border-cyan-500 appearance-none pr-8 bg-no-repeat"
-              style={{ backgroundImage: `url('data:image/svg+xml;utf8,<svg fill="gray" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>')`, backgroundPosition: 'right 0.75rem center', backgroundSize: '1.5em' }}
+          {/* País */}
+          <div className="relative">
+            <select
+              id="pais"
+              value={paisSeleccionado}
+              onChange={e => {
+                setPaisSeleccionado(e.target.value);
+                // Buscar el código del país seleccionado y actualizar codigoPais
+                const normalize = str => str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+                const selected = e.target.value;
+                let codeObj = codigosPaisesFull.find(cp => normalize(cp.pais) === normalize(selected));
+                if (!codeObj) {
+                  codeObj = codigosPaisesFull.find(cp => normalize(selected).includes(normalize(cp.pais)) || normalize(cp.pais).includes(normalize(selected)));
+                }
+                if (!codeObj) {
+                  const clean = s => normalize(s).replace(/(republic|federation|state|states|kingdom|democratic|people|islamic|arab|of|the|and|union|united|plurinational|bolivarian|province|provinces|city|country|nation|territory|islands|island|coast|north|south|east|west|central|new|old|great|little|upper|lower|mount|saint|st|sao|san|santa|la|el|los|las|le|les|de|del|da|do|das|du|di|al|el|a|o|u|i|e|y|z|x|c|d|b|g|h|j|k|l|m|n|p|q|r|s|t|v|w|z|\s+)/g, '');
+                  codeObj = codigosPaisesFull.find(cp => clean(cp.pais) === clean(selected));
+                }
+                if (!codeObj) {
+                  codeObj = codigosPaisesFull.find(cp => cp.pais_en && normalize(cp.pais_en) === normalize(selected));
+                }
+                setCodigoPais(codeObj ? codeObj.codigo : '');
+              }}
+              className="bg-[#232323]/80 border border-[#444] rounded-[28px] px-6 h-14 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-gray-500 w-full appearance-none"
               disabled={cargandoPaises}
             >
-              <option value="">{cargandoPaises ? t('userInfo_loading_countries') : t('userInfo_placeholder_country')}</option>
+              <option value="" className="text-gray-500">{cargandoPaises ? t('userInfo_loading_countries') : t('userInfo_placeholder_country')}</option>
               {paises.map(pais => (
                 <option key={pais.nombre} value={pais.nombre}>{pais.nombre}</option>
               ))}
             </select>
+            <ChevronDown size={24} className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400" style={{paddingRight: 5}} />
           </div>
-          <div>
-            <label htmlFor="ciudad" className="block text-sm font-medium text-gray-300 mb-1">{t('userInfo_label_city')}</label>
-            <select 
-              id="ciudad" 
-              value={ciudadSeleccionada} 
-              onChange={(e) => setCiudadSeleccionada(e.target.value)}
-              className="w-full p-3 bg-[#2c2c2c] border border-[#444] rounded-lg text-white focus:ring-cyan-500 focus:border-cyan-500 appearance-none pr-8 bg-no-repeat"
-              style={{ backgroundImage: `url('data:image/svg+xml;utf8,<svg fill="gray" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>')`, backgroundPosition: 'right 0.75rem center', backgroundSize: '1.5em' }}
+          {/* Ciudad */}
+          <div className="relative">
+            <select
+              id="ciudad"
+              value={ciudadSeleccionada}
+              onChange={e => setCiudadSeleccionada(e.target.value)}
+              className="bg-[#232323]/80 border border-[#444] rounded-[28px] px-6 h-14 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-gray-500 w-full appearance-none"
               disabled={cargandoCiudades || !paisSeleccionado}
             >
-              <option value="">
-                {cargandoCiudades ? t('userInfo_loading_cities') : 
-                 (ciudades.length === 0 && paisSeleccionado ? t('userInfo_noCitiesAvailable') : t('userInfo_placeholder_city'))}
+              <option value="" className="text-gray-500">
+                {cargandoCiudades ? t('userInfo_loading_cities') :
+                  (ciudades.length === 0 && paisSeleccionado ? t('userInfo_noCitiesAvailable') : t('userInfo_placeholder_city'))}
               </option>
               {ciudades.map(ciudad => (
                 <option key={ciudad} value={ciudad}>{ciudad}</option>
               ))}
             </select>
+            <ChevronDown size={24} className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400" style={{paddingRight: 5}} />
           </div>
-        </div>
-
-        <div>
-          <label htmlFor="telefono" className="block text-sm font-medium text-gray-300 mb-1">{t('userInfo_label_phone')}</label>
-          <div className="flex">
-            <select 
-              value={codigoPais} 
-              onChange={(e) => setCodigoPais(e.target.value)}
-              className="p-3 bg-[#2c2c2c] border border-[#444] rounded-l-lg text-white focus:ring-cyan-500 focus:border-cyan-500 appearance-none pr-8 bg-no-repeat w-1/3 md:w-1/4"
-              style={{ backgroundImage: `url('data:image/svg+xml;utf8,<svg fill="gray" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>')`, backgroundPosition: 'right 0.75rem center', backgroundSize: '1.5em' }}
-            >
-              <option value="">{t('userInfo_placeholder_phoneCode')}</option>
-              {codigosPaises.map(cp => (
-                <option key={cp.codigo} value={cp.codigo}>{cp.pais} ({cp.codigo})</option>
-              ))}
-            </select>
-            <input 
-              type="tel" 
-              id="telefono" 
+          {/* Teléfono */}
+          <div className="flex flex-row items-center w-full">
+            {codigoPais && (
+              <span className="bg-[#232323]/80 border border-[#444] rounded-l-[28px] px-5 h-14 flex items-center text-white text-base select-none" style={{ borderRight: 'none' }}>{codigoPais}</span>
+            )}
+            <input
+              type="tel"
+              id="telefono"
               value={numeroTelefono}
               onChange={handlePhoneChange}
               placeholder={t('userInfo_placeholder_phoneNumber')}
-              className="w-2/3 md:w-3/4 p-3 bg-[#2c2c2c] border border-l-0 border-[#444] rounded-r-lg text-white focus:ring-cyan-500 focus:border-cyan-500"
+              className={`bg-[#232323]/80 border border-[#444] ${codigoPais ? 'rounded-r-[28px]' : 'rounded-[28px]'} px-6 h-14 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-gray-500 w-full`}
+              style={codigoPais ? { borderLeft: 'none' } : {}}
             />
           </div>
-        </div>
-
-        <div className="mt-6 pt-6 border-t border-gray-700">
-            <label className="block text-sm font-medium text-gray-300 mb-2">{t('settings_item_profilePicture')}</label>
-            <div className="flex flex-col items-center space-y-4">
-                <img 
-                    src={profileImageUrl || '/default-avatar.png'} 
-                    alt={t('settings_profilePic_alt')} 
-                    className="w-32 h-32 rounded-full object-cover border-2 border-cyan-500"
-                    onError={(e) => { e.target.onerror = null; e.target.src='/default-avatar.png'; }} 
-                />
-                
-                {profilePicSuccessMessage && (
-                    <div className="text-green-400 text-sm text-center py-2">{profilePicSuccessMessage}</div>
-                )}
-                {profilePicError && (
-                    <div className="text-red-400 text-sm text-center flex items-center justify-center py-2">
-                    <AlertTriangle size={16} className="mr-1" /> {profilePicError}
-                    </div>
-                )}
-
-                <input
-                    id="profilePicInputUserInfo"
-                    name="profilePicInputUserInfo"
-                    type="file"
-                    className="hidden"
-                    accept="image/*"
-                    onChange={handleFileSelect}
-                />
-                <button
-                    type="button"
-                    onClick={() => document.getElementById('profilePicInputUserInfo').click()}
-                    disabled={isUploadingProfilePic}
-                    className="px-4 py-2 border border-cyan-500 text-sm font-medium rounded-md text-cyan-400 bg-slate-700 hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-cyan-500 disabled:opacity-50"
-                >
-                    {isUploadingProfilePic ? 
-                        <><Loader size={16} className="animate-spin mr-2" /> {t('settings_profilePic_uploading') || 'Uploading...'}</> :
-                        t('settings_button_changePicture')
-                    }
-                </button>
-            </div>
-        </div>
-
-        {saveError && (
-          <div className="flex items-center p-3 mt-4 bg-red-500 bg-opacity-20 border border-red-500 rounded-lg text-red-400">
-            <AlertTriangle size={20} className="mr-2" />
-            <span>{saveError}</span>
+          <div className="flex items-end w-full mt-0">
+            <button
+              type="button"
+              onClick={handleSaveChanges}
+              className="w-full border border-cyan-400 rounded-[28px] px-10 h-14 text-white font-medium bg-transparent hover:bg-cyan-900/20 transition whitespace-nowrap flex items-center justify-center gap-2 text-lg"
+              disabled={isSaving}
+            >
+              {isSaving ? <Loader size={20} className="animate-spin mr-2" /> : <Save size={20} className="mr-2" />}
+              {t('userInfo_button_saveChanges')}
+            </button>
           </div>
-        )}
-        {saveSuccess && (
-          <div className="flex items-center p-3 mt-4 bg-green-500 bg-opacity-20 border border-green-500 rounded-lg text-green-400">
-            <Save size={20} className="mr-2" />
-            <span>{t('userInfo_success_saved')}</span>
-          </div>
-        )}
+        </form>
       </div>
-
-      <div className="mt-8 pt-6 border-t border-gray-700">
-        <button 
-          onClick={handleSaveChanges} 
-          disabled={isSaving || isUploadingProfilePic}
-          className="w-full flex items-center justify-center p-3 bg-gradient-to-r from-[#0F7490] to-[#0A5A72] hover:opacity-90 transition text-white rounded-lg text-lg font-semibold disabled:opacity-50"
-        >
-          {isSaving ? (
-            <><Loader size={20} className="animate-spin mr-2" /> {t('userInfo_button_saving')}</>
-          ) : (
-            <>{t('userInfo_button_saveChanges')}</>
-          )}
-        </button>
-      </div>
-
+      {/* Mensajes de error y éxito */}
+      {saveError && (
+        <div className="mt-6 bg-red-500 bg-opacity-10 text-red-500 rounded-lg px-6 py-4 flex items-center gap-2">
+          <AlertTriangle size={20} />
+          <span>{saveError}</span>
+        </div>
+      )}
+      {saveSuccess && (
+        <div className="mt-6 bg-green-500 bg-opacity-10 text-green-500 rounded-lg px-6 py-4 flex items-center gap-2">
+          <Save size={20} />
+          <span>{t('userInfo_success_saved')}</span>
+        </div>
+      )}
+      {/* Crop modal igual que antes si es necesario */}
       {showCropModal && imageSrcForCropper && (
         <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50 p-4 transition-opacity duration-300 ease-out" style={{ backdropFilter: 'blur(4px)' }}>
-          <div className="bg-slate-900 p-6 rounded-lg shadow-xl max-w-lg w-full transform transition-all duration-300 ease-out scale-95 opacity-0 animate-modalFadeInScaleUp">
+          <div className="bg-slate-900 p-6 rounded-lg shadow-xl max-w-lg w-full">
             <h3 className="text-xl leading-6 font-semibold text-white mb-5 text-center">
               {t('settings_cropImage_title')}
             </h3>
             <div className="flex justify-center mb-5">
               <ReactCrop
                 crop={crop}
-                onChange={(_, percentCrop) => setCrop(percentCrop)} 
-                onComplete={(c) => setCompletedCrop(c)} 
-                aspect={aspect} 
+                onChange={(_, percentCrop) => setCrop(percentCrop)}
+                onComplete={c => setCompletedCrop(c)}
+                aspect={aspect}
                 minWidth={100}
                 minHeight={100}
-                circularCrop={false} 
+                circularCrop={false}
                 className="max-h-[60vh]"
               >
                 <img
-                  ref={imgRefForCropper} 
+                  ref={imgRefForCropper}
                   alt="Crop preview"
-                  src={imageSrcForCropper} 
+                  src={imageSrcForCropper}
                   style={{ maxHeight: '60vh', objectFit: 'contain' }}
-                  onLoad={onImageLoadForCropper} 
+                  onLoad={onImageLoadForCropper}
                 />
               </ReactCrop>
             </div>
@@ -729,16 +976,16 @@ const UserInformationContent = ({ onBack }) => {
               <button
                 type="button"
                 className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-6 py-3 bg-cyan-600 text-base font-medium text-white hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-cyan-500 sm:text-sm transition-colors duration-150"
-                onClick={handleCropImageAndInitiateUpload} 
-                disabled={isUploadingProfilePic} 
+                onClick={handleCropImageAndInitiateUpload}
+                disabled={isUploadingProfilePic}
               >
                 {isUploadingProfilePic ? t('settings_cropImage_button_cropping') : t('settings_cropImage_button_crop')}
               </button>
               <button
                 type="button"
                 className="w-full inline-flex justify-center rounded-md border border-gray-600 shadow-sm px-6 py-3 bg-slate-800 text-base font-medium text-gray-300 hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-cyan-500 sm:text-sm transition-colors duration-150"
-                onClick={handleCancelProfilePicUpdateAndCloseModal} 
-                disabled={isUploadingProfilePic} 
+                onClick={handleCancelProfilePicUpdateAndCloseModal}
+                disabled={isUploadingProfilePic}
               >
                 {t('settings_cropImage_button_cancel')}
               </button>
@@ -746,21 +993,6 @@ const UserInformationContent = ({ onBack }) => {
           </div>
         </div>
       )}
-      <style jsx global>{`
-        @keyframes modalFadeInScaleUp {
-          from {
-            opacity: 0;
-            transform: scale(0.95);
-          }
-          to {
-            opacity: 1;
-            transform: scale(1);
-          }
-        }
-        .animate-modalFadeInScaleUp {
-          animation: modalFadeInScaleUp 0.3s forwards ease-out;
-        }
-      `}</style>
     </div>
   );
 };
