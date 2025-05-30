@@ -47,6 +47,8 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
   const [balanceData, setBalanceData] = useState([]);
   const [operationsData, setOperationsData] = useState([]);
   const [error, setError] = useState(null); // Added error state
+  const [copiedLogin, setCopiedLogin] = useState(false);
+  const [copiedMasterPass, setCopiedMasterPass] = useState(false);
 
   useEffect(() => {
     const today = new Date();
@@ -447,6 +449,19 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
     }
   };
 
+  // 2. Función para copiar texto al portapapeles y mostrar feedback
+  const handleCopy = (text, type) => {
+    navigator.clipboard.writeText(text).then(() => {
+      if (type === 'login') {
+        setCopiedLogin(true);
+        setTimeout(() => setCopiedLogin(false), 1500);
+      } else if (type === 'master') {
+        setCopiedMasterPass(true);
+        setTimeout(() => setCopiedMasterPass(false), 1500);
+      }
+    });
+  };
+
   if (isLoading) {
     return (
       <div className="p-4 md:p-6 bg-gradient-to-br from-[#232323] to-[#2d2d2d] text-white min-h-screen flex items-center justify-center">
@@ -609,10 +624,17 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
                     <span className="text-gray-400">{t('tradingDashboard_loginLabel')}</span>
                     <div className="flex items-center">
                       <span className="mr-1.5 sm:mr-2">{safeAccount.login}</span>
-                      <img src="/Copy.png" alt={t('tradingDashboard_iconAlt_copy', 'Copy')} className="w-3 h-3 sm:w-4 sm:h-4 cursor-pointer" onError={(e) => { // Added cursor-pointer
-                        e.target.onerror = null;
-                        e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath d='M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z' fill='%23555'/%3E%3C/svg%3E";
-                      }} />
+                      <img
+                        src="/Copy.png"
+                        alt={t('tradingDashboard_iconAlt_copy', 'Copy')}
+                        className="w-3 h-3 sm:w-4 sm:h-4 cursor-pointer"
+                        title={copiedLogin ? t('common_copied', 'Copiado!') : t('common_copy', 'Copiar')}
+                        onClick={() => handleCopy(safeAccount.login, 'login')}
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath d='M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z' fill='%23555'/%3E%3C/svg%3E";
+                        }}
+                      />
                     </div>
                   </div>
                 </div>
@@ -629,18 +651,25 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
                     <span className="text-gray-400">{t('tradingDashboard_masterPassLabel')}</span>
                     <div className="flex items-center">
                       <span className="mr-1.5 sm:mr-2">{safeAccount.masterPassword}</span>
-                      <img src="/Visibilidad.png" alt={t('tradingDashboard_iconAlt_visibility', 'Visibility')} className="w-3 h-3 sm:w-4 sm:h-4 cursor-pointer" onError={(e) => { // Added cursor-pointer
-                        e.target.onerror = null;
-                        e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath d='M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z' fill='%23555'/%3E%3C/svg%3E";
-                      }} />
+                      <img
+                        src="/Visibilidad.png"
+                        alt={t('tradingDashboard_iconAlt_visibility', 'Visibility')}
+                        className="w-3 h-3 sm:w-4 sm:h-4 cursor-pointer"
+                        title={copiedMasterPass ? t('common_copied', 'Copiado!') : t('common_copy', 'Copiar')}
+                        onClick={() => handleCopy(safeAccount.masterPassword, 'master')}
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath d='M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z' fill='%23555'/%3E%3C/svg%3E";
+                        }}
+                      />
                     </div>
                   </div>
                 </div>
                 
                 <div className="border border-gray-700 rounded-md p-2 sm:p-2.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-400">{t('tradingDashboard_mt5ServerLabel')}</span>
-                    <span className="">{safeAccount.serverType}</span>
+                    <span className="text-gray-400">Server</span>
+                    <span className="">Alpha global market - demo</span>
                   </div>
                 </div>
               </div>
