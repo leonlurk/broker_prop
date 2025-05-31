@@ -5,6 +5,7 @@ import Register from './components/Register';
 import ForgotPassword from './components/ForgotPassword';
 import VerificationCode from './components/VerificationCode';
 import Dashboard from './Dashboard';
+import PaymentStatus from './components/PaymentStatus';
 import { useAuth } from './contexts/AuthContext';
 import { logoutUser } from './firebase/auth';
 
@@ -88,6 +89,17 @@ function App() {
             <AuthPageWrapper>
               <VerificationCode onContinue={() => navigate('/login')} />
             </AuthPageWrapper>
+          } 
+        />
+        
+        <Route 
+          path="/payment-status/:uniqueId" 
+          element={
+            isAuthenticated ? (
+              <PaymentStatus />
+            ) : (
+              <Navigate to="/login" replace />
+            )
           } 
         />
         

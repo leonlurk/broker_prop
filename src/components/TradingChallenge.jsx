@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ChevronDown, HelpCircle, Info } from 'lucide-react';
 import { db } from '../firebase/config';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 import { getTranslator } from '../utils/i18n';
+import { createTradingAccount } from '../services/mt5Service';
+import { generateCryptoPayment } from '../services/cryptoPaymentService';
 
 // Constants for standardizing phase values across the application
 const PHASE_ONE_STEP = 'ONE_STEP';
@@ -12,6 +15,7 @@ const PHASE_TWO_STEP = 'TWO_STEP';
 export default function TradingChallengeUI() {
   const { currentUser, language } = useAuth();
   const t = getTranslator(language);
+  const navigate = useNavigate();
 
   const [challengeAmount, setChallengeAmount] = useState('$5.000');
   // Estándar = 1 FASE (ONE STEP), Swing = 2 FASES (TWO STEPS)
@@ -26,6 +30,9 @@ export default function TradingChallengeUI() {
 
   const [price, setPrice] = useState(''); // Will be calculated by useEffect
   const [isPurchasing, setIsPurchasing] = useState(false);
+  const [mt5AccountCreated, setMt5AccountCreated] = useState(null); // Para almacenar la información de la cuenta MT5 creada
+  const [apiStatus, setApiStatus] = useState(null); // Para controlar el estado de la API
+  const [processingStep, setProcessingStep] = useState(''); // Para mostrar el paso actual del proceso
 
   // Data for complement options
   const profitTargetP1Options = [
@@ -101,31 +108,30 @@ export default function TradingChallengeUI() {
       alert(t('tradingChallenge_alert_loginToPurchase'));
       return;
     }
+    
     setIsPurchasing(true);
+    setProcessingStep(t('tradingChallenge_processing_init', 'Iniciando compra...'));
+    setMt5AccountCreated(null);
+    
     try {
-      // CRITICAL FIX: Make sure to explicitly determine challenge type to avoid bugs
+      // Determinación del tipo de desafío (mantener código existente)
       console.log("Raw challengeType selected:", challengeType);
       
-      // Instead of relying on a variable, directly use the challenge type for the check
       const isOneStep = challengeType === 'Estándar'; 
       const challengeTypeValue = isOneStep ? 'one_step' : 'two_step';
       
-      // CLEAR DEBUG - Get exact translation strings
       const oneStepDisplay = t('home_account_oneStepLabel');
       const twoStepDisplay = t('home_account_twoStepLabel');
       
-      // DIRECT ASSIGNMENT instead of variable-based assignment to avoid errors
       let challengePhaseValue;
       if (challengeType === 'Estándar') {
         challengePhaseValue = oneStepDisplay; // "1 FASE" in Spanish
       } else if (challengeType === 'Swing') {
         challengePhaseValue = twoStepDisplay; // "2 FASES" in Spanish
       } else {
-        // Fallback just in case
         challengePhaseValue = isOneStep ? oneStepDisplay : twoStepDisplay;
       }
       
-      // Detailed logging for verification
       console.log("Creating new account with:", {
         selectedChallengeType: challengeType,
         phase: challengePhaseValue,
@@ -139,63 +145,184 @@ export default function TradingChallengeUI() {
       
       const currentAccountNumber = Date.now().toString();
       const purchasePriceNumber = parseCurrencyToNumber(price);
+      const challengeAmountNumber = parseCurrencyToNumber(challengeAmount);
 
-      // Store the appropriate display phase directly
+      // NUEVA LÓGICA: Procesar pago según el método seleccionado
+      setProcessingStep(t('tradingChallenge_processing_payment', 'Procesando pago...'));
+      
+      let paymentData = null;
+      let paymentUniqueId = '';
+      
+      if (selectedPaymentMethod === 'crypto') {
+        try {
+          // Generar página de pago con criptomonedas
+          const cryptoPayment = await generateCryptoPayment(
+            purchasePriceNumber,
+            'USDT',  // Moneda predeterminada
+            'Tron'   // Red predeterminada
+          );
+          
+          paymentUniqueId = cryptoPayment.uniqueId;
+          
+          // Guardar referencia al pago en Firestore para seguimiento
+          const paymentRef = {
+            userId: currentUser.uid,
+            uniqueId: paymentUniqueId,
+            amount: purchasePriceNumber,
+            currency: 'USDT',
+            network: 'Tron',
+            status: 'pending',
+            createdAt: serverTimestamp(),
+            expiresAt: cryptoPayment.expiresAt,
+            challengeType: challengeTypeValue,
+            challengeAmount: challengeAmount,
+            paymentUrl: cryptoPayment.url
+          };
+          
+          await addDoc(collection(db, 'cryptoPayments'), paymentRef);
+          
+          // Redirigir a la página de estado de pago
+          navigate(`/payment-status/${paymentUniqueId}`);
+          
+          // Abrir la página de pago en una nueva ventana
+          window.open(cryptoPayment.url, '_blank');
+          
+          return; // Detener la ejecución aquí, el resto se manejará cuando se confirme el pago
+          
+        } catch (error) {
+          console.error("Error en el procesamiento del pago con criptomonedas:", error);
+          alert(t('tradingChallenge_alert_paymentError', { error: error.message }));
+          setIsPurchasing(false);
+          setProcessingStep('');
+          return; // Detener el proceso si hay error en el pago
+        }
+      } else {
+        // Simulación de procesamiento de pago para tarjeta (mantener código existente)
+        await new Promise(resolve => setTimeout(resolve, 1500));
+      }
+
+      // El resto del código se mantiene igual para crear la cuenta MT5...
+      setProcessingStep(t('tradingChallenge_processing_creatingAccount', 'Creando cuenta en MT5...'));
+      
+      // Datos para crear la cuenta en MT5
+      const mt5AccountData = {
+        name: currentUser.displayName || 'Trader',
+        email: currentUser.email,
+        leverage: 100,  // Apalancamiento por defecto
+        deposit: challengeAmountNumber,  // Depósito inicial igual al tamaño del desafío
+        challenge_type: challengeTypeValue,
+        group: `challenge\\${isOneStep ? 'onestep' : 'twostep'}`,
+        purchase_id: currentAccountNumber,
+        phone: currentUser.phoneNumber || '',
+      };
+      
+      // Llamar a la API de MT5Manager para crear la cuenta real
+      let mt5Account = null;
+      try {
+        mt5Account = await createTradingAccount(mt5AccountData);
+        setMt5AccountCreated(mt5Account);
+        console.log("MT5 Account created successfully:", mt5Account);
+        setApiStatus('success');
+      } catch (error) {
+        console.error("Error creating MT5 account:", error);
+        setApiStatus('error');
+        if (error.message) {
+          alert(t('tradingChallenge_alert_mt5Error', { error: error.message }));
+        }
+      }
+
+      // Guardar datos en Firebase (mantener código existente)
       const accountData = {
         userId: currentUser.uid,
         challengeType: challengeTypeValue,
-        // Store the original challenge type selection (Estándar or Swing)
         originalChallengeType: challengeType,
-        // Also store in accountType and accountStyle for better compatibility
         accountType: challengeType.toLowerCase(),
         accountStyle: challengeType.toLowerCase(),
-        // Store the translated phase label for direct display
         challengePhase: challengePhaseValue,
-        // Include the numberOfPhases property for backwards compatibility
         numberOfPhases: isOneStep ? 1 : 2,
         challengeAmountString: challengeAmount,
-        // Log the challengeAmount before parsing to debug the value
-        challengeAmountNumber: (console.log(`About to parse challengeAmount: "${challengeAmount}"`), parseCurrencyToNumber(challengeAmount)),
+        challengeAmountNumber: challengeAmountNumber,
         selectedProfitTargetP1: selectedProfitTargetP1,
         selectedProfitTargetP2: selectedProfitTargetP2,
         selectedProfitSplit: selectedProfitSplit,
         priceString: price,
         priceNumber: purchasePriceNumber,
-        status: 'Activa', // Status of the trading account
+        status: 'Activa',
         createdAt: serverTimestamp(),
         serverType: 'MT5',
         accountNumber: currentAccountNumber,
         pnlToday: 0,
         pnl7Days: 0,
         pnl30Days: 0,
-        balanceActual: parseCurrencyToNumber(challengeAmount),
+        balanceActual: challengeAmountNumber,
+        paymentMethod: selectedPaymentMethod,
+        paymentStatus: 'completed', // Para pagos con tarjeta que se procesan inmediatamente
+        // Si se creó la cuenta en MT5, agregamos los datos
+        ...(mt5Account && {
+          mt5Login: mt5Account.login,
+          mt5Password: mt5Account.password,
+          mt5PasswordInvestor: mt5Account.password_investor,
+          mt5Status: mt5Account.status,
+          mt5CreatedAt: mt5Account.created_at,
+          mt5AccountCreated: true
+        }),
+        // Si no se pudo crear en MT5, marcamos para seguimiento
+        ...(!mt5Account && {
+          mt5AccountCreated: false,
+          mt5CreationError: 'API error',
+          needsManualCreation: true
+        }),
+        // Datos del pago con criptomonedas (si aplica)
+        ...(paymentData && {
+          paymentUniqueId: paymentUniqueId,
+          paymentTransactionHash: paymentData?.transactionHash,
+          paymentCurrency: paymentData?.currency,
+          paymentNetwork: paymentData?.network,
+          paymentReceivedAmount: paymentData?.receivedAmount
+        })
       };
+
+      setProcessingStep(t('tradingChallenge_processing_savingData', 'Guardando datos...'));
 
       const docRef = await addDoc(collection(db, 'tradingAccounts'), accountData);
       console.log("Account created successfully:", docRef.id, accountData);
 
-      // Now, add a corresponding entry to the 'operations' collection
+      // Registrar operación en el historial
       const operationData = {
         userId: currentUser.uid,
         timestamp: serverTimestamp(),
-        status: 'Terminado', // Assuming purchase completion for operation history
+        status: 'Terminado',
         orderNumber: currentAccountNumber,
         operationType: 'Purchase Challenge',
-        details: `${challengeAmount} ${challengeType}`, // e.g., "$5.000 Estándar"
+        details: `${challengeAmount} ${challengeType}`,
         paymentMethod: selectedPaymentMethod === 'crypto' ? 'Criptomoneda' : 'Tarjeta',
         amount: purchasePriceNumber,
         currency: 'USD',
-        relatedAccountId: docRef.id // Optional: link to the trading account
+        relatedAccountId: docRef.id,
+        mt5AccountCreated: !!mt5Account,
+        ...(mt5Account && { mt5Login: mt5Account.login })
       };
       await addDoc(collection(db, 'operations'), operationData);
-      console.log("Operation logged successfully for account:", docRef.id, operationData);
 
-      alert(t('tradingChallenge_alert_purchaseSuccess', { accountId: docRef.id }));
+      setProcessingStep(t('tradingChallenge_processing_complete', '¡Compra completada!'));
+      
+      // Mostrar mensaje diferente según si se creó la cuenta MT5
+      if (mt5Account) {
+        alert(t('tradingChallenge_alert_purchaseSuccessWithMT5', { 
+          accountId: docRef.id,
+          login: mt5Account.login,
+          password: mt5Account.password 
+        }));
+      } else {
+        alert(t('tradingChallenge_alert_purchaseSuccess', { accountId: docRef.id }));
+      }
     } catch (error) {
       console.error("Error al comprar el desafío: ", error);
+      setApiStatus('error');
       alert(t('tradingChallenge_alert_purchaseError'));
     } finally {
       setIsPurchasing(false);
+      setProcessingStep('');
     }
   };
 

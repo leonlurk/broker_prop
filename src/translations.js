@@ -719,7 +719,7 @@ export const translations = {
     en: "Apply",
   },
   tradingChallenge_label_paymentMethod: {
-    es: "Metodo de pago",
+    es: "Método de pago",
     en: "Payment Method",
   },
   tradingChallenge_placeholder_select: {
@@ -1490,5 +1490,103 @@ export const translations = {
   news_error_loading: {
     es: "Error al cargar las noticias",
     en: "Error loading news"
-  }
+  },
+
+  // Nuevas traducciones para la integración con MT5_Manager API
+  tradingChallenge_processing_init: {
+    es: "Iniciando compra...",
+    en: "Starting purchase...",
+  },
+  tradingChallenge_processing_payment: {
+    es: "Procesando pago...",
+    en: "Processing payment...",
+  },
+  tradingChallenge_processing_creatingAccount: {
+    es: "Creando cuenta en MT5...",
+    en: "Creating MT5 account...",
+  },
+  tradingChallenge_processing_savingData: {
+    es: "Guardando datos...",
+    en: "Saving data...",
+  },
+  tradingChallenge_processing_complete: {
+    es: "¡Compra completada!",
+    en: "Purchase completed!",
+  },
+  tradingChallenge_alert_purchaseSuccessWithMT5: {
+    es: "Compra exitosa! Tu cuenta de desafío ha sido creada con ID: {accountId}. Tu cuenta MT5 ha sido creada con login: {login} y contraseña: {password}. Guarda estos datos en un lugar seguro.",
+    en: "Purchase successful! Your challenge account has been created with ID: {accountId}. Your MT5 account has been created with login: {login} and password: {password}. Save these details in a secure place.",
+  },
+  tradingChallenge_api_error: {
+    es: "Error al conectar con el servidor MT5. Tu compra ha sido registrada, pero la cuenta MT5 será creada manualmente. Nuestro equipo se pondrá en contacto contigo.",
+    en: "Error connecting to MT5 server. Your purchase has been recorded, but the MT5 account will be created manually. Our team will contact you.",
+  },
+
+  // Traducciones para pago con criptomonedas
+  tradingChallenge_paymentMethod_crypto: {
+    es: "Criptomoneda (USDT)",
+    en: "Cryptocurrency (USDT)",
+  },
+  tradingChallenge_processing_waitingPayment: {
+    es: "Esperando confirmación de pago...",
+    en: "Waiting for payment confirmation...",
+  },
+  tradingChallenge_processing_waitingPaymentTime: {
+    es: "Esperando confirmación de pago (tiempo restante: {{minutes}} minutos)...",
+    en: "Waiting for payment confirmation (remaining time: {{minutes}} minutes)...",
+  },
+  tradingChallenge_alert_paymentError: {
+    es: "Error en el pago: {{error}}",
+    en: "Payment error: {{error}}",
+  },
+
+  // Traducciones para la página de estado de pago
+  paymentStatus_completed: {
+    es: "¡Pago completado con éxito!",
+    en: "Payment completed successfully!",
+  },
+  paymentStatus_pending: {
+    es: "Pago en proceso",
+    en: "Payment in progress",
+  },
+  paymentStatus_expired: {
+    es: "Pago expirado",
+    en: "Payment expired",
+  },
+  paymentStatus_error: {
+    es: "Error en el pago",
+    en: "Payment error",
+  },
+  paymentStatus_loading: {
+    es: "Cargando...",
+    en: "Loading...",
+  },
+  paymentStatus_checking: {
+    es: "Verificando el estado del pago",
+    en: "Checking payment status",
+  },
+  paymentStatus_error_title: {
+    es: "Error",
+    en: "Error",
+  },
+  paymentStatus_amount: {
+    es: "Monto",
+    en: "Amount",
+  },
+  paymentStatus_received: {
+    es: "Recibido",
+    en: "Received",
+  },
+  paymentStatus_network: {
+    es: "Red",
+    en: "Network",
+  },
+  paymentStatus_transaction: {
+    es: "Transacción",
+    en: "Transaction",
+  },
+  paymentStatus_button_continue: {
+    es: "Continuar",
+    en: "Continue",
+  },
 }; 
