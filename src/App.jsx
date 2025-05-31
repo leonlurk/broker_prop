@@ -8,6 +8,8 @@ import Dashboard from './Dashboard';
 import PaymentStatus from './components/PaymentStatus';
 import { useAuth } from './contexts/AuthContext';
 import { logoutUser } from './firebase/auth';
+import Verification from './components/Verification';
+import ActionRedirector from './components/ActionRedirector';
 
 function App() {
   const { currentUser, isAuthenticated } = useAuth();
@@ -48,6 +50,7 @@ function App() {
 
   return (
     <div className="dark">
+      <ActionRedirector />
       <Routes>
         <Route 
           path="/login" 
@@ -87,7 +90,7 @@ function App() {
           path="/verification" 
           element={
             <AuthPageWrapper>
-              <VerificationCode onContinue={() => navigate('/login')} />
+              <Verification />
             </AuthPageWrapper>
           } 
         />
