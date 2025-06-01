@@ -90,7 +90,7 @@ export default function TradingChallengeUI() {
     { text: '80%', value: '80%' },
     { text: '90%', value: '90%' },
   ];
-
+  
   const baseChallengePrices = {
     '$5.000': 65,
     '$10.000': 115,
@@ -117,7 +117,7 @@ export default function TradingChallengeUI() {
     const p1PriceAdjustment = matrix.profitTargetF1?.[selectedProfitTargetP1] || 0;
     const p2PriceAdjustment = matrix.profitTargetF2?.[selectedProfitTargetP2] || 0;
     const splitAdjustment = matrix.profitSplit?.[selectedProfitSplit] || 0;
-
+    
     let subtotal = basePrice + p1PriceAdjustment + p2PriceAdjustment + splitAdjustment;
     let discountValue = 0;
     if (appliedCoupon === 'AGM20') {
@@ -557,7 +557,7 @@ export default function TradingChallengeUI() {
                     <span>Ajuste Profit Target F2</span>
                     <span className="font-medium">{priceBreakdown.profitTargetF2 >= 0 ? '+' : ''}${priceBreakdown.profitTargetF2}</span>
                   </div>
-                  <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center">
                     <span>Ajuste Profit Split</span>
                     <span className="font-medium">{priceBreakdown.profitSplit >= 0 ? '+' : ''}${priceBreakdown.profitSplit}</span>
                   </div>

@@ -1160,6 +1160,28 @@ export const translations = {
     en: "All Instruments",
   },
   
+  // PipCalculator filter tabs translations
+  pipCalculator_tab_forex: {
+    es: "Forex",
+    en: "Forex",
+  },
+  pipCalculator_tab_stocks: {
+    es: "Acciones",
+    en: "Stocks",
+  },
+  pipCalculator_tab_crypto: {
+    es: "Criptomonedas",
+    en: "Crypto",
+  },
+  pipCalculator_label_pointAmount: {
+    es: "Cantidad de punto",
+    en: "Point Amount",
+  },
+  pipCalculator_label_tickAmount: {
+    es: "Cantidad de tick",
+    en: "Tick Amount",
+  },
+  
   // Modal.jsx translations
   modal_close_aria_label: {
     es: "Cerrar modal",
