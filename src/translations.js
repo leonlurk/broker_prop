@@ -1384,8 +1384,8 @@ export const translations = {
 
   // Added for admin contact in modals
   settings_modal_contactAdminForChange: {
-    es: "Para cambiar tu {{item}}, por favor contacta a nuestro equipo de soporte en admin@example.com.",
-    en: "To change your {{item}}, please contact our support team at admin@example.com."
+    es: "Para cambiar tu {{item}}, por favor contacta a nuestro equipo de soporte en support@alphaglobalmarket.io.",
+    en: "To change your {{item}}, please contact our support team at support@alphaglobalmarket.io"
   },
   settings_label_password: {
     es: "contraseña",

@@ -40,10 +40,10 @@ const Login = ({ onRegisterClick, onForgotClick, onLoginSuccess }) => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen w-full bg-no-repeat bg-cover bg-center overflow-hidden m-0 p-0 inset-0 fixed">
-      <div className="w-[420px] h-[900px] sm:w-full md:w-[620px] p-10 rounded-3xl bg-black bg-opacity-60 border border-gray-800 shadow-xl flex flex-col justify-center mx-auto">
+    <div className="flex items-center justify-center min-h-screen w-full bg-no-repeat bg-cover bg-center overflow-hidden m-0 p-0 inset-0 fixed px-[100px] py-[80px]">
+      <div className="w-[330px] sm:w-[370px] md:w-[430px] max-w-[450px] h-[700px] px-[30px] py-8 rounded-3xl bg-black bg-opacity-60 border border-gray-800 shadow-xl flex flex-col justify-center mx-auto">
         <div className="flex justify-center mb-12">
-          <img src="/logo.png" alt="AGM Logo" className="h-17" />
+          <img src="/logo.png" alt="AGM Logo" className="h-12" />
         </div>
         
         {error && (
@@ -99,7 +99,7 @@ const Login = ({ onRegisterClick, onForgotClick, onLoginSuccess }) => {
             <button
               type="button"
               onClick={onForgotClick}
-              className="text-white hover:text-blue-500 bg-transparent whitespace-nowrap"
+              className="text-white hover:text-blue-500 bg-transparent whitespace-nowrap text-xs sm:text-sm"
             >
               {t('login_button_forgotPassword')}
             </button>

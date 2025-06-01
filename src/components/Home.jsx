@@ -238,76 +238,78 @@ const Home = ({ onViewDetails, onSettingsClick, setSelectedOption }) => {
         <p className="text-sm md:text-base text-gray-400">{getCurrentFormattedDate()}</p>
       </div>
         <div className="flex items-center space-x-2 sm:space-x-3 md:space-x-4 w-full sm:w-auto justify-end mt-2 sm:mt-0">
-  <button 
-    className="relative rounded-full bg-transparent focus:outline-none p-1.5 sm:p-2 hover:ring-1 hover:ring-cyan-400 transition-all duration-200"
-    onClick={toggleNotifications}
-  >
-    <span className="absolute -top-1 -right-1 h-2 w-2 bg-blue-500 rounded-full"></span>
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-    </svg>
-  </button>
-  <button 
-    className="relative rounded-full bg-transparent p-1.5 sm:p-2 hover:ring-1 hover:ring-cyan-400 transition-all duration-200"
-    style={{ outline: 'none' }}
-    onClick={() => onSettingsClick && onSettingsClick()}
-  >
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-    </svg>
-  </button>
-  <div className="flex items-center space-x-2 relative">
-    <button 
-      onClick={toggleUserInfo}
-      className="focus:outline-none bg-transparent p-0.5 sm:p-1 hover:ring-1 hover:ring-cyan-400 rounded-full transition-all duration-200"
-    >
-      <img 
-        src={currentUser?.photoURL || "/Perfil.png"} 
-        alt="Avatar" 
-        className="w-7 h-7 sm:w-8 sm:h-8 md:w-12 md:h-12 rounded-full object-cover" 
-        onError={(e) => {
-          e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%23555'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='20' fill='white'%3ES%3C/text%3E%3C/svg%3E";
-        }}
-      />
-    </button>
-  </div>
-  <div className="flex items-center space-x-1 md:space-x-2 relative">
-    <button 
-      onClick={toggleLanguageMenu}
-      className="flex items-center space-x-1 focus:outline-none bg-transparent p-0.5 sm:p-1 hover:ring-1 hover:ring-cyan-400 rounded-full transition-all duration-200"
-    >
-      <img 
-        src={resolvedImagePath} 
-        alt="Language" 
-        className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 rounded-full" 
-        onError={(e) => {
-          e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%23555'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='20' fill='white'%3ES%3C/text%3E%3C/svg%3E";
-        }}
-      />
-      <span className="text-xs sm:text-sm md:text-base text-gray-300">{languageTextDisplay}</span>
-    </button>
-    
-    {showLanguageMenu && (
-      <div className="absolute top-full right-0 mt-2 bg-black bg-opacity-20 border-t border-cyan-500 rounded-md overflow-hidden z-20 min-w-[90px] fading-borders">
-        <button 
-          className="focus:outline-none flex items-center space-x-2 px-3 py-1.5 sm:px-4 sm:py-2 w-full text-left bg-transparent hover:ring-1 hover:border-cyan-400 transition-all duration-200"
-          onClick={() => changeLanguage('es')}
-        >
-          <img src="/IdiomaES.png" className="w-5 h-5 sm:w-6 sm:h-6 rounded-full" alt="Spanish" />
-          <span className="text-xs sm:text-sm md:text-base text-white text-opacity-90">ES</span>
-        </button>
-        <button 
-          className="focus:outline-none flex items-center space-x-2 px-3 py-1.5 sm:px-4 sm:py-2 w-full text-left bg-transparent hover:ring-1 hover:border-cyan-400 transition-all duration-200"
-          onClick={() => changeLanguage('en')}
-        >
-          <img src="/IdiomaEN.png" className="w-5 h-5 sm:w-6 sm:h-6 rounded-full" alt="English" />
-          <span className="text-xs sm:text-sm md:text-base text-white text-opacity-90">EN</span>
-        </button>
-      </div>
-    )}
-  </div>
-</div>
+          {/* Botón de notificaciones oculto temporalmente
+          <button 
+            className="relative rounded-full bg-transparent focus:outline-none p-1.5 sm:p-2 hover:ring-1 hover:ring-cyan-400 transition-all duration-200"
+            onClick={toggleNotifications}
+          >
+            <span className="absolute -top-1 -right-1 h-2 w-2 bg-blue-500 rounded-full"></span>
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+          </button>
+          */}
+          <button 
+            className="relative rounded-full bg-transparent p-1.5 sm:p-2 hover:ring-1 hover:ring-cyan-400 transition-all duration-200"
+            style={{ outline: 'none' }}
+            onClick={() => onSettingsClick && onSettingsClick()}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </button>
+          <div className="flex items-center space-x-2 relative">
+            <button 
+              onClick={toggleUserInfo}
+              className="focus:outline-none bg-transparent p-0.5 sm:p-1 hover:ring-1 hover:ring-cyan-400 rounded-full transition-all duration-200"
+            >
+              <img 
+                src={currentUser?.photoURL || "/Perfil.png"} 
+                alt="Avatar" 
+                className="w-7 h-7 sm:w-8 sm:h-8 md:w-12 md:h-12 rounded-full object-cover" 
+                onError={(e) => {
+                  e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%23555'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='20' fill='white'%3ES%3C/text%3E%3C/svg%3E";
+                }}
+              />
+            </button>
+          </div>
+          <div className="flex items-center space-x-1 md:space-x-2 relative">
+            <button 
+              onClick={toggleLanguageMenu}
+              className="flex items-center space-x-1 focus:outline-none bg-transparent p-0.5 sm:p-1 hover:ring-1 hover:ring-cyan-400 rounded-full transition-all duration-200"
+            >
+              <img 
+                src={resolvedImagePath} 
+                alt="Language" 
+                className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 rounded-full" 
+                onError={(e) => {
+                  e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%23555'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='20' fill='white'%3ES%3C/text%3E%3C/svg%3E";
+                }}
+              />
+              <span className="text-xs sm:text-sm md:text-base text-gray-300">{languageTextDisplay}</span>
+            </button>
+            
+            {showLanguageMenu && (
+              <div className="absolute top-full right-0 mt-2 bg-black bg-opacity-20 border-t border-cyan-500 rounded-md overflow-hidden z-20 min-w-[90px] fading-borders">
+                <button 
+                  className="focus:outline-none flex items-center space-x-2 px-3 py-1.5 sm:px-4 sm:py-2 w-full text-left bg-transparent hover:ring-1 hover:border-cyan-400 transition-all duration-200"
+                  onClick={() => changeLanguage('es')}
+                >
+                  <img src="/IdiomaES.png" className="w-5 h-5 sm:w-6 sm:h-6 rounded-full" alt="Spanish" />
+                  <span className="text-xs sm:text-sm md:text-base text-white text-opacity-90">ES</span>
+                </button>
+                <button 
+                  className="focus:outline-none flex items-center space-x-2 px-3 py-1.5 sm:px-4 sm:py-2 w-full text-left bg-transparent hover:ring-1 hover:border-cyan-400 transition-all duration-200"
+                  onClick={() => changeLanguage('en')}
+                >
+                  <img src="/IdiomaEN.png" className="w-5 h-5 sm:w-6 sm:h-6 rounded-full" alt="English" />
+                  <span className="text-xs sm:text-sm md:text-base text-white text-opacity-90">EN</span>
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Tarjeta principal con fondo de imagen */}

@@ -102,11 +102,8 @@ const Register = ({ onLoginClick }) => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen w-full bg-no-repeat bg-cover bg-center overflow-hidden m-0 p-0 inset-0 fixed">
-      <div className="w-[420px] h-[900px] sm:w-full md:w-[620px] p-6 rounded-3xl bg-black bg-opacity-60 border border-gray-800 shadow-xl flex flex-col justify-center mx-auto">
-        <div className="flex justify-center mb-8">
-          <img src="/logo.png" alt="AGM Logo" className="h-25" />
-        </div>
+    <div className="flex items-center justify-center min-h-screen w-full bg-no-repeat bg-cover bg-center overflow-hidden m-0 p-0 inset-0 fixed px-[100px] py-[80px]">
+      <div className="w-[330px] sm:w-[370px] md:w-[430px] max-w-[450px] h-[700px] px-[30px] py-6 rounded-3xl bg-black bg-opacity-60 border border-gray-800 shadow-xl flex flex-col justify-center mx-auto my-[80px]">
         
         {error && (
           <div className="bg-red-500 bg-opacity-20 border border-red-600 text-white px-4 py-2 rounded-lg mb-4">
