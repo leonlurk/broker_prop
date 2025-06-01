@@ -753,19 +753,20 @@ const UserInformationContent = ({ onBack }) => {
 
   return (
     <div className={styles.container}>
-      <div className="p-4 md:p-6 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-2xl w-full flex flex-col gap-6 relative bg-opacity-90 mt-6 md:mt-12 lg:mt-20 mb-4 md:mb-6 pb-[100px] md:pb-6">
-        {/* Botón volver tipo dashboard */}
-        <button
-          type="button"
-          onClick={onBack}
-          className="absolute top-4 left-4 md:top-8 md:left-8 z-20 flex items-center justify-center w-12 h-12 md:w-14 md:h-14 rounded-full border border-cyan-400 bg-[#232323] text-white hover:bg-cyan-900/20 transition shadow-lg"
-          style={{ boxShadow: '0 2px 8px 0 rgba(28,196,249,0.08)' }}
-          aria-label={t('common_back')}
-        >
-          <ChevronDown style={{ transform: 'rotate(90deg)' }} size={32} className="md:size-36 text-cyan-400" />
-        </button>
+      {/* Botón volver tipo dashboard - arriba del contenedor interno */}
+      <button
+        type="button"
+        onClick={onBack}
+        className="mb-4 flex items-center justify-center w-10 h-10 md:w-11 md:h-11 rounded-full border border-cyan-400 bg-[#232323] text-white hover:bg-cyan-900/20 transition shadow-lg"
+        style={{ boxShadow: '0 2px 8px 0 rgba(28,196,249,0.08)' }}
+        aria-label={t('common_back')}
+      >
+        <ChevronDown style={{ transform: 'rotate(90deg)' }} size={40} className="text-cyan-400" />
+      </button>
+      
+      <div className="p-4 md:p-6 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-2xl w-full flex flex-col gap-6 relative bg-opacity-90 mb-4 md:mb-6 pb-[100px] md:pb-6">
         {/* Header: Título */}
-        <div className="mt-16 md:mt-[100px] mb-6">
+        <div className="mt-2 md:mt-4 mb-6">
           <h2 className="text-2xl md:text-3xl font-semibold text-white text-left">{t('userInfo_title')}</h2>
         </div>
         {/* Foto de perfil y formulario */}
