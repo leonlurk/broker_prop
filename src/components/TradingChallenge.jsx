@@ -632,6 +632,21 @@ export default function TradingChallengeUI() {
               {isPurchasing ? t('tradingChallenge_button_processing') : t('tradingChallenge_button_proceedToPayment')}
             </button>
             
+            {/* WhatsApp Info Box for Card Payments */}
+            <div className="bg-gradient-to-br from-[#232323] to-[#2b2b2b] border border-[#333] rounded-2xl p-4 mb-3 flex flex-col items-center text-center">
+              <p className="text-white text-sm mb-3">
+                Para pagos con <span className="font-semibold">tarjeta de crédito o débito</span> comunicarse al siguiente WhatsApp:
+              </p>
+              <a
+                href="https://wa.me/+971585437140"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block bg-gradient-to-r from-cyan-600 to-cyan-800 hover:from-cyan-700 hover:to-cyan-900 text-white font-semibold px-6 py-2 rounded-full shadow transition-all text-sm"
+              >
+                Comunicarse ahora
+              </a>
+            </div>
+            
             <p className="text-xs text-gray-500 text-center">
               {t('tradingChallenge_disclaimer_acceptance')}
             </p>
