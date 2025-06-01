@@ -5,7 +5,9 @@ import Register from './components/Register';
 import ForgotPassword from './components/ForgotPassword';
 import VerificationCode from './components/VerificationCode';
 import Dashboard from './Dashboard';
-import PaymentStatus from './components/PaymentStatus';
+import PaymentPage from './components/PaymentPage';
+import PaymentStatusPage from './components/PaymentStatusPage';
+import PaymentMonitor from './components/PaymentMonitor';
 import { useAuth } from './contexts/AuthContext';
 import { logoutUser } from './firebase/auth';
 
@@ -48,6 +50,8 @@ function App() {
 
   return (
     <div className="dark">
+      {isAuthenticated && <PaymentMonitor />}
+      
       <Routes>
         <Route 
           path="/login" 
@@ -93,10 +97,21 @@ function App() {
         />
         
         <Route 
+          path="/payment/:uniqueId" 
+          element={
+            isAuthenticated ? (
+              <PaymentPage />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          } 
+        />
+        
+        <Route 
           path="/payment-status/:uniqueId" 
           element={
             isAuthenticated ? (
-              <PaymentStatus />
+              <PaymentStatusPage />
             ) : (
               <Navigate to="/login" replace />
             )

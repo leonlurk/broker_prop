@@ -1,0 +1,504 @@
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import { getTranslator } from '../utils/i18n';
+import { Loader, CheckCircle, AlertCircle, XCircle, ArrowUpRight } from 'lucide-react';
+import PaymentService from '../services/PaymentService';
+import { createTradingAccount } from '../services/mt5Service';
+import { db } from '../firebase/config';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+
+/**
+ * Componente para mostrar el estado de un pago
+ */
+const PaymentStatusPage = () => {
+  const { uniqueId } = useParams();
+  const navigate = useNavigate();
+  const { currentUser, language } = useAuth();
+  const t = getTranslator(language);
+  
+  const [payment, setPayment] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [refreshInterval, setRefreshInterval] = useState(10000); // 10 segundos
+  const [processingAccount, setProcessingAccount] = useState(false);
+  const [accountCreated, setAccountCreated] = useState(false);
+  const [mt5AccountData, setMt5AccountData] = useState(null);
+  
+  // Función para obtener el estado del pago
+  const fetchPaymentStatus = async () => {
+    try {
+      console.log('Verificando estado del pago:', uniqueId);
+      
+      const paymentData = await PaymentService.checkPaymentStatus(uniqueId);
+      setPayment(paymentData);
+      
+      // Si el pago está completado y todavía no hemos procesado la cuenta
+      if (paymentData.status === 'completed' && !accountCreated && !processingAccount) {
+        handlePaymentCompleted(paymentData);
+      }
+      
+      // Si el pago está en estado final, detenemos la actualización
+      if (['completed', 'expired', 'error', 'underpaid', 'overpaid'].includes(paymentData.status)) {
+        console.log(`Pago en estado final: ${paymentData.status}, deteniendo actualizaciones`);
+        setRefreshInterval(null);
+      }
+    } catch (err) {
+      console.error('Error al verificar estado del pago:', err);
+      setError(err.message || 'Error al verificar el estado del pago');
+      setRefreshInterval(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  // Efecto para verificar el estado del pago
+  useEffect(() => {
+    // Verificar si el usuario está autenticado
+    if (!currentUser) {
+      navigate('/login');
+      return;
+    }
+    
+    // Obtener el estado del pago al cargar la página
+    fetchPaymentStatus();
+    
+    // Configurar intervalo de actualización
+    let intervalId;
+    if (refreshInterval) {
+      intervalId = setInterval(fetchPaymentStatus, refreshInterval);
+    }
+    
+    // Limpiar intervalo al desmontar
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [uniqueId, currentUser, navigate, refreshInterval]);
+  
+  // Función para manejar el pago completado
+  const handlePaymentCompleted = async (paymentData) => {
+    try {
+      setProcessingAccount(true);
+      console.log('Procesando cuenta para pago completado:', paymentData);
+      
+      // Buscar el pago original en cryptoPayments para obtener los datos del desafío
+      const paymentsRef = collection(db, 'cryptoPayments');
+      const q = query(paymentsRef, where('uniqueId', '==', uniqueId), limit(1));
+      const snapshot = await getDocs(q);
+      
+      if (snapshot.empty) {
+        console.error('No se encontró el registro original del pago');
+        setError('No se pudo encontrar la información del desafío');
+        setProcessingAccount(false);
+        return;
+      }
+      
+      const paymentRef = snapshot.docs[0].data();
+      const {
+        challengeType,
+        challengeAmount,
+        amount: purchasePriceNumber
+      } = paymentRef;
+      
+      // Parsear el monto del desafío
+      const challengeAmountNumber = parseCurrencyToNumber(challengeAmount);
+      
+      // Crear cuenta en MT5
+      const currentAccountNumber = Date.now().toString();
+      
+      // Determinar si es one_step o two_step
+      const isOneStep = challengeType === 'one_step';
+      
+      // Datos para crear la cuenta en MT5
+      const mt5AccountData = {
+        name: currentUser.displayName || 'Trader',
+        email: currentUser.email,
+        leverage: 100,  // Apalancamiento por defecto
+        deposit: challengeAmountNumber,  // Depósito inicial igual al tamaño del desafío
+        challenge_type: challengeType,
+        group: `challenge\\${isOneStep ? 'onestep' : 'twostep'}`,
+        purchase_id: currentAccountNumber,
+        phone: currentUser.phoneNumber || '',
+      };
+      
+      // Llamar a la API de MT5Manager para crear la cuenta real
+      console.log('Creando cuenta MT5:', mt5AccountData);
+      let mt5Account = null;
+      try {
+        mt5Account = await createTradingAccount(mt5AccountData);
+        setMt5AccountData(mt5Account);
+        console.log("MT5 Account created successfully:", mt5Account);
+      } catch (error) {
+        console.error("Error creating MT5 account:", error);
+      }
+      
+      // Determinar valores para tradingAccounts
+      const challengePhaseValue = isOneStep ? 
+        t('home_account_oneStepLabel') : t('home_account_twoStepLabel');
+      
+      // Guardar datos en Firebase
+      const accountData = {
+        userId: currentUser.uid,
+        challengeType: challengeType,
+        accountType: isOneStep ? 'estándar' : 'swing',
+        accountStyle: isOneStep ? 'estándar' : 'swing',
+        challengePhase: challengePhaseValue,
+        numberOfPhases: isOneStep ? 1 : 2,
+        challengeAmountString: challengeAmount,
+        challengeAmountNumber: challengeAmountNumber,
+        priceString: `$${purchasePriceNumber.toFixed(2)}`,
+        priceNumber: purchasePriceNumber,
+        status: 'Activa',
+        createdAt: serverTimestamp(),
+        serverType: 'MT5',
+        accountNumber: currentAccountNumber,
+        pnlToday: 0,
+        pnl7Days: 0,
+        pnl30Days: 0,
+        balanceActual: challengeAmountNumber,
+        paymentMethod: 'crypto',
+        paymentStatus: 'completed',
+        paymentUniqueId: uniqueId,
+        paymentTransactionHash: paymentData.transactionHash,
+        // Si se creó la cuenta en MT5, agregamos los datos
+        ...(mt5Account && {
+          mt5Login: mt5Account.login,
+          mt5Password: mt5Account.password,
+          mt5PasswordInvestor: mt5Account.password_investor,
+          mt5Status: mt5Account.status,
+          mt5CreatedAt: mt5Account.created_at,
+          mt5AccountCreated: true
+        }),
+        // Si no se pudo crear en MT5, marcamos para seguimiento
+        ...(!mt5Account && {
+          mt5AccountCreated: false,
+          mt5CreationError: 'API error',
+          needsManualCreation: true
+        }),
+      };
+      
+      console.log('Guardando datos de cuenta:', accountData);
+      const docRef = await addDoc(collection(db, 'tradingAccounts'), accountData);
+      
+      // Registrar operación en el historial
+      const operationData = {
+        userId: currentUser.uid,
+        timestamp: serverTimestamp(),
+        status: 'Terminado',
+        orderNumber: currentAccountNumber,
+        operationType: 'Purchase Challenge',
+        details: `${challengeAmount} ${isOneStep ? 'Estándar' : 'Swing'}`,
+        paymentMethod: 'Criptomoneda',
+        amount: purchasePriceNumber,
+        currency: 'USD',
+        relatedAccountId: docRef.id,
+        mt5AccountCreated: !!mt5Account,
+        ...(mt5Account && { mt5Login: mt5Account.login })
+      };
+      await addDoc(collection(db, 'operations'), operationData);
+      
+      setAccountCreated(true);
+      setProcessingAccount(false);
+      
+    } catch (error) {
+      console.error('Error al procesar cuenta:', error);
+      setError(`Error al crear cuenta: ${error.message}`);
+      setProcessingAccount(false);
+    }
+  };
+  
+  // Función para parsear valores monetarios
+  const parseCurrencyToNumber = (currencyString) => {
+    if (typeof currencyString !== 'string') return 0;
+    
+    // Primero quitamos el símbolo de moneda y cualquier espacio
+    let valueString = currencyString.replace(/[$\s]/g, '');
+    
+    // En el formato español/latinoamericano, el punto se usa como separador de miles
+    // y la coma como separador decimal: $200.000,00
+    // Quitamos todos los puntos y reemplazamos comas por puntos para formato numérico
+    valueString = valueString.replace(/\./g, '').replace(/,/g, '.');
+    
+    // Convertir a número
+    const numericValue = parseFloat(valueString);
+    
+    // Comprobar si el número se pudo convertir correctamente
+    if (isNaN(numericValue)) {
+      console.error(`Error parsing currency value: ${currencyString}`);
+      return 0; // Valor por defecto en caso de error
+    }
+    
+    return numericValue;
+  };
+  
+  // Función para obtener el icono según el estado
+  const getStatusIcon = () => {
+    if (!payment) return <Loader size={64} className="text-cyan-500 mb-4 animate-spin" />;
+    
+    switch (payment.status) {
+      case 'completed':
+        return <CheckCircle size={64} className="text-green-500 mb-4" />;
+      case 'pending':
+        return <Loader size={64} className="text-yellow-500 mb-4 animate-spin" />;
+      case 'expired':
+        return <XCircle size={64} className="text-red-500 mb-4" />;
+      case 'error':
+        return <AlertCircle size={64} className="text-red-500 mb-4" />;
+      case 'underpaid':
+        return <AlertCircle size={64} className="text-orange-500 mb-4" />;
+      case 'overpaid':
+        return <CheckCircle size={64} className="text-blue-500 mb-4" />;
+      default:
+        return <Loader size={64} className="text-cyan-500 mb-4 animate-spin" />;
+    }
+  };
+  
+  // Función para obtener el texto según el estado
+  const getStatusText = () => {
+    if (!payment) return t('paymentStatus_checking');
+    
+    if (accountCreated || processingAccount) {
+      return processingAccount 
+        ? t('paymentStatus_creating_account') 
+        : t('paymentStatus_account_created');
+    }
+    
+    switch (payment.status) {
+      case 'completed':
+        return t('paymentStatus_completed');
+      case 'pending':
+        return t('paymentStatus_pending');
+      case 'expired':
+        return t('paymentStatus_expired');
+      case 'error':
+        return t('paymentStatus_error');
+      case 'underpaid':
+        return t('paymentStatus_underpaid');
+      case 'overpaid':
+        return t('paymentStatus_overpaid');
+      default:
+        return payment.status;
+    }
+  };
+  
+  // Función para obtener descripción detallada según el estado
+  const getStatusDescription = () => {
+    if (!payment) return '';
+    
+    if (accountCreated) {
+      return t('paymentStatus_account_created_desc');
+    }
+    
+    if (processingAccount) {
+      return t('paymentStatus_creating_account_desc');
+    }
+    
+    switch (payment.status) {
+      case 'completed':
+        return t('paymentStatus_completed_desc');
+      case 'pending':
+        return t('paymentStatus_pending_desc');
+      case 'expired':
+        return t('paymentStatus_expired_desc');
+      case 'error':
+        return t('paymentStatus_error_desc');
+      case 'underpaid':
+        return t('paymentStatus_underpaid_desc');
+      case 'overpaid':
+        return t('paymentStatus_overpaid_desc');
+      default:
+        return '';
+    }
+  };
+  
+  // Función para continuar al dashboard
+  const handleContinue = () => {
+    navigate('/dashboard');
+  };
+  
+  // Función para volver a la página de pago
+  const handleReturnToPayment = () => {
+    navigate(`/payment/${uniqueId}`);
+  };
+  
+  // Renderizar pantalla de carga
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <Loader size={64} className="text-cyan-500 mb-4 animate-spin mx-auto" />
+          <h2 className="text-xl font-semibold text-white mb-2">{t('paymentStatus_loading')}</h2>
+          <p className="text-gray-400">{t('paymentStatus_checking')}</p>
+        </div>
+      </div>
+    );
+  }
+  
+  // Renderizar pantalla de error
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <AlertCircle size={64} className="text-red-500 mb-4 mx-auto" />
+          <h2 className="text-xl font-semibold text-white mb-2">{t('paymentStatus_error_title')}</h2>
+          <p className="text-gray-400 mb-6">{error}</p>
+          <button
+            onClick={handleContinue}
+            className="px-6 py-2 bg-cyan-600 text-white rounded-full hover:bg-cyan-700 transition"
+          >
+            {t('paymentStatus_button_continue')}
+          </button>
+        </div>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+      <div className="max-w-md w-full p-6 bg-gray-800 rounded-xl shadow-lg">
+        <div className="text-center">
+          {getStatusIcon()}
+          
+          <h2 className="text-2xl font-semibold text-white mb-2">{getStatusText()}</h2>
+          <p className="text-gray-300 mb-6">{getStatusDescription()}</p>
+          
+          {payment && (
+            <div className="mb-6 text-left">
+              <div className="bg-gray-700 rounded-lg p-4 mb-4">
+                {payment.paymentData && (
+                  <>
+                    <div className="flex justify-between mb-2">
+                      <span className="text-gray-400">{t('paymentStatus_amount')}:</span>
+                      <span className="text-white">{payment.paymentData.amount} {payment.paymentData.currency}</span>
+                    </div>
+                    
+                    <div className="flex justify-between mb-2">
+                      <span className="text-gray-400">{t('paymentStatus_network')}:</span>
+                      <span className="text-white">{payment.paymentData.network}</span>
+                    </div>
+                  </>
+                )}
+                
+                {payment.receivedAmount && (
+                  <div className="flex justify-between mb-2">
+                    <span className="text-gray-400">{t('paymentStatus_received')}:</span>
+                    <span className="text-white">{payment.receivedAmount} {payment.paymentData?.currency}</span>
+                  </div>
+                )}
+                
+                {payment.transactionHash && (
+                  <div className="flex justify-between mb-2">
+                    <span className="text-gray-400">{t('paymentStatus_transaction')}:</span>
+                    <div className="flex items-center">
+                      <span className="text-white truncate max-w-[150px]">{payment.transactionHash}</span>
+                      {payment.paymentData?.network === 'Tron' && (
+                        <a
+                          href={`https://tronscan.org/#/transaction/${payment.transactionHash}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="ml-2 text-cyan-400 hover:text-cyan-300"
+                        >
+                          <ArrowUpRight size={14} />
+                        </a>
+                      )}
+                      {payment.paymentData?.network === 'BSC' && (
+                        <a
+                          href={`https://bscscan.com/tx/${payment.transactionHash}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="ml-2 text-cyan-400 hover:text-cyan-300"
+                        >
+                          <ArrowUpRight size={14} />
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              {/* Información de cuenta MT5 */}
+              {(accountCreated || mt5AccountData) && (
+                <div className="bg-gray-700 rounded-lg p-4 mb-4">
+                  <h3 className="text-lg font-medium text-white mb-3">
+                    {t('paymentStatus_mt5_account_info')}
+                  </h3>
+                  
+                  {mt5AccountData && (
+                    <>
+                      <div className="flex justify-between mb-2">
+                        <span className="text-gray-400">{t('paymentStatus_mt5_login')}:</span>
+                        <span className="text-white font-mono">{mt5AccountData.login}</span>
+                      </div>
+                      
+                      <div className="flex justify-between mb-2">
+                        <span className="text-gray-400">{t('paymentStatus_mt5_password')}:</span>
+                        <span className="text-white font-mono">{mt5AccountData.password}</span>
+                      </div>
+                      
+                      {mt5AccountData.password_investor && (
+                        <div className="flex justify-between mb-2">
+                          <span className="text-gray-400">{t('paymentStatus_mt5_investor')}:</span>
+                          <span className="text-white font-mono">{mt5AccountData.password_investor}</span>
+                        </div>
+                      )}
+                      
+                      <div className="bg-yellow-800 bg-opacity-40 p-3 rounded mt-3">
+                        <p className="text-yellow-300 text-sm">
+                          {t('paymentStatus_mt5_save_credentials')}
+                        </p>
+                      </div>
+                    </>
+                  )}
+                  
+                  {!mt5AccountData && accountCreated && (
+                    <div className="bg-yellow-800 bg-opacity-40 p-3 rounded">
+                      <p className="text-yellow-300 text-sm">
+                        {t('paymentStatus_mt5_manual_creation')}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {/* Acciones según estado */}
+              {payment.status === 'pending' && (
+                <div className="bg-yellow-800 bg-opacity-30 rounded-lg p-4 mb-4">
+                  <p className="text-yellow-300 text-sm">{t('paymentStatus_pendingInfo')}</p>
+                  <button
+                    onClick={handleReturnToPayment}
+                    className="mt-3 w-full px-4 py-2 bg-yellow-700 text-white rounded hover:bg-yellow-600 transition text-sm"
+                  >
+                    {t('paymentStatus_button_return_to_payment')}
+                  </button>
+                </div>
+              )}
+              
+              {payment.status === 'underpaid' && (
+                <div className="bg-orange-800 bg-opacity-30 rounded-lg p-4 mb-4">
+                  <p className="text-orange-300 text-sm">{t('paymentStatus_underpaidInfo')}</p>
+                </div>
+              )}
+              
+              {payment.status === 'completed' && !accountCreated && !processingAccount && (
+                <div className="bg-green-800 bg-opacity-30 rounded-lg p-4 mb-4">
+                  <p className="text-green-300 text-sm">{t('paymentStatus_completedInfo')}</p>
+                </div>
+              )}
+            </div>
+          )}
+          
+          <button
+            onClick={handleContinue}
+            className="w-full px-6 py-3 bg-cyan-600 text-white rounded-full hover:bg-cyan-700 transition"
+          >
+            {t('paymentStatus_button_continue')}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default PaymentStatusPage; 
