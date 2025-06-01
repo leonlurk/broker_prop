@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { getTranslator } from '../utils/i18n';
-import { Loader, CheckCircle, AlertCircle, XCircle, ArrowUpRight } from 'lucide-react';
+import { Loader, CheckCircle, AlertCircle, XCircle, ArrowUpRight, ArrowLeft } from 'lucide-react';
 import PaymentService from '../services/PaymentService';
 import { createTradingAccount } from '../services/mt5Service';
 import { db } from '../firebase/config';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, where, getDocs, limit } from 'firebase/firestore';
 
 /**
  * Componente para mostrar el estado de un pago
@@ -24,6 +24,7 @@ const PaymentStatusPage = () => {
   const [processingAccount, setProcessingAccount] = useState(false);
   const [accountCreated, setAccountCreated] = useState(false);
   const [mt5AccountData, setMt5AccountData] = useState(null);
+  const [accountId, setAccountId] = useState(null);
   
   // Función para obtener el estado del pago
   const fetchPaymentStatus = async () => {
@@ -45,7 +46,7 @@ const PaymentStatusPage = () => {
       }
     } catch (err) {
       console.error('Error al verificar estado del pago:', err);
-      setError(err.message || 'Error al verificar el estado del pago');
+      setError(err.message || t('paymentStatus_error_generic', 'Error al verificar el estado del pago'));
       setRefreshInterval(null);
     } finally {
       setLoading(false);
@@ -90,7 +91,7 @@ const PaymentStatusPage = () => {
       
       if (snapshot.empty) {
         console.error('No se encontró el registro original del pago');
-        setError('No se pudo encontrar la información del desafío');
+        setError(t('paymentStatus_error_payment_not_found', 'No se pudo encontrar la información del desafío'));
         setProcessingAccount(false);
         return;
       }
@@ -181,6 +182,7 @@ const PaymentStatusPage = () => {
       
       console.log('Guardando datos de cuenta:', accountData);
       const docRef = await addDoc(collection(db, 'tradingAccounts'), accountData);
+      setAccountId(docRef.id);
       
       // Registrar operación en el historial
       const operationData = {
@@ -204,7 +206,7 @@ const PaymentStatusPage = () => {
       
     } catch (error) {
       console.error('Error al procesar cuenta:', error);
-      setError(`Error al crear cuenta: ${error.message}`);
+      setError(t('paymentStatus_error_account_creation', `Error al crear cuenta: ${error.message}`));
       setProcessingAccount(false);
     }
   };
@@ -259,10 +261,12 @@ const PaymentStatusPage = () => {
   const getStatusText = () => {
     if (!payment) return t('paymentStatus_checking');
     
-    if (accountCreated || processingAccount) {
-      return processingAccount 
-        ? t('paymentStatus_creating_account') 
-        : t('paymentStatus_account_created');
+    if (accountCreated) {
+      return t('paymentStatus_account_created', 'Cuenta creada con éxito');
+    }
+    
+    if (processingAccount) {
+      return t('paymentStatus_creating_account', 'Creando cuenta...');
     }
     
     switch (payment.status) {
@@ -275,9 +279,9 @@ const PaymentStatusPage = () => {
       case 'error':
         return t('paymentStatus_error');
       case 'underpaid':
-        return t('paymentStatus_underpaid');
+        return t('paymentStatus_underpaid', 'Pago insuficiente');
       case 'overpaid':
-        return t('paymentStatus_overpaid');
+        return t('paymentStatus_overpaid', 'Pago excedente');
       default:
         return payment.status;
     }
@@ -288,49 +292,69 @@ const PaymentStatusPage = () => {
     if (!payment) return '';
     
     if (accountCreated) {
-      return t('paymentStatus_account_created_desc');
+      return t('paymentStatus_account_created_desc', 'Tu cuenta ha sido creada exitosamente y está lista para usar.');
     }
     
     if (processingAccount) {
-      return t('paymentStatus_creating_account_desc');
+      return t('paymentStatus_creating_account_desc', 'Estamos creando tu cuenta. Por favor espera un momento...');
     }
     
     switch (payment.status) {
       case 'completed':
-        return t('paymentStatus_completed_desc');
+        return t('paymentStatus_completed_desc', 'Tu pago ha sido procesado correctamente. ¡Gracias por tu compra!');
       case 'pending':
-        return t('paymentStatus_pending_desc');
+        return t('paymentStatus_pending_desc', 'Estamos esperando la confirmación de tu pago. Esto puede tomar unos minutos.');
       case 'expired':
-        return t('paymentStatus_expired_desc');
+        return t('paymentStatus_expired_desc', 'El tiempo para realizar el pago ha expirado. Por favor, inicia un nuevo proceso de compra.');
       case 'error':
-        return t('paymentStatus_error_desc');
+        return t('paymentStatus_error_desc', 'Ha ocurrido un error durante el proceso de pago. Por favor, contacta a soporte.');
       case 'underpaid':
-        return t('paymentStatus_underpaid_desc');
+        return t('paymentStatus_underpaid_desc', 'El monto recibido es menor al esperado. Por favor, contacta a soporte para resolver esta situación.');
       case 'overpaid':
-        return t('paymentStatus_overpaid_desc');
+        return t('paymentStatus_overpaid_desc', 'El monto recibido es mayor al esperado. El excedente será procesado según nuestras políticas.');
       default:
         return '';
     }
   };
   
-  // Función para continuar al dashboard
+  // Función para manejar la navegación según el estado del pago
   const handleContinue = () => {
-    navigate('/dashboard');
+    if (accountCreated && accountId) {
+      // Si la cuenta fue creada con éxito, llevamos al usuario a ver los detalles de su cuenta
+      navigate(`/accounts/${accountId}`);
+    } else if (payment && payment.status === 'completed') {
+      // Si el pago está completado pero la cuenta no está creada aún, vamos al dashboard
+      navigate('/dashboard');
+    } else if (payment && payment.status === 'pending') {
+      // Si está pendiente, permitimos al usuario volver a la página principal
+      navigate('/dashboard');
+    } else if (payment && ['expired', 'error', 'underpaid'].includes(payment.status)) {
+      // Si hay algún error, lo llevamos a intentar una nueva compra
+      navigate('/new-challenge');
+    } else {
+      // Por defecto, vamos al dashboard
+      navigate('/dashboard');
+    }
   };
   
   // Función para volver a la página de pago
   const handleReturnToPayment = () => {
     navigate(`/payment/${uniqueId}`);
   };
+
+  // Función para volver a la página anterior
+  const handleGoBack = () => {
+    navigate(-1);
+  };
   
   // Renderizar pantalla de carga
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-[#232323] flex items-center justify-center">
         <div className="text-center">
           <Loader size={64} className="text-cyan-500 mb-4 animate-spin mx-auto" />
-          <h2 className="text-xl font-semibold text-white mb-2">{t('paymentStatus_loading')}</h2>
-          <p className="text-gray-400">{t('paymentStatus_checking')}</p>
+          <h2 className="text-xl font-semibold text-white mb-2">{t('paymentStatus_loading', 'Cargando...')}</h2>
+          <p className="text-gray-400">{t('paymentStatus_checking', 'Verificando el estado del pago')}</p>
         </div>
       </div>
     );
@@ -339,25 +363,51 @@ const PaymentStatusPage = () => {
   // Renderizar pantalla de error
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <AlertCircle size={64} className="text-red-500 mb-4 mx-auto" />
-          <h2 className="text-xl font-semibold text-white mb-2">{t('paymentStatus_error_title')}</h2>
-          <p className="text-gray-400 mb-6">{error}</p>
-          <button
-            onClick={handleContinue}
-            className="px-6 py-2 bg-cyan-600 text-white rounded-full hover:bg-cyan-700 transition"
+      <div className="min-h-screen bg-[#232323] flex items-center justify-center p-4">
+        <div className="max-w-md w-full p-6 bg-[#2b2b2b] rounded-xl border border-[#333] shadow-lg">
+          <button 
+            onClick={handleGoBack}
+            className="flex items-center text-gray-300 mb-6 hover:text-cyan-500 transition"
           >
-            {t('paymentStatus_button_continue')}
+            <ArrowLeft size={16} className="mr-2" />
+            {t('common_back', 'Volver')}
           </button>
+          
+          <div className="text-center">
+            <AlertCircle size={64} className="text-red-500 mb-4 mx-auto" />
+            <h2 className="text-xl font-semibold text-white mb-2">{t('paymentStatus_error_title', 'Error')}</h2>
+            <p className="text-gray-300 mb-6">{error}</p>
+            <div className="flex space-x-4">
+              <button
+                onClick={handleGoBack}
+                className="flex-1 px-4 py-2 bg-[#2c2c2c] border border-gray-700 text-white rounded-full hover:bg-[#3a3a3a] transition"
+              >
+                {t('common_back', 'Volver')}
+              </button>
+              <button
+                onClick={() => navigate('/new-challenge')}
+                className="flex-1 px-4 py-2 bg-cyan-600 text-white rounded-full hover:bg-cyan-700 transition"
+              >
+                {t('paymentStatus_button_try_again', 'Intentar de nuevo')}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
   
   return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
-      <div className="max-w-md w-full p-6 bg-gray-800 rounded-xl shadow-lg">
+    <div className="min-h-screen bg-[#232323] flex items-center justify-center p-4">
+      <div className="max-w-md w-full p-6 bg-[#2b2b2b] rounded-xl border border-[#333] shadow-lg">
+        <button 
+          onClick={handleGoBack}
+          className="flex items-center text-gray-300 mb-6 hover:text-cyan-500 transition"
+        >
+          <ArrowLeft size={16} className="mr-2" />
+          {t('common_back', 'Volver')}
+        </button>
+        
         <div className="text-center">
           {getStatusIcon()}
           
@@ -366,16 +416,16 @@ const PaymentStatusPage = () => {
           
           {payment && (
             <div className="mb-6 text-left">
-              <div className="bg-gray-700 rounded-lg p-4 mb-4">
+              <div className="bg-[#2c2c2c] rounded-lg p-4 mb-4 border border-gray-700">
                 {payment.paymentData && (
                   <>
                     <div className="flex justify-between mb-2">
-                      <span className="text-gray-400">{t('paymentStatus_amount')}:</span>
+                      <span className="text-gray-400">{t('paymentStatus_amount', 'Monto')}:</span>
                       <span className="text-white">{payment.paymentData.amount} {payment.paymentData.currency}</span>
                     </div>
                     
                     <div className="flex justify-between mb-2">
-                      <span className="text-gray-400">{t('paymentStatus_network')}:</span>
+                      <span className="text-gray-400">{t('paymentStatus_network', 'Red')}:</span>
                       <span className="text-white">{payment.paymentData.network}</span>
                     </div>
                   </>
@@ -383,14 +433,14 @@ const PaymentStatusPage = () => {
                 
                 {payment.receivedAmount && (
                   <div className="flex justify-between mb-2">
-                    <span className="text-gray-400">{t('paymentStatus_received')}:</span>
+                    <span className="text-gray-400">{t('paymentStatus_received', 'Recibido')}:</span>
                     <span className="text-white">{payment.receivedAmount} {payment.paymentData?.currency}</span>
                   </div>
                 )}
                 
                 {payment.transactionHash && (
                   <div className="flex justify-between mb-2">
-                    <span className="text-gray-400">{t('paymentStatus_transaction')}:</span>
+                    <span className="text-gray-400">{t('paymentStatus_transaction', 'Transacción')}:</span>
                     <div className="flex items-center">
                       <span className="text-white truncate max-w-[150px]">{payment.transactionHash}</span>
                       {payment.paymentData?.network === 'Tron' && (
@@ -420,33 +470,33 @@ const PaymentStatusPage = () => {
               
               {/* Información de cuenta MT5 */}
               {(accountCreated || mt5AccountData) && (
-                <div className="bg-gray-700 rounded-lg p-4 mb-4">
+                <div className="bg-[#2c2c2c] rounded-lg p-4 mb-4 border border-gray-700">
                   <h3 className="text-lg font-medium text-white mb-3">
-                    {t('paymentStatus_mt5_account_info')}
+                    {t('paymentStatus_mt5_account_info', 'Información de cuenta MT5')}
                   </h3>
                   
                   {mt5AccountData && (
                     <>
                       <div className="flex justify-between mb-2">
-                        <span className="text-gray-400">{t('paymentStatus_mt5_login')}:</span>
+                        <span className="text-gray-400">{t('paymentStatus_mt5_login', 'Login')}:</span>
                         <span className="text-white font-mono">{mt5AccountData.login}</span>
                       </div>
                       
                       <div className="flex justify-between mb-2">
-                        <span className="text-gray-400">{t('paymentStatus_mt5_password')}:</span>
+                        <span className="text-gray-400">{t('paymentStatus_mt5_password', 'Contraseña')}:</span>
                         <span className="text-white font-mono">{mt5AccountData.password}</span>
                       </div>
                       
                       {mt5AccountData.password_investor && (
                         <div className="flex justify-between mb-2">
-                          <span className="text-gray-400">{t('paymentStatus_mt5_investor')}:</span>
+                          <span className="text-gray-400">{t('paymentStatus_mt5_investor', 'Contraseña de Inversionista')}:</span>
                           <span className="text-white font-mono">{mt5AccountData.password_investor}</span>
                         </div>
                       )}
                       
                       <div className="bg-yellow-800 bg-opacity-40 p-3 rounded mt-3">
                         <p className="text-yellow-300 text-sm">
-                          {t('paymentStatus_mt5_save_credentials')}
+                          {t('paymentStatus_mt5_save_credentials', 'Guarda estas credenciales. No las compartiremos de nuevo.')}
                         </p>
                       </div>
                     </>
@@ -455,7 +505,7 @@ const PaymentStatusPage = () => {
                   {!mt5AccountData && accountCreated && (
                     <div className="bg-yellow-800 bg-opacity-40 p-3 rounded">
                       <p className="text-yellow-300 text-sm">
-                        {t('paymentStatus_mt5_manual_creation')}
+                        {t('paymentStatus_mt5_manual_creation', 'Tu cuenta será creada manualmente por nuestro equipo. Recibirás las credenciales por correo electrónico.')}
                       </p>
                     </div>
                   )}
@@ -465,36 +515,51 @@ const PaymentStatusPage = () => {
               {/* Acciones según estado */}
               {payment.status === 'pending' && (
                 <div className="bg-yellow-800 bg-opacity-30 rounded-lg p-4 mb-4">
-                  <p className="text-yellow-300 text-sm">{t('paymentStatus_pendingInfo')}</p>
+                  <p className="text-yellow-300 text-sm">{t('paymentStatus_pendingInfo', 'Puedes esperar en esta página o volver más tarde. El estado se actualizará automáticamente.')}</p>
                   <button
                     onClick={handleReturnToPayment}
-                    className="mt-3 w-full px-4 py-2 bg-yellow-700 text-white rounded hover:bg-yellow-600 transition text-sm"
+                    className="mt-3 w-full px-4 py-2 bg-yellow-700 text-white rounded-full hover:bg-yellow-600 transition text-sm"
                   >
-                    {t('paymentStatus_button_return_to_payment')}
+                    {t('paymentStatus_button_return_to_payment', 'Volver a la página de pago')}
                   </button>
                 </div>
               )}
               
               {payment.status === 'underpaid' && (
                 <div className="bg-orange-800 bg-opacity-30 rounded-lg p-4 mb-4">
-                  <p className="text-orange-300 text-sm">{t('paymentStatus_underpaidInfo')}</p>
+                  <p className="text-orange-300 text-sm">{t('paymentStatus_underpaidInfo', 'Se ha recibido menos de lo esperado. Contacta a soporte para más información.')}</p>
                 </div>
               )}
               
               {payment.status === 'completed' && !accountCreated && !processingAccount && (
                 <div className="bg-green-800 bg-opacity-30 rounded-lg p-4 mb-4">
-                  <p className="text-green-300 text-sm">{t('paymentStatus_completedInfo')}</p>
+                  <p className="text-green-300 text-sm">{t('paymentStatus_completedInfo', 'Pago confirmado. Procesando tu cuenta...')}</p>
                 </div>
               )}
             </div>
           )}
           
-          <button
-            onClick={handleContinue}
-            className="w-full px-6 py-3 bg-cyan-600 text-white rounded-full hover:bg-cyan-700 transition"
-          >
-            {t('paymentStatus_button_continue')}
-          </button>
+          <div className="flex space-x-4">
+            {payment && payment.status === 'pending' && (
+              <button
+                onClick={handleGoBack}
+                className="flex-1 px-6 py-3 bg-[#2c2c2c] border border-gray-700 text-white rounded-full hover:bg-[#3a3a3a] transition"
+              >
+                {t('common_back', 'Volver')}
+              </button>
+            )}
+            
+            <button
+              onClick={handleContinue}
+              className={`${payment && payment.status === 'pending' ? 'flex-1' : 'w-full'} px-6 py-3 ${accountCreated ? 'bg-green-600 hover:bg-green-700' : 'bg-cyan-600 hover:bg-cyan-700'} text-white rounded-full transition`}
+            >
+              {accountCreated 
+                ? t('paymentStatus_button_view_account', 'Ver mi cuenta') 
+                : payment && payment.status === 'expired'
+                  ? t('paymentStatus_button_try_again', 'Intentar de nuevo')
+                  : t('paymentStatus_button_continue', 'Continuar')}
+            </button>
+          </div>
         </div>
       </div>
     </div>

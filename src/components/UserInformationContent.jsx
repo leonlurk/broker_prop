@@ -752,247 +752,250 @@ const UserInformationContent = ({ onBack }) => {
   };
 
   return (
-    <div style={{ position: 'absolute', width: '100%', maxWidth: 1200, left: 0, top: 20, marginLeft: 337, boxShadow: '0 8px 32px 0 rgba(0,0,0,0.18)' }} className="bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-2xl p-4 md:p-6 mb-4 md:mb-6 w-full flex flex-col gap-6 relative bg-opacity-90">
-      {/* Botón volver tipo dashboard */}
+    <div className={styles.container}>
+      {/* Botón volver tipo dashboard - arriba del contenedor interno */}
       <button
         type="button"
         onClick={onBack}
-        className="absolute top-8 left-8 z-20 flex items-center justify-center w-14 h-14 rounded-full border border-cyan-400 bg-[#232323] text-white hover:bg-cyan-900/20 transition shadow-lg"
+        className="mb-4 flex items-center justify-center w-10 h-10 md:w-11 md:h-11 rounded-full border border-cyan-400 bg-[#232323] text-white hover:bg-cyan-900/20 transition shadow-lg"
         style={{ boxShadow: '0 2px 8px 0 rgba(28,196,249,0.08)' }}
         aria-label={t('common_back')}
       >
-        <ChevronDown style={{ transform: 'rotate(90deg)' }} size={36} className="text-cyan-400" />
+        <ChevronDown style={{ transform: 'rotate(90deg)' }} size={40} className="text-cyan-400" />
       </button>
-      {/* Header: Título */}
-      <div className="mt-[100px] mb-6">
-        <h2 className="text-3xl font-semibold text-white text-left">{t('userInfo_title')}</h2>
-      </div>
-      {/* Foto de perfil y formulario */}
-      <div className="flex flex-row gap-8 items-start w-full">
-        {/* Foto de perfil */}
-        <div className="flex flex-col items-center justify-start pt-2">
-          <div className="relative">
-            <img
-              src={profileImageUrl || fallbackUserPhoto}
-              alt="Foto de perfil"
-              className="w-28 h-28 rounded-full object-cover border-4 border-[#232323] shadow-md"
-            />
-            <button
-              type="button"
-              className="absolute bottom-2 right-2 bg-[#232323] border border-cyan-400 rounded-full p-2 flex items-center justify-center hover:bg-cyan-900/30 transition"
-              onClick={() => document.getElementById('profilePicInputUserInfo').click()}
-              aria-label={t('userInfo_button_changePhoto')}
-            >
-              <Camera size={20} className="text-cyan-400" />
-            </button>
-            <input
-              id="profilePicInputUserInfo"
-              name="profilePicInputUserInfo"
-              type="file"
-              className="hidden"
-              accept="image/*"
-              onChange={handleFileSelect}
-            />
-          </div>
+      
+      <div className="p-4 md:p-6 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-2xl w-full flex flex-col gap-6 relative bg-opacity-90 mb-4 md:mb-6 pb-[100px] md:pb-6">
+        {/* Header: Título */}
+        <div className="mt-2 md:mt-4 mb-6">
+          <h2 className="text-2xl md:text-3xl font-semibold text-white text-left">{t('userInfo_title')}</h2>
         </div>
-        {/* Formulario */}
-        <form className="flex-1 w-full grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8" autoComplete="off" onSubmit={e => { e.preventDefault(); handleSaveChanges(); }}>
-          {/* Nombre */}
-          <div>
-            <input
-              type="text"
-              id="nombre"
-              value={nombre}
-              onChange={e => setNombre(e.target.value)}
-              placeholder={t('userInfo_placeholder_firstName')}
-              className="bg-[#232323]/80 border border-[#444] rounded-[28px] px-6 h-14 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-gray-500 w-full"
-            />
-          </div>
-          {/* Apellido */}
-          <div>
-            <input
-              type="text"
-              id="apellido"
-              value={apellido}
-              onChange={e => setApellido(e.target.value)}
-              placeholder={t('userInfo_placeholder_lastName')}
-              className="bg-[#232323]/80 border border-[#444] rounded-[28px] px-6 h-14 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-gray-500 w-full"
-            />
-          </div>
-          {/* Fecha de nacimiento */}
-          <div>
+        {/* Foto de perfil y formulario */}
+        <div className="flex flex-col md:flex-row gap-8 items-start w-full">
+          {/* Foto de perfil */}
+          <div className="flex flex-col items-center justify-start pt-2 mb-4 md:mb-0">
             <div className="relative">
+              <img
+                src={profileImageUrl || fallbackUserPhoto}
+                alt="Foto de perfil"
+                className="w-24 h-24 md:w-28 md:h-28 rounded-full object-cover border-4 border-[#232323] shadow-md"
+              />
+              <button
+                type="button"
+                className="absolute bottom-2 right-2 bg-[#232323] border border-cyan-400 rounded-full p-2 flex items-center justify-center hover:bg-cyan-900/30 transition"
+                onClick={() => document.getElementById('profilePicInputUserInfo').click()}
+                aria-label={t('userInfo_button_changePhoto')}
+              >
+                <Camera size={20} className="text-cyan-400" />
+              </button>
+              <input
+                id="profilePicInputUserInfo"
+                name="profilePicInputUserInfo"
+                type="file"
+                className="hidden"
+                accept="image/*"
+                onChange={handleFileSelect}
+              />
+            </div>
+          </div>
+          {/* Formulario */}
+          <form className="flex-1 w-full grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8" autoComplete="off" onSubmit={e => { e.preventDefault(); handleSaveChanges(); }}>
+            {/* Nombre */}
+            <div>
               <input
                 type="text"
-                id="fechaNacimiento"
-                value={fechaNacimiento}
-                onClick={() => setShowCalendar(!showCalendar)}
-                placeholder={t('userInfo_placeholder_dob')}
-                className="bg-[#232323]/80 border border-[#444] rounded-[28px] px-6 h-14 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-gray-500 pr-10 cursor-pointer w-full"
-                readOnly
+                id="nombre"
+                value={nombre}
+                onChange={e => setNombre(e.target.value)}
+                placeholder={t('userInfo_placeholder_firstName')}
+                className="bg-[#232323]/80 border border-[#444] rounded-[28px] px-6 h-14 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-gray-500 w-full"
               />
-              <Calendar size={20} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
             </div>
-            {showCalendar && renderCalendar()}
-          </div>
-          {/* Género */}
-          <div className="relative">
-            <select
-              id="genero"
-              value={genero}
-              onChange={e => setGenero(e.target.value)}
-              className="bg-[#232323]/80 border border-[#444] rounded-[28px] px-6 h-14 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-gray-500 w-full appearance-none"
-            >
-              <option value="" className="text-gray-500">{t('userInfo_placeholder_gender')}</option>
-              <option value="masculino">{t('gender_male')}</option>
-              <option value="femenino">{t('gender_female')}</option>
-              <option value="otro">{t('gender_other')}</option>
-              <option value="prefiero_no_decirlo">{t('gender_preferNotToSay')}</option>
-            </select>
-            <ChevronDown size={24} className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400" style={{paddingRight: 5}} />
-          </div>
-          {/* País */}
-          <div className="relative">
-            <select
-              id="pais"
-              value={paisSeleccionado}
-              onChange={e => {
-                setPaisSeleccionado(e.target.value);
-                // Buscar el código del país seleccionado y actualizar codigoPais
-                const normalize = str => str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-                const selected = e.target.value;
-                let codeObj = codigosPaisesFull.find(cp => normalize(cp.pais) === normalize(selected));
-                if (!codeObj) {
-                  codeObj = codigosPaisesFull.find(cp => normalize(selected).includes(normalize(cp.pais)) || normalize(cp.pais).includes(normalize(selected)));
-                }
-                if (!codeObj) {
-                  const clean = s => normalize(s).replace(/(republic|federation|state|states|kingdom|democratic|people|islamic|arab|of|the|and|union|united|plurinational|bolivarian|province|provinces|city|country|nation|territory|islands|island|coast|north|south|east|west|central|new|old|great|little|upper|lower|mount|saint|st|sao|san|santa|la|el|los|las|le|les|de|del|da|do|das|du|di|al|el|a|o|u|i|e|y|z|x|c|d|b|g|h|j|k|l|m|n|p|q|r|s|t|v|w|z|\s+)/g, '');
-                  codeObj = codigosPaisesFull.find(cp => clean(cp.pais) === clean(selected));
-                }
-                if (!codeObj) {
-                  codeObj = codigosPaisesFull.find(cp => cp.pais_en && normalize(cp.pais_en) === normalize(selected));
-                }
-                setCodigoPais(codeObj ? codeObj.codigo : '');
-              }}
-              className="bg-[#232323]/80 border border-[#444] rounded-[28px] px-6 h-14 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-gray-500 w-full appearance-none"
-              disabled={cargandoPaises}
-            >
-              <option value="" className="text-gray-500">{cargandoPaises ? t('userInfo_loading_countries') : t('userInfo_placeholder_country')}</option>
-              {paises.map(pais => (
-                <option key={pais.nombre} value={pais.nombre}>{pais.nombre}</option>
-              ))}
-            </select>
-            <ChevronDown size={24} className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400" style={{paddingRight: 5}} />
-          </div>
-          {/* Ciudad */}
-          <div className="relative">
-            <select
-              id="ciudad"
-              value={ciudadSeleccionada}
-              onChange={e => setCiudadSeleccionada(e.target.value)}
-              className="bg-[#232323]/80 border border-[#444] rounded-[28px] px-6 h-14 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-gray-500 w-full appearance-none"
-              disabled={cargandoCiudades || !paisSeleccionado}
-            >
-              <option value="" className="text-gray-500">
-                {cargandoCiudades ? t('userInfo_loading_cities') :
-                  (ciudades.length === 0 && paisSeleccionado ? t('userInfo_noCitiesAvailable') : t('userInfo_placeholder_city'))}
-              </option>
-              {ciudades.map(ciudad => (
-                <option key={ciudad} value={ciudad}>{ciudad}</option>
-              ))}
-            </select>
-            <ChevronDown size={24} className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400" style={{paddingRight: 5}} />
-          </div>
-          {/* Teléfono */}
-          <div className="flex flex-row items-center w-full">
-            {codigoPais && (
-              <span className="bg-[#232323]/80 border border-[#444] rounded-l-[28px] px-5 h-14 flex items-center text-white text-base select-none" style={{ borderRight: 'none' }}>{codigoPais}</span>
-            )}
-            <input
-              type="tel"
-              id="telefono"
-              value={numeroTelefono}
-              onChange={handlePhoneChange}
-              placeholder={t('userInfo_placeholder_phoneNumber')}
-              className={`bg-[#232323]/80 border border-[#444] ${codigoPais ? 'rounded-r-[28px]' : 'rounded-[28px]'} px-6 h-14 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-gray-500 w-full`}
-              style={codigoPais ? { borderLeft: 'none' } : {}}
-            />
-          </div>
-          <div className="flex items-end w-full mt-0">
-            <button
-              type="button"
-              onClick={handleSaveChanges}
-              className="w-full border border-cyan-400 rounded-[28px] px-10 h-14 text-white font-medium bg-transparent hover:bg-cyan-900/20 transition whitespace-nowrap flex items-center justify-center gap-2 text-lg"
-              disabled={isSaving}
-            >
-              {isSaving ? <Loader size={20} className="animate-spin mr-2" /> : <Save size={20} className="mr-2" />}
-              {t('userInfo_button_saveChanges')}
-            </button>
-          </div>
-        </form>
-      </div>
-      {/* Mensajes de error y éxito */}
-      {saveError && (
-        <div className="mt-6 bg-red-500 bg-opacity-10 text-red-500 rounded-lg px-6 py-4 flex items-center gap-2">
-          <AlertTriangle size={20} />
-          <span>{saveError}</span>
-        </div>
-      )}
-      {saveSuccess && (
-        <div className="mt-6 bg-green-500 bg-opacity-10 text-green-500 rounded-lg px-6 py-4 flex items-center gap-2">
-          <Save size={20} />
-          <span>{t('userInfo_success_saved')}</span>
-        </div>
-      )}
-      {/* Crop modal igual que antes si es necesario */}
-      {showCropModal && imageSrcForCropper && (
-        <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50 p-4 transition-opacity duration-300 ease-out" style={{ backdropFilter: 'blur(4px)' }}>
-          <div className="bg-slate-900 p-6 rounded-lg shadow-xl max-w-lg w-full">
-            <h3 className="text-xl leading-6 font-semibold text-white mb-5 text-center">
-              {t('settings_cropImage_title')}
-            </h3>
-            <div className="flex justify-center mb-5">
-              <ReactCrop
-                crop={crop}
-                onChange={(_, percentCrop) => setCrop(percentCrop)}
-                onComplete={c => setCompletedCrop(c)}
-                aspect={aspect}
-                minWidth={100}
-                minHeight={100}
-                circularCrop={false}
-                className="max-h-[60vh]"
-              >
-                <img
-                  ref={imgRefForCropper}
-                  alt="Crop preview"
-                  src={imageSrcForCropper}
-                  style={{ maxHeight: '60vh', objectFit: 'contain' }}
-                  onLoad={onImageLoadForCropper}
+            {/* Apellido */}
+            <div>
+              <input
+                type="text"
+                id="apellido"
+                value={apellido}
+                onChange={e => setApellido(e.target.value)}
+                placeholder={t('userInfo_placeholder_lastName')}
+                className="bg-[#232323]/80 border border-[#444] rounded-[28px] px-6 h-14 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-gray-500 w-full"
+              />
+            </div>
+            {/* Fecha de nacimiento */}
+            <div>
+              <div className="relative">
+                <input
+                  type="text"
+                  id="fechaNacimiento"
+                  value={fechaNacimiento}
+                  onClick={() => setShowCalendar(!showCalendar)}
+                  placeholder={t('userInfo_placeholder_dob')}
+                  className="bg-[#232323]/80 border border-[#444] rounded-[28px] px-6 h-14 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-gray-500 pr-10 cursor-pointer w-full"
+                  readOnly
                 />
-              </ReactCrop>
+                <Calendar size={20} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+              </div>
+              {showCalendar && renderCalendar()}
             </div>
-            {profilePicError && <p className="mb-3 text-sm text-red-500 text-center">{profilePicError}</p>}
-            <div className="mt-6 flex flex-col sm:flex-row-reverse gap-3">
+            {/* Género */}
+            <div className="relative">
+              <select
+                id="genero"
+                value={genero}
+                onChange={e => setGenero(e.target.value)}
+                className="bg-[#232323]/80 border border-[#444] rounded-[28px] px-6 h-14 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-gray-500 w-full appearance-none"
+              >
+                <option value="" className="text-gray-500">{t('userInfo_placeholder_gender')}</option>
+                <option value="masculino">{t('gender_male')}</option>
+                <option value="femenino">{t('gender_female')}</option>
+                <option value="otro">{t('gender_other')}</option>
+                <option value="prefiero_no_decirlo">{t('gender_preferNotToSay')}</option>
+              </select>
+              <ChevronDown size={24} className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400" style={{paddingRight: 5}} />
+            </div>
+            {/* País */}
+            <div className="relative">
+              <select
+                id="pais"
+                value={paisSeleccionado}
+                onChange={e => {
+                  setPaisSeleccionado(e.target.value);
+                  // Buscar el código del país seleccionado y actualizar codigoPais
+                  const normalize = str => str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+                  const selected = e.target.value;
+                  let codeObj = codigosPaisesFull.find(cp => normalize(cp.pais) === normalize(selected));
+                  if (!codeObj) {
+                    codeObj = codigosPaisesFull.find(cp => normalize(selected).includes(normalize(cp.pais)) || normalize(cp.pais).includes(normalize(selected)));
+                  }
+                  if (!codeObj) {
+                    const clean = s => normalize(s).replace(/(republic|federation|state|states|kingdom|democratic|people|islamic|arab|of|the|and|union|united|plurinational|bolivarian|province|provinces|city|country|nation|territory|islands|island|coast|north|south|east|west|central|new|old|great|little|upper|lower|mount|saint|st|sao|san|santa|la|el|los|las|le|les|de|del|da|do|das|du|di|al|el|a|o|u|i|e|y|z|x|c|d|b|g|h|j|k|l|m|n|p|q|r|s|t|v|w|z|\s+)/g, '');
+                    codeObj = codigosPaisesFull.find(cp => clean(cp.pais) === clean(selected));
+                  }
+                  if (!codeObj) {
+                    codeObj = codigosPaisesFull.find(cp => cp.pais_en && normalize(cp.pais_en) === normalize(selected));
+                  }
+                  setCodigoPais(codeObj ? codeObj.codigo : '');
+                }}
+                className="bg-[#232323]/80 border border-[#444] rounded-[28px] px-6 h-14 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-gray-500 w-full appearance-none"
+                disabled={cargandoPaises}
+              >
+                <option value="" className="text-gray-500">{cargandoPaises ? t('userInfo_loading_countries') : t('userInfo_placeholder_country')}</option>
+                {paises.map(pais => (
+                  <option key={pais.nombre} value={pais.nombre}>{pais.nombre}</option>
+                ))}
+              </select>
+              <ChevronDown size={24} className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400" style={{paddingRight: 5}} />
+            </div>
+            {/* Ciudad */}
+            <div className="relative">
+              <select
+                id="ciudad"
+                value={ciudadSeleccionada}
+                onChange={e => setCiudadSeleccionada(e.target.value)}
+                className="bg-[#232323]/80 border border-[#444] rounded-[28px] px-6 h-14 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-gray-500 w-full appearance-none"
+                disabled={cargandoCiudades || !paisSeleccionado}
+              >
+                <option value="" className="text-gray-500">
+                  {cargandoCiudades ? t('userInfo_loading_cities') :
+                    (ciudades.length === 0 && paisSeleccionado ? t('userInfo_noCitiesAvailable') : t('userInfo_placeholder_city'))}
+                </option>
+                {ciudades.map(ciudad => (
+                  <option key={ciudad} value={ciudad}>{ciudad}</option>
+                ))}
+              </select>
+              <ChevronDown size={24} className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400" style={{paddingRight: 5}} />
+            </div>
+            {/* Teléfono */}
+            <div className="flex flex-row items-center w-full">
+              {codigoPais && (
+                <span className="bg-[#232323]/80 border border-[#444] rounded-l-[28px] px-5 h-14 flex items-center text-white text-base select-none" style={{ borderRight: 'none' }}>{codigoPais}</span>
+              )}
+              <input
+                type="tel"
+                id="telefono"
+                value={numeroTelefono}
+                onChange={handlePhoneChange}
+                placeholder={t('userInfo_placeholder_phoneNumber')}
+                className={`bg-[#232323]/80 border border-[#444] ${codigoPais ? 'rounded-r-[28px]' : 'rounded-[28px]'} px-6 h-14 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-gray-500 w-full`}
+                style={codigoPais ? { borderLeft: 'none' } : {}}
+              />
+            </div>
+            <div className="flex items-end w-full mt-0">
               <button
                 type="button"
-                className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-6 py-3 bg-cyan-600 text-base font-medium text-white hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-cyan-500 sm:text-sm transition-colors duration-150"
-                onClick={handleCropImageAndInitiateUpload}
-                disabled={isUploadingProfilePic}
+                onClick={handleSaveChanges}
+                className="w-full border border-cyan-400 rounded-[28px] px-10 h-14 text-white font-medium bg-transparent hover:bg-cyan-900/20 transition whitespace-nowrap flex items-center justify-center gap-2 text-lg"
+                disabled={isSaving}
               >
-                {isUploadingProfilePic ? t('settings_cropImage_button_cropping') : t('settings_cropImage_button_crop')}
+                {isSaving ? <Loader size={20} className="animate-spin mr-2" /> : <Save size={20} className="mr-2" />}
+                {t('userInfo_button_saveChanges')}
               </button>
-              <button
-                type="button"
-                className="w-full inline-flex justify-center rounded-md border border-gray-600 shadow-sm px-6 py-3 bg-slate-800 text-base font-medium text-gray-300 hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-cyan-500 sm:text-sm transition-colors duration-150"
-                onClick={handleCancelProfilePicUpdateAndCloseModal}
-                disabled={isUploadingProfilePic}
-              >
-                {t('settings_cropImage_button_cancel')}
-              </button>
+            </div>
+          </form>
+        </div>
+        {/* Mensajes de error y éxito */}
+        {saveError && (
+          <div className="mt-6 bg-red-500 bg-opacity-10 text-red-500 rounded-lg px-6 py-4 flex items-center gap-2">
+            <AlertTriangle size={20} />
+            <span>{saveError}</span>
+          </div>
+        )}
+        {saveSuccess && (
+          <div className="mt-6 bg-green-500 bg-opacity-10 text-green-500 rounded-lg px-6 py-4 flex items-center gap-2">
+            <Save size={20} />
+            <span>{t('userInfo_success_saved')}</span>
+          </div>
+        )}
+        {/* Crop modal igual que antes si es necesario */}
+        {showCropModal && imageSrcForCropper && (
+          <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50 p-4 transition-opacity duration-300 ease-out" style={{ backdropFilter: 'blur(4px)' }}>
+            <div className="bg-slate-900 p-6 rounded-lg shadow-xl max-w-lg w-full">
+              <h3 className="text-xl leading-6 font-semibold text-white mb-5 text-center">
+                {t('settings_cropImage_title')}
+              </h3>
+              <div className="flex justify-center mb-5">
+                <ReactCrop
+                  crop={crop}
+                  onChange={(_, percentCrop) => setCrop(percentCrop)}
+                  onComplete={c => setCompletedCrop(c)}
+                  aspect={aspect}
+                  minWidth={100}
+                  minHeight={100}
+                  circularCrop={false}
+                  className="max-h-[60vh]"
+                >
+                  <img
+                    ref={imgRefForCropper}
+                    alt="Crop preview"
+                    src={imageSrcForCropper}
+                    style={{ maxHeight: '60vh', objectFit: 'contain' }}
+                    onLoad={onImageLoadForCropper}
+                  />
+                </ReactCrop>
+              </div>
+              {profilePicError && <p className="mb-3 text-sm text-red-500 text-center">{profilePicError}</p>}
+              <div className="mt-6 flex flex-col sm:flex-row-reverse gap-3">
+                <button
+                  type="button"
+                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-6 py-3 bg-cyan-600 text-base font-medium text-white hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-cyan-500 sm:text-sm transition-colors duration-150"
+                  onClick={handleCropImageAndInitiateUpload}
+                  disabled={isUploadingProfilePic}
+                >
+                  {isUploadingProfilePic ? t('settings_cropImage_button_cropping') : t('settings_cropImage_button_crop')}
+                </button>
+                <button
+                  type="button"
+                  className="w-full inline-flex justify-center rounded-md border border-gray-600 shadow-sm px-6 py-3 bg-slate-800 text-base font-medium text-gray-300 hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-cyan-500 sm:text-sm transition-colors duration-150"
+                  onClick={handleCancelProfilePicUpdateAndCloseModal}
+                  disabled={isUploadingProfilePic}
+                >
+                  {t('settings_cropImage_button_cancel')}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

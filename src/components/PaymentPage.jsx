@@ -4,7 +4,7 @@ import { db } from '../firebase/config';
 import { collection, query, where, getDocs, limit } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 import { getTranslator } from '../utils/i18n';
-import { Loader, AlertCircle, Copy, RefreshCw } from 'lucide-react';
+import { Loader, AlertCircle, Copy, RefreshCw, ArrowLeft, Clock } from 'lucide-react';
 
 /**
  * Componente para mostrar la página de pago con el código QR
@@ -32,7 +32,7 @@ const PaymentPage = () => {
       const snapshot = await getDocs(q);
       
       if (snapshot.empty) {
-        setError('Pago no encontrado');
+        setError(t('paymentPage_not_found'));
         setLoading(false);
         return;
       }
@@ -53,7 +53,7 @@ const PaymentPage = () => {
       setLoading(false);
     } catch (err) {
       console.error('Error al obtener datos del pago:', err);
-      setError(err.message || 'Error al obtener datos del pago');
+      setError(err.message || t('paymentPage_error_generic', 'Error al obtener datos del pago'));
       setLoading(false);
     }
   };
@@ -107,7 +107,7 @@ const PaymentPage = () => {
   // Renderizar pantalla de carga
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-[#232323] flex items-center justify-center">
         <div className="text-center">
           <Loader size={64} className="text-cyan-500 mb-4 animate-spin mx-auto" />
           <h2 className="text-xl font-semibold text-white mb-2">{t('paymentPage_loading')}</h2>
@@ -119,17 +119,19 @@ const PaymentPage = () => {
   // Renderizar pantalla de error
   if (error || !payment) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <AlertCircle size={64} className="text-red-500 mb-4 mx-auto" />
-          <h2 className="text-xl font-semibold text-white mb-2">{t('paymentPage_error_title')}</h2>
-          <p className="text-gray-400 mb-6">{error || t('paymentPage_not_found')}</p>
-          <button
-            onClick={() => navigate('/dashboard')}
-            className="px-6 py-2 bg-cyan-600 text-white rounded-full hover:bg-cyan-700 transition"
-          >
-            {t('paymentPage_button_dashboard')}
-          </button>
+      <div className="min-h-screen bg-[#232323] flex items-center justify-center p-4">
+        <div className="max-w-md w-full p-6 bg-[#2b2b2b] rounded-xl border border-[#333] shadow-lg">
+          <div className="text-center">
+            <AlertCircle size={64} className="text-red-500 mb-4 mx-auto" />
+            <h2 className="text-xl font-semibold text-white mb-2">{t('paymentPage_error_title')}</h2>
+            <p className="text-gray-300 mb-6">{error || t('paymentPage_not_found')}</p>
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="px-6 py-3 bg-cyan-600 text-white rounded-full hover:bg-cyan-700 transition"
+            >
+              {t('paymentPage_button_dashboard')}
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -142,30 +144,39 @@ const PaymentPage = () => {
   
   // Renderizar página de pago
   return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+    <div className="min-h-screen bg-[#232323] flex items-center justify-center p-4">
+      <div className="max-w-md w-full bg-[#2b2b2b] rounded-xl border border-[#333] shadow-lg overflow-hidden">
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-700 to-cyan-600 p-4">
+        <div className="bg-gradient-to-r from-cyan-700 to-cyan-600 p-6">
+          <button 
+            onClick={() => navigate(-1)} 
+            className="flex items-center text-white mb-4 hover:text-gray-200 transition"
+          >
+            <ArrowLeft size={16} className="mr-2" />
+            {t('paymentPage_button_cancel')}
+          </button>
+          
           <div className="flex justify-between items-center">
-            <h1 className="text-xl font-bold text-white">{t('paymentPage_title')}</h1>
-            <div className="bg-red-500 text-white text-sm py-1 px-3 rounded-full flex items-center">
-              <span className="mr-1">{formatTimeLeft(timeLeft)}</span>
-              <RefreshCw size={14} className="animate-spin" />
+            <h1 className="text-2xl font-bold text-white">{t('paymentPage_title')}</h1>
+            
+            <div className="bg-[#232323] bg-opacity-30 text-white text-sm py-1.5 px-3 rounded-full flex items-center">
+              <Clock size={14} className="mr-1.5" />
+              <span>{formatTimeLeft(timeLeft)}</span>
             </div>
           </div>
-          <p className="text-blue-100 mt-1">{t('paymentPage_subtitle')}</p>
+          <p className="text-gray-100 mt-2 text-sm">{t('paymentPage_subtitle')}</p>
         </div>
         
         {/* Contenido */}
-        <div className="p-5">
+        <div className="p-6">
           {/* Detalles del pago */}
-          <div className="mb-6">
+          <div className="mb-6 bg-[#333] p-4 rounded-lg">
             <div className="flex justify-between items-center mb-3">
-              <span className="text-gray-400">{t('paymentPage_amount')}:</span>
+              <span className="text-gray-300">{t('paymentPage_amount')}:</span>
               <span className="text-white font-medium">{amount} {currency}</span>
             </div>
-            <div className="flex justify-between items-center mb-3">
-              <span className="text-gray-400">{t('paymentPage_network')}:</span>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-300">{t('paymentPage_network')}:</span>
               <span className="text-white font-medium">{network}</span>
             </div>
           </div>
@@ -173,11 +184,11 @@ const PaymentPage = () => {
           {/* QR Code */}
           <div className="flex flex-col items-center mb-6">
             <p className="text-gray-300 text-sm mb-3">{t('paymentPage_scan_qr')}</p>
-            <div className="bg-white p-3 rounded-lg mb-3">
+            <div className="bg-white p-4 rounded-lg mb-3 shadow-lg">
               {qrCode ? (
-                <img src={qrCode} alt="Payment QR Code" className="w-48 h-48" />
+                <img src={qrCode} alt="Payment QR Code" className="w-56 h-56" />
               ) : (
-                <div className="w-48 h-48 flex items-center justify-center bg-gray-200">
+                <div className="w-56 h-56 flex items-center justify-center bg-gray-200">
                   <AlertCircle size={32} className="text-red-500" />
                 </div>
               )}
@@ -187,19 +198,20 @@ const PaymentPage = () => {
           {/* Dirección de pago */}
           <div className="mb-6">
             <p className="text-gray-300 text-sm mb-2">{t('paymentPage_wallet_address')}:</p>
-            <div className="flex items-center bg-gray-700 p-3 rounded-lg">
+            <div className="flex items-center bg-[#333] p-3 rounded-lg">
               <input
                 type="text"
                 readOnly
                 value={walletAddress}
-                className="flex-1 bg-transparent border-none text-white text-sm focus:outline-none overflow-hidden"
+                className="flex-1 bg-transparent border-none text-white text-sm focus:outline-none overflow-hidden font-mono"
               />
               <button
                 onClick={copyToClipboard}
-                className="ml-2 bg-gray-600 hover:bg-gray-500 text-white p-2 rounded-md transition-colors"
+                className="ml-2 bg-cyan-600 hover:bg-cyan-700 text-white p-2 rounded-md transition-colors"
+                aria-label="Copy wallet address"
               >
                 {copySuccess ? (
-                  <span className="text-green-400 text-xs">✓ {t('paymentPage_copied')}</span>
+                  <span className="text-white text-xs px-1">{t('paymentPage_copied')}</span>
                 ) : (
                   <Copy size={16} />
                 )}
@@ -208,9 +220,9 @@ const PaymentPage = () => {
           </div>
           
           {/* Instrucciones */}
-          <div className="bg-gray-700 bg-opacity-50 rounded-lg p-4 mb-6">
-            <h3 className="text-white font-medium mb-2">{t('paymentPage_instructions_title')}</h3>
-            <ol className="text-gray-300 text-sm space-y-2 list-decimal pl-5">
+          <div className="bg-[#333] bg-opacity-50 rounded-lg p-4 mb-6">
+            <h3 className="text-white font-medium mb-3">{t('paymentPage_instructions_title')}</h3>
+            <ol className="text-gray-300 text-sm space-y-3 list-decimal pl-5">
               <li>{t('paymentPage_instruction_1')}</li>
               <li>{t('paymentPage_instruction_2', { amount, currency })}</li>
               <li>{t('paymentPage_instruction_3')}</li>
@@ -222,15 +234,15 @@ const PaymentPage = () => {
           <div className="flex flex-col space-y-3">
             <button
               onClick={() => navigate(`/payment-status/${uniqueId}`)}
-              className="w-full px-6 py-3 bg-cyan-600 text-white rounded-full hover:bg-cyan-700 transition"
+              className="w-full px-6 py-3 bg-cyan-600 text-white rounded-full hover:bg-cyan-700 transition font-medium"
             >
               {t('paymentPage_button_check_status')}
             </button>
             <button
               onClick={() => navigate('/dashboard')}
-              className="w-full px-6 py-2 bg-transparent border border-gray-600 text-gray-300 rounded-full hover:bg-gray-700 transition"
+              className="w-full px-6 py-3 bg-transparent border border-gray-600 text-gray-300 rounded-full hover:bg-[#333] transition"
             >
-              {t('paymentPage_button_cancel')}
+              {t('paymentPage_button_dashboard')}
             </button>
           </div>
         </div>

@@ -35,49 +35,12 @@ const Descargas = () => {
       { 
         os: isMobile ? t('descargas_os_android') : t('descargas_os_windows'),
         icon: isMobile ? '/Android.png' : '/windows.png',
-        link: isMobile ? '#android-link' : '#windows-link'
+        link: isMobile ? 'https://download.mql5.com/cdn/mobile/mt5/android?utm_source=www.metatrader5.com&utm_campaign=install.metaquotes' : 'https://download.mql5.com/cdn/web/metaquotes.ltd/mt5/mt5setup.exe?utm_source=www.metatrader5.com&utm_campaign=download'
       },
       { 
         os: isMobile ? t('descargas_os_iphone') : t('descargas_os_mac'),
         icon: isMobile ? '/apple.png' : '/apple.png',
-        link: isMobile ? '#iphone-link' : '#mac-link'
-      }
-    ]
-  },
-  // Aquí va la nueva plataforma
-  {
-    id: 'mt4',
-    name: t('descargas_platform_alphaGlobalMarket_name'),
-    description: t('descargas_platform_alphaGlobalMarket_description'),
-    image: '/logo.png',
-    downloads: [
-      { 
-        os: isMobile ? t('descargas_os_android') : t('descargas_os_windows'),
-        icon: isMobile ? '/Android.png' : '/windows.png',
-        link: isMobile ? '#android-mt4-link' : '#windows-mt4-link'
-      },
-      { 
-        os: isMobile ? t('descargas_os_iphone') : t('descargas_os_mac'),
-        icon: isMobile ? '/apple.png' : '/apple.png',
-        link: isMobile ? '#iphone-mt4-link' : '#mac-mt4-link'
-      }
-    ]
-  },
-  {
-    id: 'vpn',
-    name: t('descargas_platform_vpn_name'),
-    description: t('descargas_platform_vpn_description'),
-    image: '/Vector.png',
-    downloads: [
-      { 
-        os: isMobile ? t('descargas_os_android') : t('descargas_os_windows'),
-        icon: isMobile ? '/Android.png' : '/windows.png',
-        link: isMobile ? '#android-vpn-link' : '#windows-vpn-link'
-      },
-      { 
-        os: isMobile ? t('descargas_os_iphone') : t('descargas_os_mac'),
-        icon: isMobile ? '/apple.png' : '/apple.png',
-        link: isMobile ? '#iphone-vpn-link' : '#mac-vpn-link'
+        link: isMobile ? 'https://download.mql5.com/cdn/mobile/mt5/ios?utm_source=www.metatrader5.com&utm_campaign=install.metaquotes' : 'https://download.mql5.com/cdn/web/metaquotes.ltd/mt5/MetaTrader5.pkg.zip?utm_source=www.metatrader5.com&utm_campaign=download.mt5.macos'
       }
     ]
   }

@@ -34,23 +34,61 @@ export default function TradingChallengeUI() {
   const [apiStatus, setApiStatus] = useState(null); // Para controlar el estado de la API
   const [processingStep, setProcessingStep] = useState(''); // Para mostrar el paso actual del proceso
 
-  // Data for complement options
+  // Estado para cupón y descuento
+  const [coupon, setCoupon] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState('');
+  const [discount, setDiscount] = useState(0);
+  const [couponError, setCouponError] = useState('');
+
+  // NUEVA MATRIZ DE PRECIOS DE COMPLEMENTOS SEGÚN TAMAÑO DE CUENTA
+  const addOnPriceMatrix = {
+    '$5.000': {
+      profitTargetF1: { '9%': 10, '10%': 0, '11%': -3 },
+      profitTargetF2: { '4%': 10, '5%': 0, '6%': -3 },
+      profitSplit: { '70%': -3, '80%': 0, '90%': 10 }
+    },
+    '$10.000': {
+      profitTargetF1: { '9%': 20, '10%': 0, '11%': -6 },
+      profitTargetF2: { '4%': 20, '5%': 0, '6%': -6 },
+      profitSplit: { '70%': -8, '80%': 0, '90%': 20 }
+    },
+    '$25.000': {
+      profitTargetF1: { '9%': 50, '10%': 0, '11%': -15 },
+      profitTargetF2: { '4%': 50, '5%': 0, '6%': -15 },
+      profitSplit: { '70%': -15, '80%': 0, '90%': 50 }
+    },
+    '$50.000': {
+      profitTargetF1: { '9%': 100, '10%': 0, '11%': -30 },
+      profitTargetF2: { '4%': 100, '5%': 0, '6%': -30 },
+      profitSplit: { '70%': -30, '80%': 0, '90%': 100 }
+    },
+    '$100.000': {
+      profitTargetF1: { '9%': 200, '10%': 0, '11%': -60 },
+      profitTargetF2: { '4%': 200, '5%': 0, '6%': -60 },
+      profitSplit: { '70%': -60, '80%': 0, '90%': 200 }
+    },
+    '$200.000': {
+      profitTargetF1: { '9%': 300, '10%': 0, '11%': -120 },
+      profitTargetF2: { '4%': 300, '5%': 0, '6%': -120 },
+      profitSplit: { '70%': -120, '80%': 0, '90%': 300 }
+    }
+  };
+
+  // Opciones de complementos (sin ajuste fijo)
   const profitTargetP1Options = [
-    { text: '9%', value: '9%', adjustment: 50, priceText: '+$50,00' },
-    { text: '10%', value: '10%', adjustment: 0, priceText: '' },
-    { text: '11%', value: '11%', adjustment: -50, priceText: '-$50,00' },
+    { text: '9%', value: '9%' },
+    { text: '10%', value: '10%' },
+    { text: '11%', value: '11%' },
   ];
-
   const profitTargetP2Options = [
-    { text: '4%', value: '4%', adjustment: 50, priceText: '+$50,00' },
-    { text: '5%', value: '5%', adjustment: 0, priceText: '' },
-    { text: '6%', value: '6%', adjustment: -50, priceText: '-$50,00' },
+    { text: '4%', value: '4%' },
+    { text: '5%', value: '5%' },
+    { text: '6%', value: '6%' },
   ];
-
   const profitSplitOptions = [
-    { text: '70%', value: '70%', adjustment: -50, priceText: '-$50,00' },
-    { text: '80%', value: '80%', adjustment: 0, priceText: '' },
-    { text: '90%', value: '90%', adjustment: 50, priceText: '+$50,00' },
+    { text: '70%', value: '70%' },
+    { text: '80%', value: '80%' },
+    { text: '90%', value: '90%' },
   ];
   
   const baseChallengePrices = {
@@ -62,24 +100,40 @@ export default function TradingChallengeUI() {
     '$200.000': 1045,
   };
 
-  // useEffect to calculate price
+  // useEffect para calcular el precio y desglose
+  const [priceBreakdown, setPriceBreakdown] = useState({
+    base: 0,
+    profitTargetF1: 0,
+    profitTargetF2: 0,
+    profitSplit: 0,
+    discount: 0,
+    total: 0
+  });
+
   useEffect(() => {
     const basePrice = baseChallengePrices[challengeAmount] || 0;
-    
-    let p1PriceAdjustment = 0;
-    let p2PriceAdjustment = 0;
+    const matrix = addOnPriceMatrix[challengeAmount] || {};
 
-    if (activePhaseForProfitTargetBonus === 'P1') {
-      p1PriceAdjustment = profitTargetP1Options.find(opt => opt.value === selectedProfitTargetP1)?.adjustment || 0;
-    } else if (activePhaseForProfitTargetBonus === 'P2') {
-      p2PriceAdjustment = profitTargetP2Options.find(opt => opt.value === selectedProfitTargetP2)?.adjustment || 0;
+    const p1PriceAdjustment = matrix.profitTargetF1?.[selectedProfitTargetP1] || 0;
+    const p2PriceAdjustment = matrix.profitTargetF2?.[selectedProfitTargetP2] || 0;
+    const splitAdjustment = matrix.profitSplit?.[selectedProfitSplit] || 0;
+    
+    let subtotal = basePrice + p1PriceAdjustment + p2PriceAdjustment + splitAdjustment;
+    let discountValue = 0;
+    if (appliedCoupon === 'AGM20') {
+      discountValue = subtotal * 0.2;
     }
-    
-    const splitAdjustment = profitSplitOptions.find(opt => opt.value === selectedProfitSplit)?.adjustment || 0;
-    
-    const totalPrice = basePrice + p1PriceAdjustment + p2PriceAdjustment + splitAdjustment;
+    const totalPrice = subtotal - discountValue;
     setPrice(`$${totalPrice.toFixed(2).replace('.', ',')}`);
-  }, [challengeAmount, selectedProfitTargetP1, selectedProfitTargetP2, selectedProfitSplit, activePhaseForProfitTargetBonus]);
+    setPriceBreakdown({
+      base: basePrice,
+      profitTargetF1: p1PriceAdjustment,
+      profitTargetF2: p2PriceAdjustment,
+      profitSplit: splitAdjustment,
+      discount: discountValue,
+      total: totalPrice
+    });
+  }, [challengeAmount, selectedProfitTargetP1, selectedProfitTargetP2, selectedProfitSplit, appliedCoupon]);
 
   const parseCurrencyToNumber = (currencyString) => {
     // Primero quitamos el símbolo de moneda y cualquier espacio
@@ -326,6 +380,17 @@ export default function TradingChallengeUI() {
     }
   };
 
+  // Handler para aplicar cupón
+  const handleApplyCoupon = () => {
+    if (coupon.trim().toUpperCase() === 'AGM20') {
+      setAppliedCoupon('AGM20');
+      setCouponError('');
+    } else {
+      setAppliedCoupon('');
+      setCouponError('Cupón inválido');
+    }
+  };
+
   return (
     <div className="bg-[#232323] text-white min-h-screen">
       {/* Main Content Wrapper */}
@@ -425,61 +490,36 @@ export default function TradingChallengeUI() {
                   {t('tradingChallenge_subtitle_complements', 'Selecciona complementos por tipo de trader')}
                 </p>
 
-                {/* Profit Target Fase 1 options - sólo para Estándar (1 FASE) */}
-                <div className={`mb-6 md:mb-8 ${challengeType === 'Swing' ? 'opacity-50' : ''}`}>
+                {/* Profit Target Fase 1 options - SIEMPRE HABILITADO */}
+                <div className="mb-6 md:mb-8">
                   <h3 className="text-lg font-medium mb-3">
                     {t('tradingChallenge_label_profitTargetP1', 'Profit Target Fase 1')}
-                    {challengeType === 'Swing' && (
-                      <span className="text-sm text-gray-400 ml-2">
-                        {t('tradingChallenge_notApplicableP1', 'No aplicable para desafíos de 2 fases')}
-                      </span>
-                    )}
                   </h3>
                   <div className="flex flex-wrap gap-2 md:gap-3">
                     {profitTargetP1Options.map(option => (
                       <button 
                         key={option.value}
-                        className={`flex-1 text-center px-4 py-2 rounded-full text-sm border focus:outline-none bg-[#2c2c2c] hover:bg-[#3a3a3a] ${activePhaseForProfitTargetBonus === 'P1' && selectedProfitTargetP1 === option.value ? 'border-cyan-500' : 'border-gray-700 hover:border-gray-600'}`}
-                        onClick={() => { 
-                          if (challengeType !== 'Swing') {
-                            setSelectedProfitTargetP1(option.value); 
-                            setActivePhaseForProfitTargetBonus('P1');
-                          }
-                        }}
-                        disabled={challengeType === 'Swing'}
+                        className={`flex-1 text-center px-4 py-2 rounded-full text-sm border focus:outline-none bg-[#2c2c2c] hover:bg-[#3a3a3a] ${selectedProfitTargetP1 === option.value ? 'border-cyan-500' : 'border-gray-700 hover:border-gray-600'}`}
+                        onClick={() => setSelectedProfitTargetP1(option.value)}
                       >
                         <div className="font-medium">{option.text}</div>
-                        {option.priceText && <div className="text-xs text-gray-400">{option.priceText}</div>}
                       </button>
                     ))}
                   </div>
                 </div>
-                
-                {/* Profit Target Fase 2 options - sólo para Swing (2 FASES) */}
-                <div className={`mb-6 md:mb-8 ${challengeType === 'Estándar' ? 'opacity-50' : ''}`}>
+                {/* Profit Target Fase 2 options - SIEMPRE HABILITADO */}
+                <div className="mb-6 md:mb-8">
                   <h3 className="text-lg font-medium mb-3">
                     {t('tradingChallenge_label_profitTargetP2', 'Profit Target Fase 2')}
-                    {challengeType === 'Estándar' && (
-                      <span className="text-sm text-gray-400 ml-2">
-                        {t('tradingChallenge_notApplicable', 'No aplicable para desafíos de 1 fase')}
-                      </span>
-                    )}
                   </h3>
                   <div className="flex flex-wrap gap-2 md:gap-3">
                     {profitTargetP2Options.map(option => (
                       <button
                         key={option.value}
-                        className={`flex-1 text-center px-4 py-2 rounded-full text-sm border focus:outline-none bg-[#2c2c2c] hover:bg-[#3a3a3a] ${activePhaseForProfitTargetBonus === 'P2' && selectedProfitTargetP2 === option.value ? 'border-cyan-500' : 'border-gray-700 hover:border-gray-600'}`}
-                        onClick={() => { 
-                          if (challengeType !== 'Estándar') {
-                            setSelectedProfitTargetP2(option.value); 
-                            setActivePhaseForProfitTargetBonus('P2');
-                          }
-                        }}
-                        disabled={challengeType === 'Estándar'}
+                        className={`flex-1 text-center px-4 py-2 rounded-full text-sm border focus:outline-none bg-[#2c2c2c] hover:bg-[#3a3a3a] ${selectedProfitTargetP2 === option.value ? 'border-cyan-500' : 'border-gray-700 hover:border-gray-600'}`}
+                        onClick={() => setSelectedProfitTargetP2(option.value)}
                       >
                         <div className="font-medium">{option.text}</div>
-                        {option.priceText && <div className="text-xs text-gray-400">{option.priceText}</div>}
                       </button>
                     ))}
                   </div>
@@ -496,7 +536,6 @@ export default function TradingChallengeUI() {
                         onClick={() => setSelectedProfitSplit(option.value)}
                       >
                         <div className="font-medium">{option.text}</div>
-                        {option.priceText && <div className="text-xs text-gray-400">{option.priceText}</div>}
                       </button>
                     ))}
                   </div>
@@ -505,13 +544,38 @@ export default function TradingChallengeUI() {
               
               {/* Price, Platform, Currency Section */}
               <div className="space-y-3 text-base md:text-lg">
+                <div className="flex flex-col gap-1">
+                  <div className="flex justify-between items-center">
+                    <span>Precio base</span>
+                    <span className="font-medium">${priceBreakdown.base}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span>Ajuste Profit Target F1</span>
+                    <span className="font-medium">{priceBreakdown.profitTargetF1 >= 0 ? '+' : ''}${priceBreakdown.profitTargetF1}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span>Ajuste Profit Target F2</span>
+                    <span className="font-medium">{priceBreakdown.profitTargetF2 >= 0 ? '+' : ''}${priceBreakdown.profitTargetF2}</span>
+                  </div>
                 <div className="flex justify-between items-center">
-                  <span>{t('tradingChallenge_label_price')}</span>
-                  <span className="font-medium">{price}</span>
+                    <span>Ajuste Profit Split</span>
+                    <span className="font-medium">{priceBreakdown.profitSplit >= 0 ? '+' : ''}${priceBreakdown.profitSplit}</span>
+                  </div>
+                  {priceBreakdown.discount > 0 && (
+                    <div className="flex justify-between items-center text-green-400">
+                      <span>Descuento AGM20 (20%)</span>
+                      <span className="font-medium">- ${priceBreakdown.discount.toFixed(2)}</span>
+                    </div>
+                  )}
+                  <div className="border-t border-gray-700 my-2"></div>
+                  <div className="flex justify-between items-center text-lg">
+                    <span>Total</span>
+                    <span className="font-bold">${priceBreakdown.total.toFixed(2)}</span>
+                  </div>
                 </div>
                 <div className="flex justify-between items-center border-t border-gray-700 pt-3 mt-3">
                   <span>{t('tradingChallenge_label_platform')}</span>
-                  <span className="font-medium">{t('tradingChallenge_label_platformValuePlaceholder')}</span>
+                  <span className="font-medium">Metatrader 5</span>
                 </div>
                 <div className="flex justify-between items-center border-t border-gray-700 pt-3 mt-3">
                   <span>{t('tradingChallenge_label_currency')}</span>
@@ -529,11 +593,18 @@ export default function TradingChallengeUI() {
                 <input
                   className="flex-1 bg-[#2c2c2c] border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-cyan-500"
                   placeholder={t('tradingChallenge_placeholder_enterCode')}
+                  value={coupon}
+                  onChange={e => setCoupon(e.target.value)}
                 />
-                <button className="border border-cyan-500 bg-[#2c2c2c] hover:bg-[#3a3a3a] text-white px-6 py-2 rounded-lg text-sm">
+                <button className="border border-cyan-500 bg-[#2c2c2c] hover:bg-[#3a3a3a] text-white px-6 py-2 rounded-lg text-sm"
+                  onClick={handleApplyCoupon}
+                  type="button"
+                >
                   {t('tradingChallenge_button_apply')}
                 </button>
               </div>
+              {couponError && <div className="text-red-500 text-xs mt-1">{couponError}</div>}
+              {appliedCoupon === 'AGM20' && <div className="text-green-500 text-xs mt-1">Cupón AGM20 aplicado: 20% OFF</div>}
             </div>
             
             <div className="mb-6 md:mb-10">

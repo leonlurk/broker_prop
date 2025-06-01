@@ -1,6 +1,7 @@
 import { ethers } from 'ethers';
 import BigNumber from 'bignumber.js';
 import axios from 'axios';
+import TronWeb from 'tronweb/dist/TronWeb.js';
 import { db } from '../firebase/config';
 
 /**
@@ -17,6 +18,14 @@ export class BlockchainMonitor {
     // Confirmaciones requeridas
     this.BSC_CONFIRMATIONS = parseInt(import.meta.env.VITE_BSC_CONFIRMATIONS || '15', 10);
     this.TRON_CONFIRMATIONS = parseInt(import.meta.env.VITE_TRON_CONFIRMATIONS || '20', 10);
+    
+    // Inicializar TronWeb
+    this.tronWeb = new TronWeb({
+      fullHost: import.meta.env.VITE_TRON_FULL_HOST || 'https://api.trongrid.io'
+    });
+    
+    // Inicializar axios para las solicitudes HTTP
+    this.axios = axios;
   }
   
   /**
@@ -131,159 +140,91 @@ export class BlockchainMonitor {
   }
   
   /**
-   * Verifica si existe una transacción confirmada para un pago en Tron
-   * @param {Object} payment - Datos del pago
-   * @returns {Promise<Object|null>} - Datos de la transacción o null si no se encuentra
+   * Verifica pagos en Tron mediante consultas a la API de TronGrid
+   * @param {string} paymentId - ID único del pago
+   * @param {string} receiverAddress - Dirección que recibe el pago
+   * @param {number} amount - Monto esperado en USDT
+   * @param {number} startTime - Timestamp de inicio para buscar la transacción
+   * @returns {Promise<Object>} - Resultado de la verificación
    */
-  async checkTronPayment(payment) {
+  async checkTronPayment(paymentId, receiverAddress, amount, startTime) {
     try {
-      const recipientAddress = payment.paymentData.mainWallet.address;
-      const currency = payment.paymentData.currency;
+      // Usar la dirección correcta de contrato USDT en Tron
+      const contractAddress = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t'; // USDT contract address on Tron
       
-      // Obtener información del token
-      const tokenInfo = this.getTokenInfo('Tron', currency);
-      if (!tokenInfo) {
-        console.error(`[Monitor-Tron] Moneda no soportada ${currency} para pago ${payment.uniqueId}`);
-        return null;
+      console.log(`[Monitor-Tron] Usando dirección de contrato USDT: ${contractAddress}`);
+      
+      // Asegúrate de que la dirección del receptor es válida
+      if (!receiverAddress || !this.tronWeb.isAddress(receiverAddress)) {
+        console.error(`[Monitor-Tron] Dirección de receptor inválida: ${receiverAddress}`);
+        return {
+          success: false,
+          error: 'Dirección de receptor inválida',
+          data: null
+        };
       }
       
-      // Convertir el monto esperado a unidades con decimales
-      const expectedAmountSunStr = ethers.utils.parseUnits(
-        payment.paymentData.amount.toString(), 
-        tokenInfo.decimals
-      ).toString();
-      const expectedAmountSunBig = new BigNumber(expectedAmountSunStr);
+      // Calcular el rango de tiempo para buscar transacciones
+      const currentTime = Date.now();
+      const minTimestamp = startTime || (currentTime - (60 * 60 * 1000)); // 1 hora atrás por defecto
+      const maxTimestamp = currentTime;
       
-      // Validar fechas
-      const now = new Date();
-      const createdAt = payment.paymentData.createdAt.toDate ? 
-        payment.paymentData.createdAt.toDate() : payment.paymentData.createdAt;
-      const expiresAt = payment.paymentData.expiresAt.toDate ? 
-        payment.paymentData.expiresAt.toDate() : payment.paymentData.expiresAt;
-      
-      const minTimestamp = createdAt.getTime();
-      const maxTimestamp = expiresAt.getTime() + (5 * 60 * 1000); // 5 min extra
-      
-      // Determinar si es una transferencia de token o TRX nativo
-      const isTokenTransfer = (currency !== 'TRX');
-      
-      // Configurar headers para la API
-      let headers = {};
-      if (this.tronApiKey) {
-        headers['TRON-PRO-API-KEY'] = this.tronApiKey;
-      }
-      
-      // Construir URL y parámetros
-      let apiUrl = '';
-      if (isTokenTransfer) {
-        apiUrl = `${this.tronApiUrl}/v1/accounts/${recipientAddress}/transactions/trc20`;
-      } else {
-        apiUrl = `${this.tronApiUrl}/v1/accounts/${recipientAddress}/transactions`;
-      }
-      
-      const apiParams = {
+      const requestUrl = `${this.tronApiUrl}/v1/accounts/${receiverAddress}/transactions/trc20`;
+      const requestParams = {
         limit: 50,
         min_block_timestamp: minTimestamp,
         max_block_timestamp: maxTimestamp,
-        only_to: true
+        only_to: true,
+        contract_address: contractAddress
       };
       
-      if (isTokenTransfer) {
-        apiParams.contract_address = tokenInfo.contractAddress;
+      console.log(`[Monitor-Tron] URL de petición: ${requestUrl}`);
+      console.log(`[Monitor-Tron] Parámetros:`, requestParams);
+      
+      // Consultar la API de TronGrid
+      const response = await this.axios.get(requestUrl, { params: requestParams });
+      
+      if (!response.data || !response.data.data || response.data.data.length === 0) {
+        return {
+          success: false,
+          message: 'No se encontraron transacciones',
+          data: null
+        };
       }
       
-      console.log(`[Monitor-Tron] Consultando ${apiUrl} para ${currency} a ${recipientAddress} para pago ${payment.uniqueId}`);
-      const response = await axios.get(apiUrl, { params: apiParams, headers });
-      
-      if (!response.data || !response.data.success) {
-        console.error(`[Monitor-Tron] Error de API para ${payment.uniqueId}: ${response.data?.error || 'Error desconocido'}`);
-        return null;
-      }
-      
-      if (!response.data.data || response.data.data.length === 0) {
-        console.log(`[Monitor-Tron] No se encontraron transacciones para ${payment.uniqueId}`);
-        return null;
-      }
-      
-      // Buscar una transacción que coincida con los criterios
-      for (const tx of response.data.data) {
-        let txHash, blockNumber, receivedAmountSunBig, txConfirmed, txTimestamp;
+      // Buscar una transacción que coincida con el monto
+      const validTransaction = response.data.data.find(tx => {
+        // La cantidad en TRC20 se maneja en un formato específico
+        const txAmount = parseInt(tx.value) / Math.pow(10, 6); // USDT tiene 6 decimales
         
-        if (isTokenTransfer) {
-          // Verificar transferencia de token TRC20
-          if (tx.type !== 'Transfer' || 
-              tx.to.toLowerCase() !== recipientAddress.toLowerCase() || 
-              !tx.token_info || 
-              tx.token_info.address !== tokenInfo.contractAddress) {
-            continue;
-          }
-          
-          txHash = tx.transaction_id;
-          blockNumber = tx.block_timestamp;
-          receivedAmountSunBig = new BigNumber(tx.value);
-          txTimestamp = tx.block_timestamp;
-          txConfirmed = true; // Asumimos que las transacciones devueltas por la API ya están confirmadas
-          
-        } else {
-          // Verificar transferencia de TRX nativo
-          if (!tx.raw_data || !tx.raw_data.contract || 
-              tx.raw_data.contract.length === 0 || 
-              tx.raw_data.contract[0].type !== 'TransferContract') {
-            continue;
-          }
-          
-          // Verificar datos del contrato
-          if (!tx.raw_data.contract[0].parameter || !tx.raw_data.contract[0].parameter.value) {
-            continue;
-          }
-          
-          const contractData = tx.raw_data.contract[0].parameter.value;
-          
-          // Verificar destinatario y monto
-          if (!contractData.to_address || typeof contractData.amount === 'undefined') {
-            continue;
-          }
-          
-          txHash = tx.txID;
-          blockNumber = tx.blockNumber || tx.block_timestamp;
-          txTimestamp = tx.block_timestamp;
-          
-          // Parsear monto
-          receivedAmountSunBig = new BigNumber(contractData.amount.toString());
-          
-          // Determinar si está confirmada
-          txConfirmed = tx.ret && tx.ret.length > 0 && tx.ret[0].contractRet === 'SUCCESS' && blockNumber > 0;
-        }
-        
-        // Verificar timestamp nuevamente
-        if (txTimestamp < minTimestamp || txTimestamp > maxTimestamp) {
-          continue;
-        }
-        
-        // Verificar coincidencia exacta del monto
-        if (receivedAmountSunBig.isEqualTo(expectedAmountSunBig)) {
-          console.log(`[Monitor-Tron] Encontrada coincidencia para ${payment.uniqueId}: Tx ${txHash}, Confirmada: ${txConfirmed}`);
-          
-          return {
-            hash: txHash,
-            receivedAmount: ethers.utils.formatUnits(receivedAmountSunBig.toFixed(), tokenInfo.decimals),
-            blockNumber: blockNumber,
-            isConfirmed: txConfirmed
-          };
-        } else {
-          console.log(`[Monitor-Tron] Tx ${txHash} para ${payment.uniqueId} con monto incorrecto. Esperado: ${expectedAmountSunBig.toFixed()}, Recibido: ${receivedAmountSunBig.toFixed()}`);
-        }
-      }
+        // Verificar si el monto coincide (con un margen de 0.01 para redondeo)
+        return Math.abs(txAmount - amount) < 0.01;
+      });
       
-      console.log(`[Monitor-Tron] No se encontró transacción confirmada para ${payment.uniqueId}`);
-      return null;
+      if (validTransaction) {
+        return {
+          success: true,
+          message: 'Pago verificado en blockchain',
+          data: validTransaction
+        };
+      } else {
+        return {
+          success: false,
+          message: 'No se encontró una transacción que coincida con el monto esperado',
+          data: null
+        };
+      }
       
     } catch (error) {
-      console.error(`[Monitor-Tron] Error al verificar pago Tron ${payment.uniqueId}:`, error.message);
-      if (error.response) {
-        console.error("[Monitor-Tron] Datos de respuesta con error:", error.response.data);
+      console.error(`[Monitor-Tron] Error al verificar pago Tron ${paymentId}:`, error.message);
+      if (error.response && error.response.data) {
+        console.error('[Monitor-Tron] Datos de respuesta con error:', error.response.data);
       }
-      return null;
+      return {
+        success: false,
+        error: error.message,
+        data: error.response ? error.response.data : null
+      };
     }
   }
   
@@ -293,12 +234,55 @@ export class BlockchainMonitor {
    * @returns {Promise<Object|null>} - Datos de la transacción o null si no se encuentra
    */
   async monitorPayment(payment) {
-    if (payment.paymentData.network === 'BSC') {
-      return await this.checkBSCPayment(payment);
-    } else if (payment.paymentData.network === 'Tron') {
-      return await this.checkTronPayment(payment);
-    } else {
-      console.error(`[Monitor] Red no soportada: ${payment.paymentData.network}`);
+    try {
+      if (!payment || !payment.paymentData) {
+        console.error('[Monitor] Datos de pago inválidos o nulos');
+        return null;
+      }
+
+      // Convertir createdAt a timestamp numérico, manejando diferentes formatos
+      let startTimestamp;
+      const createdAt = payment.paymentData.createdAt;
+      
+      if (!createdAt) {
+        // Si no hay fecha, usar hace 1 hora
+        startTimestamp = Date.now() - (60 * 60 * 1000);
+      } else if (typeof createdAt === 'number') {
+        // Si ya es un timestamp numérico
+        startTimestamp = createdAt;
+      } else if (typeof createdAt === 'string') {
+        // Si es string, intentar parsearlo
+        startTimestamp = new Date(createdAt).getTime();
+      } else if (typeof createdAt.getTime === 'function') {
+        // Si es un objeto Date
+        startTimestamp = createdAt.getTime();
+      } else if (createdAt.toDate && typeof createdAt.toDate === 'function') {
+        // Si es un Timestamp de Firestore
+        startTimestamp = createdAt.toDate().getTime();
+      } else if (createdAt.seconds) {
+        // Si es un Timestamp en formato {seconds, nanoseconds}
+        startTimestamp = createdAt.seconds * 1000;
+      } else {
+        // Fallback: usar la hora actual menos 1 hora
+        console.warn('[Monitor] Formato de fecha no reconocido, usando timestamp actual');
+        startTimestamp = Date.now() - (60 * 60 * 1000);
+      }
+
+      if (payment.paymentData.network === 'BSC') {
+        return await this.checkBSCPayment(payment);
+      } else if (payment.paymentData.network === 'Tron') {
+        return await this.checkTronPayment(
+          payment.uniqueId,
+          payment.paymentData.mainWallet.address,
+          parseFloat(payment.paymentData.amount),
+          startTimestamp
+        );
+      } else {
+        console.error(`[Monitor] Red no soportada: ${payment.paymentData.network}`);
+        return null;
+      }
+    } catch (error) {
+      console.error(`[Monitor] Error al monitorear pago: ${error.message}`);
       return null;
     }
   }

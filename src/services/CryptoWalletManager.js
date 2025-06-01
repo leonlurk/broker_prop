@@ -1,7 +1,9 @@
-import { TronWeb } from 'tronweb';
+import TronWeb from 'tronweb/dist/TronWeb.js';
 import Web3 from 'web3';
 import { db } from '../firebase/config';
+import { doc, getDoc } from 'firebase/firestore';
 import QRCode from 'qrcode';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Clase para gestionar billeteras y direcciones de criptomonedas
@@ -24,6 +26,14 @@ export class CryptoWalletManager {
       tron: import.meta.env.VITE_TRON_WALLET_ADDRESS,
       bsc: import.meta.env.VITE_BSC_WALLET_ADDRESS
     };
+  }
+
+  /**
+   * Genera un ID único para el pago
+   * @returns {string} ID único
+   */
+  generatePaymentId() {
+    return uuidv4();
   }
 
   /**
@@ -51,14 +61,15 @@ export class CryptoWalletManager {
    */
   async getWalletAddressFromFirestore(network) {
     try {
-      // Consultar el documento de configuración en Firestore
-      const configDoc = await db.collection('config').doc('wallets').get();
+      // Consultar el documento de configuración en Firestore (sintaxis v9)
+      const configRef = doc(db, 'config', 'wallets');
+      const configSnapshot = await getDoc(configRef);
       
-      if (!configDoc.exists) {
+      if (!configSnapshot.exists()) {
         throw new Error('No se encontró configuración de billeteras en Firestore');
       }
       
-      const wallets = configDoc.data();
+      const wallets = configSnapshot.data();
       const networkKey = network.toLowerCase();
       
       if (!wallets[networkKey]) {
@@ -70,7 +81,7 @@ export class CryptoWalletManager {
       console.error(`Error al obtener dirección de wallet para ${network}:`, error);
       // Fallback a direcciones predeterminadas (solo para desarrollo)
       if (network === 'Tron') {
-        return 'TJmcoSqARQjBoKkfvAKUBYJGXwKdDzR9J4'; // Dirección demo Tron
+        return 'TEaQgjdWECF4fjzgscF6pA5v2GQvPPhBpR'; // Dirección correcta Tron
       } else if (network === 'BSC') {
         return '0x1234567890123456789012345678901234567890'; // Dirección demo BSC
       }
@@ -87,15 +98,8 @@ export class CryptoWalletManager {
    * @returns {Promise<string>} - URL del código QR en base64
    */
   async generatePaymentQR(address, amount, currency, network) {
-    const qrData = JSON.stringify({
-      address,
-      amount,
-      currency,
-      network
-    });
-    
     try {
-      return await QRCode.toDataURL(qrData);
+      return await QRCode.toDataURL(address);
     } catch (error) {
       console.error('Error al generar código QR:', error);
       throw new Error('No se pudo generar el código QR para el pago');

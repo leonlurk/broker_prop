@@ -97,7 +97,11 @@ export const logoutUser = async () => {
 // Reset password
 export const resetPassword = async (email) => {
   try {
-    await sendPasswordResetEmail(auth, email);
+    const actionCodeSettings = {
+      url: "http://localhost:5175/verification", // Cambia por tu dominio real en producción
+      handleCodeInApp: true
+    };
+    await sendPasswordResetEmail(auth, email, actionCodeSettings);
     return { success: true };
   } catch (error) {
     return { error };

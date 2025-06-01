@@ -1,6 +1,6 @@
 import { db } from '../firebase/config';
 import { collection, doc, addDoc, updateDoc, getDoc, getDocs, query, where, limit, orderBy, serverTimestamp } from 'firebase/firestore';
-import crypto from 'crypto';
+import { v4 as uuidv4 } from 'uuid';
 import CryptoWalletManager from './CryptoWalletManager';
 import BlockchainMonitor from './BlockchainMonitor';
 
@@ -31,7 +31,7 @@ class PaymentService {
       console.log(`Generando pago por ${amount} ${currency} en ${network} para ${userName}`);
       
       // Generar ID único para el pago
-      const uniqueId = crypto.randomUUID();
+      const uniqueId = uuidv4();
       
       // Obtener dirección de wallet para recibir el pago
       const walletAddress = await this.walletManager.generateWalletAddress(network);

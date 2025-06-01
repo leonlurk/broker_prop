@@ -361,74 +361,74 @@ const Home = ({ onViewDetails, onSettingsClick, setSelectedOption }) => {
         {!isLoadingDashboardAccounts && dashboardAccounts.length > 0 && (
           <div className="w-full flex justify-center">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 w-full">
-              {dashboardAccounts.map((account) => {
-                const amount = getChallengeAmount(account);
-                let displayAmount;
-                if (typeof amount === 'number' && !isNaN(amount)) {
-                  displayAmount = amount.toLocaleString('en-US', {
-                    style: 'currency',
-                    currency: 'USD',
-                    minimumFractionDigits: 0,
-                    maximumFractionDigits: 0
-                  });
-                } else {
-                  displayAmount = t('home_account_amountNotAvailable');
-                }
+            {dashboardAccounts.map((account) => {
+              const amount = getChallengeAmount(account);
+              let displayAmount;
+              if (typeof amount === 'number' && !isNaN(amount)) {
+                displayAmount = amount.toLocaleString('en-US', {
+                  style: 'currency',
+                  currency: 'USD',
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 0
+                });
+              } else {
+                displayAmount = t('home_account_amountNotAvailable');
+              }
 
-                return (
-                  <div key={account.id} className="bg-gradient-to-br from-[#232323] to-[#2d2d2d] p-4 sm:p-5 rounded-3xl border border-[#333] flex flex-col justify-between min-h-[280px] max-w-lg">
+              return (
+                <div key={account.id} className="bg-gradient-to-br from-[#232323] to-[#2d2d2d] p-4 sm:p-5 rounded-3xl border border-[#333] flex flex-col justify-between min-h-[280px] max-w-lg">
+                  <div>
+                    <div className="flex justify-between items-start mb-3 sm:mb-4">
+                      <h3 className="font-medium text-lg sm:text-xl md:text-2xl">
+                      {getPhaseDisplayLabel(account)}
+                    </h3>
+                      <span className="text-gray-400 text-xs sm:text-sm">#{account.accountNumber}</span>
+                  </div>
+
+                    <div className="mb-3 sm:mb-4">
+                      <p className="text-gray-400 text-xs sm:text-sm">Balance Actual</p>
+                      <p className="text-xl sm:text-2xl font-medium">{formatBalance(amount)}</p>
+                  </div>
+
+                    <div className="grid grid-cols-3 gap-2 sm:gap-4 text-xs sm:text-sm mb-4 sm:mb-6">
                     <div>
-                      <div className="flex justify-between items-start mb-3 sm:mb-4">
-                        <h3 className="font-medium text-lg sm:text-xl md:text-2xl">
-                        {getPhaseDisplayLabel(account)}
-                      </h3>
-                        <span className="text-gray-400 text-xs sm:text-sm">#{account.accountNumber}</span>
+                      <p className="text-gray-400">PNL Hoy</p>
+                        <p className={`truncate ${(account.pnlToday || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {(account.pnlToday || 0) >= 0 ? '+' : ''}{((account.pnlToday || 0) / (amount || 1) * 100).toFixed(2)}%<br />
+                        {(account.pnlToday || 0) >= 0 ? '+' : ''}{formatBalance(account.pnlToday || 0)}
+                      </p>
                     </div>
-
-                      <div className="mb-3 sm:mb-4">
-                        <p className="text-gray-400 text-xs sm:text-sm">Balance Actual</p>
-                        <p className="text-xl sm:text-2xl font-medium">{formatBalance(amount)}</p>
+                    <div>
+                      <p className="text-gray-400">PNL 7 días</p>
+                        <p className={`truncate ${(account.pnl7Days || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {(account.pnl7Days || 0) >= 0 ? '+' : ''}{((account.pnl7Days || 0) / (amount || 1) * 100).toFixed(2)}%<br />
+                        {(account.pnl7Days || 0) >= 0 ? '+' : ''}{formatBalance(account.pnl7Days || 0)}
+                      </p>
                     </div>
-
-                      <div className="grid grid-cols-3 gap-2 sm:gap-4 text-xs sm:text-sm mb-4 sm:mb-6">
-                      <div>
-                        <p className="text-gray-400">PNL Hoy</p>
-                          <p className={`truncate ${(account.pnlToday || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                          {(account.pnlToday || 0) >= 0 ? '+' : ''}{((account.pnlToday || 0) / (amount || 1) * 100).toFixed(2)}%<br />
-                          {(account.pnlToday || 0) >= 0 ? '+' : ''}{formatBalance(account.pnlToday || 0)}
-                        </p>
+                    <div>
+                      <p className="text-gray-400">PNL 30 días</p>
+                        <p className={`truncate ${(account.pnl30Days || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {(account.pnl30Days || 0) >= 0 ? '+' : ''}{((account.pnl30Days || 0) / (amount || 1) * 100).toFixed(2)}%<br />
+                        {(account.pnl30Days || 0) >= 0 ? '+' : ''}{formatBalance(account.pnl30Days || 0)}
+                      </p>
                       </div>
-                      <div>
-                        <p className="text-gray-400">PNL 7 días</p>
-                          <p className={`truncate ${(account.pnl7Days || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                          {(account.pnl7Days || 0) >= 0 ? '+' : ''}{((account.pnl7Days || 0) / (amount || 1) * 100).toFixed(2)}%<br />
-                          {(account.pnl7Days || 0) >= 0 ? '+' : ''}{formatBalance(account.pnl7Days || 0)}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-gray-400">PNL 30 días</p>
-                          <p className={`truncate ${(account.pnl30Days || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                          {(account.pnl30Days || 0) >= 0 ? '+' : ''}{((account.pnl30Days || 0) / (amount || 1) * 100).toFixed(2)}%<br />
-                          {(account.pnl30Days || 0) >= 0 ? '+' : ''}{formatBalance(account.pnl30Days || 0)}
-                        </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex justify-center mt-auto">
-                      <button 
-                        className="border border-cyan-500 border-opacity-50 text-white py-1 sm:py-1.5 px-4 sm:px-6 rounded-full hover:bg-gray-800 transition text-xs sm:text-sm"
-                        style={{ outline: 'none' }}
-                        onClick={() => {
-                          onViewDetails && onViewDetails(account.id);
-                        }}
-                      >
-                        Ver Detalles
-                      </button>
                     </div>
                   </div>
-                );
-              })}
+
+                  <div className="flex justify-center mt-auto">
+                    <button 
+                      className="border border-cyan-500 border-opacity-50 text-white py-1 sm:py-1.5 px-4 sm:px-6 rounded-full hover:bg-gray-800 transition text-xs sm:text-sm"
+                      style={{ outline: 'none' }}
+                      onClick={() => {
+                        onViewDetails && onViewDetails(account.id);
+                      }}
+                    >
+                      Ver Detalles
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
             </div>
           </div>
         )}

@@ -15,13 +15,6 @@ function App() {
   const { currentUser, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   
-  // Asegurar modo oscuro
-  useEffect(() => {
-    // Garantizar que el modo oscuro esté siempre activado
-    document.documentElement.classList.add('dark');
-    document.documentElement.style.colorScheme = 'dark';
-  }, []);
-  
   // Redirect to dashboard if already authenticated
   useEffect(() => {
     if (isAuthenticated && window.location.pathname === '/login') {
@@ -40,7 +33,7 @@ function App() {
  
   // Common background wrapper for auth pages
   const AuthPageWrapper = ({ children }) => (
-    <div className="min-h-screen w-full flex items-center justify-end bg-black bg-no-repeat bg-cover bg-center dark"
+    <div className="min-h-screen w-full flex items-center justify-end bg-black bg-no-repeat bg-cover bg-center"
       style={{ backgroundImage: 'url(/fondo.png)', width: '100vw', height: '100vh' }}>
       <div className="mr-6 md:mr-6 sm:mx-auto">
         {children}

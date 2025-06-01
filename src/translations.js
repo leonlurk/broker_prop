@@ -1160,6 +1160,28 @@ export const translations = {
     en: "All Instruments",
   },
   
+  // PipCalculator filter tabs translations
+  pipCalculator_tab_forex: {
+    es: "Forex",
+    en: "Forex",
+  },
+  pipCalculator_tab_stocks: {
+    es: "Acciones",
+    en: "Stocks",
+  },
+  pipCalculator_tab_crypto: {
+    es: "Criptomonedas",
+    en: "Crypto",
+  },
+  pipCalculator_label_pointAmount: {
+    es: "Cantidad de punto",
+    en: "Point Amount",
+  },
+  pipCalculator_label_tickAmount: {
+    es: "Cantidad de tick",
+    en: "Tick Amount",
+  },
+  
   // Modal.jsx translations
   modal_close_aria_label: {
     es: "Cerrar modal",
@@ -1589,4 +1611,230 @@ export const translations = {
     es: "Continuar",
     en: "Continue",
   },
+
+  // Nuevas claves para PaymentStatusPage.jsx
+  paymentStatus_error_generic: {
+    es: "Error al verificar el estado del pago",
+    en: "Error verifying payment status"
+  },
+  paymentStatus_error_payment_not_found: {
+    es: "No se pudo encontrar la información del desafío",
+    en: "Could not find challenge information"
+  },
+  paymentStatus_error_account_creation: {
+    es: "Error al crear cuenta: {{errorMessage}}",
+    en: "Error creating account: {{errorMessage}}"
+  },
+  paymentStatus_account_created: {
+    es: "Cuenta creada con éxito",
+    en: "Account created successfully"
+  },
+  paymentStatus_creating_account: {
+    es: "Creando cuenta...",
+    en: "Creating account..."
+  },
+  paymentStatus_underpaid: {
+    es: "Pago insuficiente",
+    en: "Underpaid"
+  },
+  paymentStatus_overpaid: {
+    es: "Pago excedente",
+    en: "Overpaid"
+  },
+  paymentStatus_account_created_desc: {
+    es: "Tu cuenta ha sido creada exitosamente y está lista para usar.",
+    en: "Your account has been successfully created and is ready to use."
+  },
+  paymentStatus_creating_account_desc: {
+    es: "Estamos creando tu cuenta. Por favor espera un momento...",
+    en: "We are creating your account. Please wait a moment..."
+  },
+  paymentStatus_completed_desc: {
+    es: "Tu pago ha sido procesado correctamente. ¡Gracias por tu compra!",
+    en: "Your payment has been processed successfully. Thank you for your purchase!"
+  },
+  paymentStatus_pending_desc: {
+    es: "Estamos esperando la confirmación de tu pago. Esto puede tomar unos minutos.",
+    en: "We are waiting for your payment confirmation. This may take a few minutes."
+  },
+  paymentStatus_expired_desc: {
+    es: "El tiempo para realizar el pago ha expirado. Por favor, inicia un nuevo proceso de compra.",
+    en: "The time to make the payment has expired. Please start a new purchase process."
+  },
+  paymentStatus_error_desc: {
+    es: "Ha ocurrido un error durante el proceso de pago. Por favor, contacta a soporte.",
+    en: "An error occurred during the payment process. Please contact support."
+  },
+  paymentStatus_button_view_account: {
+    es: "Ver mi cuenta",
+    en: "View my account"
+  },
+  paymentStatus_button_try_again: {
+    es: "Intentar de nuevo",
+    en: "Try again"
+  },
+  paymentStatus_mt5_account_info: {
+    es: "Información de cuenta MT5",
+    en: "MT5 Account Information"
+  },
+  paymentStatus_mt5_login: {
+    es: "Login",
+    en: "Login"
+  },
+  paymentStatus_mt5_password: {
+    es: "Contraseña",
+    en: "Password"
+  },
+  paymentStatus_mt5_investor: {
+    es: "Contraseña de Inversionista",
+    en: "Investor Password"
+  },
+  paymentStatus_mt5_save_credentials: {
+    es: "Guarda estas credenciales. No las compartiremos de nuevo.",
+    en: "Save these credentials. We won't share them again."
+  },
+  paymentStatus_mt5_manual_creation: {
+    es: "Tu cuenta será creada manualmente por nuestro equipo. Recibirás las credenciales por correo electrónico.",
+    en: "Your account will be created manually by our team. You will receive the credentials by email."
+  },
+  paymentStatus_pendingInfo: {
+    es: "Puedes esperar en esta página o volver más tarde. El estado se actualizará automáticamente.",
+    en: "You can wait on this page or come back later. The status will update automatically."
+  },
+  paymentStatus_underpaidInfo: {
+    es: "Se ha recibido menos de lo esperado. Contacta a soporte para más información.",
+    en: "Less than expected has been received. Contact support for more information."
+  },
+  paymentStatus_completedInfo: {
+    es: "Pago confirmado. Procesando tu cuenta...",
+    en: "Payment confirmed. Processing your account..."
+  },
+  paymentStatus_button_return_to_payment: {
+    es: "Volver a la página de pago",
+    en: "Return to payment page"
+  },
+
+  // Nuevas claves para VerificationCode.jsx
+  verificationCode_title_success: {
+    es: "¡Verificación exitosa!",
+    en: "Verification successful!"
+  },
+  verificationCode_text_checkEmail: {
+    es: "Hemos enviado un código de verificación a tu correo electrónico",
+    en: "We have sent a verification code to your email"
+  },
+  verificationCode_text_checkPhone: {
+    es: "Hemos enviado un código de verificación a tu teléfono",
+    en: "We have sent a verification code to your phone"
+  },
+  verificationCode_text_enterCode: {
+    es: "Ingresa el código de verificación para continuar",
+    en: "Enter the verification code to continue"
+  },
+  verificationCode_error_invalid: {
+    es: "Código de verificación inválido",
+    en: "Invalid verification code"
+  },
+  verificationCode_error_verification: {
+    es: "Error al verificar el código",
+    en: "Error verifying code"
+  },
+  verificationCode_error_incomplete: {
+    es: "Por favor ingresa los 4 dígitos del código",
+    en: "Please enter all 4 digits of the code"
+  },
+  verificationCode_error_resend: {
+    es: "Error al reenviar el código",
+    en: "Error resending code"
+  },
+  verificationCode_button_verifying: {
+    es: "Verificando...",
+    en: "Verifying..."
+  },
+  verificationCode_button_resending: {
+    es: "Reenviando...",
+    en: "Resending..."
+  },
+  verificationCode_button_continue: {
+    es: "Continuar",
+    en: "Continue"
+  },
+  
+  // PaymentPage.jsx translations
+  paymentPage_loading: {
+    es: "Cargando información del pago...",
+    en: "Loading payment information..."
+  },
+  paymentPage_error_title: {
+    es: "Error de Pago",
+    en: "Payment Error"
+  },
+  paymentPage_not_found: {
+    es: "Información de pago no encontrada",
+    en: "Payment information not found"
+  },
+  paymentPage_button_dashboard: {
+    es: "Volver al Dashboard",
+    en: "Back to Dashboard"
+  },
+  paymentPage_title: {
+    es: "Pago con Criptomoneda",
+    en: "Cryptocurrency Payment"
+  },
+  paymentPage_subtitle: {
+    es: "Completa el pago para continuar con tu compra",
+    en: "Complete the payment to proceed with your purchase"
+  },
+  paymentPage_amount: {
+    es: "Monto a Pagar",
+    en: "Amount to Pay"
+  },
+  paymentPage_network: {
+    es: "Red",
+    en: "Network"
+  },
+  paymentPage_scan_qr: {
+    es: "Escanea el código QR con tu wallet o aplicación de pagos",
+    en: "Scan the QR code with your wallet or payment app"
+  },
+  paymentPage_wallet_address: {
+    es: "Dirección de la Wallet",
+    en: "Wallet Address"
+  },
+  paymentPage_copied: {
+    es: "¡Copiado!",
+    en: "Copied!"
+  },
+  paymentPage_instructions_title: {
+    es: "Instrucciones de Pago",
+    en: "Payment Instructions"
+  },
+  paymentPage_instruction_1: {
+    es: "Escanea el código QR o copia la dirección de la wallet",
+    en: "Scan the QR code or copy the wallet address"
+  },
+  paymentPage_instruction_2: {
+    es: "Envía exactamente {{amount}} {{currency}} a la dirección mostrada",
+    en: "Send exactly {{amount}} {{currency}} to the displayed address"
+  },
+  paymentPage_instruction_3: {
+    es: "El sistema detectará automáticamente tu pago una vez confirmado en la blockchain",
+    en: "The system will automatically detect your payment once confirmed on the blockchain"
+  },
+  paymentPage_instruction_4: {
+    es: "Una vez completado, serás redirigido a la página de confirmación",
+    en: "Once completed, you will be redirected to the confirmation page"
+  },
+  paymentPage_button_check_status: {
+    es: "Verificar Estado del Pago",
+    en: "Check Payment Status"
+  },
+  paymentPage_button_cancel: {
+    es: "Cancelar y Volver",
+    en: "Cancel and Go Back"
+  },
+  paymentPage_time_remaining: {
+    es: "Tiempo restante",
+    en: "Time remaining"
+  }
 }; 
