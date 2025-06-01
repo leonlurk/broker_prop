@@ -6,7 +6,7 @@ import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 import { getTranslator } from '../utils/i18n';
 import { createTradingAccount } from '../services/mt5Service';
-import { generateCryptoPayment } from '../services/cryptoPaymentService';
+import PaymentService from '../services/PaymentService';
 
 // Constants for standardizing phase values across the application
 const PHASE_ONE_STEP = 'ONE_STEP';
@@ -209,11 +209,12 @@ export default function TradingChallengeUI() {
       
       if (selectedPaymentMethod === 'crypto') {
         try {
-          // Generar página de pago con criptomonedas
-          const cryptoPayment = await generateCryptoPayment(
+          // Usar el nuevo servicio integrado en lugar de la API externa
+          const cryptoPayment = await PaymentService.generateCryptoPayment(
             purchasePriceNumber,
             'USDT',  // Moneda predeterminada
-            'Tron'   // Red predeterminada
+            'Tron',   // Red predeterminada
+            currentUser.displayName || 'Usuario'
           );
           
           paymentUniqueId = cryptoPayment.uniqueId;
@@ -227,7 +228,6 @@ export default function TradingChallengeUI() {
             network: 'Tron',
             status: 'pending',
             createdAt: serverTimestamp(),
-            expiresAt: cryptoPayment.expiresAt,
             challengeType: challengeTypeValue,
             challengeAmount: challengeAmount,
             paymentUrl: cryptoPayment.url

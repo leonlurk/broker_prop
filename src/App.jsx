@@ -5,7 +5,9 @@ import Register from './components/Register';
 import ForgotPassword from './components/ForgotPassword';
 import VerificationCode from './components/VerificationCode';
 import Dashboard from './Dashboard';
-import PaymentStatus from './components/PaymentStatus';
+import PaymentPage from './components/PaymentPage';
+import PaymentStatusPage from './components/PaymentStatusPage';
+import PaymentMonitor from './components/PaymentMonitor';
 import { useAuth } from './contexts/AuthContext';
 import { logoutUser } from './firebase/auth';
 import Verification from './components/Verification';
@@ -14,13 +16,6 @@ import ActionRedirector from './components/ActionRedirector';
 function App() {
   const { currentUser, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  
-  // Asegurar modo oscuro
-  useEffect(() => {
-    // Garantizar que el modo oscuro esté siempre activado
-    document.documentElement.classList.add('dark');
-    document.documentElement.style.colorScheme = 'dark';
-  }, []);
   
   // Redirect to dashboard if already authenticated
   useEffect(() => {
@@ -40,7 +35,7 @@ function App() {
  
   // Common background wrapper for auth pages
   const AuthPageWrapper = ({ children }) => (
-    <div className="min-h-screen w-full flex items-center justify-end bg-black bg-no-repeat bg-cover bg-center dark"
+    <div className="min-h-screen w-full flex items-center justify-end bg-black bg-no-repeat bg-cover bg-center"
       style={{ backgroundImage: 'url(/fondo.png)', width: '100vw', height: '100vh' }}>
       <div className="mr-6 md:mr-6 sm:mx-auto">
         {children}
@@ -51,6 +46,8 @@ function App() {
   return (
     <div className="dark">
       <ActionRedirector />
+      {isAuthenticated && <PaymentMonitor />}
+      
       <Routes>
         <Route 
           path="/login" 
@@ -96,10 +93,21 @@ function App() {
         />
         
         <Route 
+          path="/payment/:uniqueId" 
+          element={
+            isAuthenticated ? (
+              <PaymentPage />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          } 
+        />
+        
+        <Route 
           path="/payment-status/:uniqueId" 
           element={
             isAuthenticated ? (
-              <PaymentStatus />
+              <PaymentStatusPage />
             ) : (
               <Navigate to="/login" replace />
             )
