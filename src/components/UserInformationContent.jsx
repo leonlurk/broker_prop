@@ -10,8 +10,6 @@ import ReactCrop, { centerCrop, makeAspectCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import styles from './UserInformationContent.module.css';
 
-const fallbackUserPhoto = 'https://randomuser.me/api/portraits/men/1.jpg';
-
 const fieldStyle = {
   background: 'rgba(44,44,44,0.95)',
   border: '1.5px solid #3C3C3C',
@@ -779,22 +777,34 @@ const UserInformationContent = ({ onBack }) => {
           {/* Foto de perfil - Side en desktop, top en mobile */}
           <div className="flex flex-col items-center lg:items-start lg:w-auto">
             <div className="relative mb-4 lg:mb-0">
-              <img
-                src={profileImageUrl || fallbackUserPhoto}
-                alt="Foto de perfil"
-                className="w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-full object-cover border border-[#3C3C3C] shadow-lg"
-                style={{ boxShadow: 'inset 0px 4px 4px rgba(0, 0, 0, 0.5)' }}
-              />
+              {profileImageUrl ? (
+                <img
+                  src={profileImageUrl}
+                  alt="Foto de perfil"
+                  className="w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-full object-cover border border-[#3C3C3C] shadow-lg"
+                  style={{ boxShadow: 'inset 0px 4px 4px rgba(0, 0, 0, 0.5)' }}
+                />
+              ) : (
+                <div
+                  className="w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-full border border-[#3C3C3C] shadow-lg flex items-center justify-center text-white font-semibold text-2xl sm:text-3xl lg:text-4xl uppercase"
+                  style={{ 
+                    background: 'linear-gradient(122.63deg, #222222 0%, #353535 100%)',
+                    boxShadow: 'inset 0px 4px 4px rgba(0, 0, 0, 0.5)' 
+                  }}
+                >
+                  {currentUser?.email?.charAt(0) || 'U'}
+                </div>
+              )}
               <button
                 type="button"
-                className="absolute bottom-0 right-0 w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 rounded-full border border-[#3C3C3C] flex items-center justify-center hover:bg-cyan-900/30 transition"
+                className="absolute bottom-0 right-0 w-10 h-10 sm:w-11 sm:h-11 lg:w-12 lg:h-12 rounded-full border border-[#3C3C3C] flex items-center justify-center hover:bg-gray-800/50 transition"
                 style={{ 
-                  background: 'linear-gradient(122.63deg, #222222 0%, #353535 100%)'
+                  background: 'transparent'
                 }}
                 onClick={() => document.getElementById('profilePicInputUserInfo').click()}
                 aria-label={t('userInfo_button_changePhoto')}
               >
-                <Camera size={18} className="text-white sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
+                <Camera size={24} className="text-white" />
               </button>
               <input
                 id="profilePicInputUserInfo"
