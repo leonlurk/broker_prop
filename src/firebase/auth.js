@@ -65,7 +65,22 @@ export const registerUser = async (username, email, password, refId = null) => {
     
     return { user };
   } catch (error) {
-    return { error };
+    console.error("Registration error:", error);
+    
+    // Handle specific Firebase Auth errors with friendly messages
+    let friendlyMessage = "Error al registrarse. Por favor, intente nuevamente.";
+    
+    if (error.code === 'auth/email-already-in-use') {
+      friendlyMessage = "Este correo electrónico ya está registrado. Intenta iniciar sesión o usa otro email.";
+    } else if (error.code === 'auth/weak-password') {
+      friendlyMessage = "La contraseña es muy débil. Debe tener al menos 6 caracteres.";
+    } else if (error.code === 'auth/invalid-email') {
+      friendlyMessage = "El formato del correo electrónico no es válido.";
+    } else if (error.code === 'auth/operation-not-allowed') {
+      friendlyMessage = "El registro con email está deshabilitado temporalmente.";
+    }
+    
+    return { error: { message: friendlyMessage, code: error.code } };
   }
 };
 

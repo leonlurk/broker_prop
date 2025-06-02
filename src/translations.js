@@ -81,6 +81,22 @@ export const translations = {
     es: "Error al registrar. Por favor, inténtelo de nuevo.",
     en: "Registration failed. Please try again.",
   },
+  register_error_emailAlreadyInUse: {
+    es: "Este correo electrónico ya está registrado. Intenta iniciar sesión o usa otro email.",
+    en: "This email is already registered. Try logging in or use a different email.",
+  },
+  register_error_weakPassword: {
+    es: "La contraseña es muy débil. Debe tener al menos 6 caracteres.",
+    en: "Password is too weak. It must have at least 6 characters.",
+  },
+  register_error_invalidEmail: {
+    es: "El formato del correo electrónico no es válido.",
+    en: "The email format is not valid.",
+  },
+  register_error_operationNotAllowed: {
+    es: "El registro con email está deshabilitado temporalmente.",
+    en: "Email registration is temporarily disabled.",
+  },
   register_message_registrationSuccess: {
     es: "¡Registro exitoso! Por favor verifica tu correo electrónico para activar tu cuenta.",
     en: "Registration successful! Please check your email to activate your account.",

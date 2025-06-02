@@ -5,7 +5,7 @@ import Select from 'react-select';
 import countryList from 'react-select-country-list';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import { useAuth } from '../contexts/AuthContext';
 import { getTranslator } from '../utils/i18n';
@@ -57,6 +57,7 @@ const Register = ({ onLoginClick }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setMessage('');
     
     if (password !== confirmPassword) {
       return setError(t('register_error_passwordsDoNotMatch'));
@@ -71,28 +72,58 @@ const Register = ({ onLoginClick }) => {
     setLoading(true);
     
     try {
+      console.log('Starting registration process...');
       const { user, error } = await registerUser(username, email, password, refId);
       
       if (error) {
-        throw new Error(error.message || t('register_error_registrationFailed'));
+        console.error('Firebase Auth registration error:', error);
+        
+        // Handle specific Firebase Auth error codes with translated messages
+        let errorMessage;
+        if (error.code === 'auth/email-already-in-use') {
+          errorMessage = t('register_error_emailAlreadyInUse');
+        } else if (error.code === 'auth/weak-password') {
+          errorMessage = t('register_error_weakPassword');
+        } else if (error.code === 'auth/invalid-email') {
+          errorMessage = t('register_error_invalidEmail');
+        } else if (error.code === 'auth/operation-not-allowed') {
+          errorMessage = t('register_error_operationNotAllowed');
+        } else {
+          errorMessage = error.message || t('register_error_registrationFailed');
+        }
+        
+        throw new Error(errorMessage);
       }
       
       if (user) {
-        const userDocRef = doc(db, "users", user.uid);
-        await updateDoc(userDocRef, {
-            firstName: firstName,
-            lastName: lastName,
-            country: country.label,
-            countryCode: country.value,
-            phoneNumber: phoneNumber,
-        });
+        console.log('User created successfully:', user.uid);
+        
+        // Save additional user data
+        try {
+          const userDocRef = doc(db, "users", user.uid);
+          await setDoc(userDocRef, {
+              firstName: firstName,
+              lastName: lastName,
+              country: country.label,
+              countryCode: country.value,
+              phoneNumber: phoneNumber,
+              registrationCompleted: true,
+              lastUpdated: serverTimestamp(),
+          }, { merge: true });
+          
+          console.log('User additional data saved successfully');
+        } catch (firestoreError) {
+          console.error('Error saving additional user data:', firestoreError);
+          // Don't fail the whole process, but log the error
+          setError('Usuario creado pero algunos datos adicionales no se guardaron. Puedes completarlos en tu perfil.');
+        }
       }
 
       console.log('Registration successful:', user);
       setMessage(t('register_message_registrationSuccess'));
-      setTimeout(() => {
-        navigate('/login');
-      }, 5000);
+      
+      // Redirect immediately to login with success message
+      navigate('/login?registered=true');
     } catch (err) {
       console.error('Registration error:', err);
       setError(err.message || t('register_error_registrationFailed'));

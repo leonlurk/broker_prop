@@ -105,18 +105,41 @@ const Sidebar = ({ selectedOption, setSelectedOption, onLogout }) => {
 
     return (
         <>
-            {/* Botón hamburguesa para móviles */}
+            {/* Header móvil fijo */}
             {isMobile && (
-                <button 
-                    onClick={toggleMobileMenu}
-                    className="fixed top-4 left-4 z-50 p-2 bg-[#232323] rounded-md shadow-lg text-white"
-                >
-                    {isMobileMenuOpen ? 
-                        <RiCloseLine className="w-6 h-6" /> : 
-                        <RiMenuLine className="w-6 h-6" />
-                    }
-                </button>
+                <div className="fixed top-0 left-0 right-0 z-50 bg-[#232323] border-b border-gray-700 shadow-lg">
+                    <div className="flex items-center justify-between px-4 py-3">
+                        {/* Botón hamburguesa */}
+                        <button 
+                            onClick={toggleMobileMenu}
+                            className="p-2 rounded-md hover:bg-[#2a2a2a] transition-colors text-white"
+                        >
+                            {isMobileMenuOpen ? 
+                                <RiCloseLine className="w-6 h-6" /> : 
+                                <RiMenuLine className="w-6 h-6" />
+                            }
+                        </button>
+                        
+                        {/* Logo/Título centrado */}
+                        <div className="flex items-center">
+                            <img 
+                                src="/logo.png" 
+                                alt={t('sidebar_alt_agmLogo')} 
+                                className="w-10 h-auto"
+                                onError={(e) => {
+                                    e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%23333333'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='12' fill='white'%3EAGM%3C/text%3E%3C/svg%3E";
+                                }}
+                            />
+                        </div>
+                        
+                        {/* Espacio para balance visual */}
+                        <div className="w-10"></div>
+                    </div>
+                </div>
             )}
+            
+            {/* Spacer para compensar el header fijo en móvil */}
+            {isMobile && <div className="h-16"></div>}
             
             {/* Overlay para cerrar el menú al hacer clic afuera (solo en móvil) */}
             {isMobile && isMobileMenuOpen && (
@@ -127,21 +150,23 @@ const Sidebar = ({ selectedOption, setSelectedOption, onLogout }) => {
             )}
 
             <div 
-                className={`${isMobile ? 'fixed left-0 top-0 z-40' : 'fixed left-0 top-0 z-30'} h-screen ${isMobile ? (isMobileMenuOpen ? 'w-[80%] max-w-[300px]' : 'w-0') : 'w-[300px]'} 
+                className={`${isMobile ? 'fixed left-0 top-16 z-40' : 'fixed left-0 top-0 z-30'} ${isMobile ? 'h-[calc(100vh-4rem)]' : 'h-screen'} ${isMobile ? (isMobileMenuOpen ? 'w-[80%] max-w-[300px]' : 'w-0') : 'w-[300px]'} 
                 bg-[#232323] text-white  border-opacity-20 flex flex-col
                 transition-all duration-300 ease-in-out overflow-y-auto overflow-x-hidden`}
             >
-                {/* Logo section - fixed */}
-                <div className="flex justify-center px-4 pt-8 pb-4">
-                    <img 
-                        src="/logo.png" 
-                        alt={t('sidebar_alt_agmLogo')} 
-                        className="w-20 h-auto"
-                        onError={(e) => {
-                            e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Crect width='64' height='64' fill='%23333333'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='16' fill='white'%3EAGM%3C/text%3E%3C/svg%3E";
-                        }}
-                    />
-                </div>
+                {/* Logo section - fixed (solo desktop) */}
+                {!isMobile && (
+                    <div className="flex justify-center px-4 pt-8 pb-4">
+                        <img 
+                            src="/logo.png" 
+                            alt={t('sidebar_alt_agmLogo')} 
+                            className="w-20 h-auto"
+                            onError={(e) => {
+                                e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Crect width='64' height='64' fill='%23333333'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='16' fill='white'%3EAGM%3C/text%3E%3C/svg%3E";
+                            }}
+                        />
+                    </div>
+                )}
                 
                 {/* Plataformas button - ahora con flecha y desplegable */}
                 {/*
@@ -199,7 +224,7 @@ const Sidebar = ({ selectedOption, setSelectedOption, onLogout }) => {
                 </div>
                 */}
                 
-                <div className="h-px w-full bg-gray-700 my-4"></div>
+                <div className={`h-px w-full bg-gray-700 ${isMobile ? 'my-2' : 'my-4'}`}></div>
                 
                 {/* Scrollable menu section */}
                 <div className="flex-1 overflow-y-auto transition-all duration-500 ease-in-out flex flex-col justify-center" style={{ scrollbarWidth: 'thin', scrollbarColor: '#555 #333' }}>
