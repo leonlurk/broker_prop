@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { onAuthStateChange, getCurrentUser } from '../firebase/auth';
+import { onAuthStateChange, getCurrentUser, logoutUser } from '../firebase/auth';
 import { db } from '../firebase/config';
 import { doc, getDoc, updateDoc, setDoc } from 'firebase/firestore';
 
@@ -61,11 +61,28 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const logout = async () => {
+    try {
+      const result = await logoutUser();
+      if (result.success) {
+        setCurrentUser(null);
+        setLanguageState('es');
+        console.log('User logged out successfully');
+        window.location.href = '/login';
+      } else {
+        console.error('Logout error:', result.error);
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
   const value = {
     currentUser,
     isAuthenticated: !!currentUser,
     language,
     setLanguage,
+    logout,
   };
 
   console.log('[AuthContext] Provider value being created. Language:', language);

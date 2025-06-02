@@ -10,7 +10,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { getTranslator } from '../utils/i18n';
 
 const Settings = ({ onBack }) => {
-  const { currentUser, language } = useAuth();
+  const { currentUser, language, logout } = useAuth();
   const t = useMemo(() => getTranslator(language), [language]);
 
   // DEBUGGING: Log language and a sample translation
@@ -353,6 +353,15 @@ const Settings = ({ onBack }) => {
             >
               <h2 className="text-lg md:text-xl">{t('settings_section_billing')}</h2>
               <ChevronRight className="h-6 w-6 text-gray-400" />
+            </div>
+
+            {/* Botón Cerrar Sesión */}
+            <div 
+              className="p-4 flex rounded-3xl justify-between items-center cursor-pointer bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] hover:border-red-500/50 transition-colors"
+              onClick={logout}
+            >
+              <h2 className="text-lg md:text-xl text-red-400">{t('sidebar_logout')}</h2>
+              <ChevronRight className="h-6 w-6 text-red-400" />
             </div>
 
         </div>
