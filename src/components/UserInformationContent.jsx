@@ -768,32 +768,33 @@ const UserInformationContent = ({ onBack }) => {
         </div>
       </div>
       
-      <div className="p-4 md:p-6 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-2xl w-full flex flex-col gap-6 relative bg-opacity-90 mb-4 md:mb-6 pb-[100px] md:pb-6">
+      <div className="p-4 sm:p-6 lg:p-8 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-2xl w-full flex flex-col gap-6 relative bg-opacity-90 mb-4 md:mb-6">
         {/* Header: Título */}
         <div className="mt-2 md:mt-4 mb-6">
           <h2 className="text-2xl md:text-3xl font-semibold text-white text-left">{t('userInfo_title')}</h2>
-      </div>
-        {/* Foto de perfil y formulario */}
-        <div className="relative w-full h-[450px]">
-          {/* Foto de perfil */}
-          <div className="absolute left-3 top-0">
-            <div className="relative">
+        </div>
+        
+        {/* Contenedor principal responsive */}
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
+          {/* Foto de perfil - Side en desktop, top en mobile */}
+          <div className="flex flex-col items-center lg:items-start lg:w-auto">
+            <div className="relative mb-4 lg:mb-0">
               <img
                 src={profileImageUrl || fallbackUserPhoto}
                 alt="Foto de perfil"
-                className="w-[120px] h-[120px] rounded-full object-cover border border-[#3C3C3C] shadow-lg"
+                className="w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-full object-cover border border-[#3C3C3C] shadow-lg"
                 style={{ boxShadow: 'inset 0px 4px 4px rgba(0, 0, 0, 0.5)' }}
               />
               <button
                 type="button"
-                className="absolute bottom-0 right-0 w-[40px] h-[40px] rounded-full border border-[#3C3C3C] flex items-center justify-center hover:bg-cyan-900/30 transition"
+                className="absolute bottom-0 right-0 w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 rounded-full border border-[#3C3C3C] flex items-center justify-center hover:bg-cyan-900/30 transition"
                 style={{ 
                   background: 'linear-gradient(122.63deg, #222222 0%, #353535 100%)'
                 }}
                 onClick={() => document.getElementById('profilePicInputUserInfo').click()}
                 aria-label={t('userInfo_button_changePhoto')}
               >
-                <Camera size={24} className="text-white" />
+                <Camera size={18} className="text-white sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
               </button>
               <input
                 id="profilePicInputUserInfo"
@@ -806,263 +807,275 @@ const UserInformationContent = ({ onBack }) => {
             </div>
           </div>
 
-          {/* Labels y campos */}
-          
-          {/* Label Nombre */}
-          <div className="absolute left-[150px] top-[20px]">
-            <span className="text-white text-[18px] font-normal font-['Poppins'] leading-5 tracking-[0.1px]">
-              Nombre
-            </span>
-          </div>
-          
-          {/* Campo Nombre */}
-          <div className="absolute left-[150px] top-[45px] w-[292px] h-[50px]">
-            <input 
-              type="text" 
-              id="nombre" 
-              value={nombre}
-              onChange={e => setNombre(e.target.value)}
-              placeholder="Nombre"
-              className="w-full h-full px-[20px] text-white text-[16px] font-normal font-['Poppins'] leading-5 tracking-[0.1px] border border-[#3C3C3C] rounded-[25px] focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-white/50"
-              style={{ 
-                background: 'linear-gradient(122.63deg, rgba(34, 34, 34, 0.5) 0%, rgba(53, 53, 53, 0.5) 100%)'
-              }}
-            />
-          </div>
-
-          {/* Label Apellido */}
-          <div className="absolute left-[450px] top-[20px]">
-            <span className="text-white text-[18px] font-normal font-['Poppins'] leading-5 tracking-[0.1px]">
-              Apellido
-            </span>
-          </div>
-          
-          {/* Campo Apellido */}
-          <div className="absolute left-[450px] top-[45px] w-[420px] h-[50px]">
-            <input 
-              type="text" 
-              id="apellido" 
-              value={apellido}
-              onChange={e => setApellido(e.target.value)}
-              placeholder="Apellido"
-              className="w-full h-full px-[20px] text-white text-[16px] font-normal font-['Poppins'] leading-5 tracking-[0.1px] border border-[#3C3C3C] rounded-[25px] focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-white/50"
-              style={{ 
-                background: 'linear-gradient(122.63deg, rgba(34, 34, 34, 0.5) 0%, rgba(53, 53, 53, 0.5) 100%)'
-              }}
-            />
-          </div>
-
-          {/* Campo Fecha de nacimiento */}
-          <div className="absolute left-3 top-[140px] w-[430px] h-[50px]">
-            <div className="relative w-full h-full">
-              <input
-                type="text"
-                id="fechaNacimiento"
-                value={fechaNacimiento}
-                onClick={() => setShowCalendar(!showCalendar)} 
-                placeholder="Fecha de nacimiento"
-                className="w-full h-full px-[20px] pr-[50px] text-white text-[16px] font-normal font-['Poppins'] leading-5 tracking-[0.1px] border border-[#3C3C3C] rounded-[25px] focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-white/50 cursor-pointer"
-                style={{ 
-                  background: 'linear-gradient(122.63deg, rgba(34, 34, 34, 0.5) 0%, rgba(53, 53, 53, 0.5) 100%)'
-                }}
-                readOnly
-              />
-              <Calendar size={20} className="absolute right-[15px] top-1/2 -translate-y-1/2 text-[#A0A0A0] pointer-events-none" />
-            </div>
-            {showCalendar && renderCalendar()}
-          </div>
-
-          {/* Campo Género */}
-          <div className="absolute left-[450px] top-[140px] w-[420px] h-[50px]">
-            <div className="relative w-full h-full">
-              <select 
-                id="genero" 
-                value={genero} 
-                onChange={e => setGenero(e.target.value)}
-                className="w-full h-full px-[20px] pr-[50px] text-white text-[16px] font-normal font-['Poppins'] leading-5 tracking-[0.1px] border border-[#3C3C3C] rounded-[25px] focus:outline-none focus:ring-2 focus:ring-cyan-500 appearance-none"
-                style={{ 
-                  background: 'linear-gradient(122.63deg, rgba(34, 34, 34, 0.5) 0%, rgba(53, 53, 53, 0.5) 100%)'
-                }}
-              >
-                <option value="" className="text-white/50">Género</option>
-                <option value="masculino">{t('gender_male')}</option>
-                <option value="femenino">{t('gender_female')}</option>
-                <option value="otro">{t('gender_other')}</option>
-                <option value="prefiero_no_decirlo">{t('gender_preferNotToSay')}</option>
-              </select>
-              <ChevronDown size={24} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A0A0A0] pointer-events-none" />
-            </div>
-          </div>
-
-          {/* Campo País */}
-          <div className="absolute left-3 top-[220px] w-[430px] h-[50px]">
-            <div className="relative w-full h-full">
-              <select 
-                id="pais" 
-                value={paisSeleccionado} 
-                onChange={e => {
-                  setPaisSeleccionado(e.target.value);
-                  // Lógica existente para actualizar código de país
-                  const normalize = str => str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-                  const selected = e.target.value;
-                  let codeObj = codigosPaisesFull.find(cp => normalize(cp.pais) === normalize(selected));
-                  if (!codeObj) {
-                    codeObj = codigosPaisesFull.find(cp => normalize(selected).includes(normalize(cp.pais)) || normalize(cp.pais).includes(normalize(selected)));
-                  }
-                  if (!codeObj) {
-                    const clean = s => normalize(s).replace(/(republic|federation|state|states|kingdom|democratic|people|islamic|arab|of|the|and|union|united|plurinational|bolivarian|province|provinces|city|country|nation|territory|islands|island|coast|north|south|east|west|central|new|old|great|little|upper|lower|mount|saint|st|sao|san|santa|la|el|los|las|le|les|de|del|da|do|das|du|di|al|el|a|o|u|i|e|y|z|x|c|d|b|g|h|j|k|l|m|n|p|q|r|s|t|v|w|z|\s+)/g, '');
-                    codeObj = codigosPaisesFull.find(cp => clean(cp.pais) === clean(selected));
-                  }
-                  if (!codeObj) {
-                    codeObj = codigosPaisesFull.find(cp => cp.pais_en && normalize(cp.pais_en) === normalize(selected));
-                  }
-                  setCodigoPais(codeObj ? codeObj.codigo : '');
-                }}
-                className="w-full h-full px-[20px] pr-[50px] text-white text-[16px] font-normal font-['Poppins'] leading-5 tracking-[0.1px] border border-[#3C3C3C] rounded-[25px] focus:outline-none focus:ring-2 focus:ring-cyan-500 appearance-none"
-                style={{ 
-                  background: 'linear-gradient(122.63deg, rgba(34, 34, 34, 0.5) 0%, rgba(53, 53, 53, 0.5) 100%)'
-                }}
-                disabled={cargandoPaises}
-              >
-                <option value="" className="text-white/50">{cargandoPaises ? t('userInfo_loading_countries') : 'Argentina'}</option>
-                {paises.map(pais => (
-                  <option key={pais.nombre} value={pais.nombre}>{pais.nombre}</option>
-                ))}
-              </select>
-              <ChevronDown size={24} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A0A0A0] pointer-events-none" />
-            </div>
-          </div>
-
-          {/* Campo Ciudad */}
-          <div className="absolute left-[450px] top-[220px] w-[420px] h-[50px]">
-            <div className="relative w-full h-full">
-              <select 
-                id="ciudad" 
-                value={ciudadSeleccionada} 
-                onChange={e => setCiudadSeleccionada(e.target.value)}
-                className="w-full h-full px-[20px] pr-[50px] text-white text-[16px] font-normal font-['Poppins'] leading-5 tracking-[0.1px] border border-[#3C3C3C] rounded-[25px] focus:outline-none focus:ring-2 focus:ring-cyan-500 appearance-none"
-                style={{ 
-                  background: 'linear-gradient(122.63deg, rgba(34, 34, 34, 0.5) 0%, rgba(53, 53, 53, 0.5) 100%)'
-                }}
-                disabled={cargandoCiudades || !paisSeleccionado}
-              >
-                <option value="" className="text-white/50">
-                  {cargandoCiudades ? t('userInfo_loading_cities') || 'Cargando ciudades...' : 
-                   !paisSeleccionado ? 'Selecciona un país primero' : 'Selecciona una ciudad'}
-                </option>
-                {ciudades.map(ciudad => (
-                  <option key={ciudad} value={ciudad}>{ciudad}</option>
-                ))}
-              </select>
-              <ChevronDown size={24} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A0A0A0] pointer-events-none" />
-            </div>
-          </div>
-
-          {/* Campo Teléfono */}
-          <div className="absolute left-3 top-[300px] w-[430px] h-[50px]">
-            <div className="relative w-full h-full">
-              <div className="flex h-full">
-                {/* Código de país */}
-                <div className="flex items-center px-3 border border-r-0 border-[#3C3C3C] rounded-l-[25px] text-white text-[16px] font-normal font-['Poppins'] min-w-[80px] justify-center"
-                     style={{ 
-                       background: 'linear-gradient(122.63deg, rgba(34, 34, 34, 0.5) 0%, rgba(53, 53, 53, 0.5) 100%)'
-                     }}>
-                  {codigoPais || '+54'}
-                </div>
-                {/* Número de teléfono */}
+          {/* Formulario responsive */}
+          <div className="flex-1">
+            {/* Grid responsive para campos */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+              {/* Nombre */}
+              <div className="space-y-2">
+                <label className="block text-white text-sm sm:text-base font-medium">
+                  {t('userInfo_label_firstName')}
+                </label>
                 <input 
-                  type="tel" 
-                  id="telefono" 
-                  value={numeroTelefono}
-                  onChange={handlePhoneChange}
-                  placeholder="Número de teléfono"
-                  className="flex-1 h-full px-[15px] text-white text-[16px] font-normal font-['Poppins'] leading-5 tracking-[0.1px] border border-l-0 border-[#3C3C3C] rounded-r-[25px] focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-white/50"
+                  type="text" 
+                  id="nombre" 
+                  value={nombre}
+                  onChange={e => setNombre(e.target.value)}
+                  placeholder={t('userInfo_placeholder_firstName')}
+                  className="w-full h-12 sm:h-14 px-4 sm:px-5 text-white text-sm sm:text-base font-normal font-['Poppins'] border border-[#3C3C3C] rounded-full focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-white/50"
                   style={{ 
                     background: 'linear-gradient(122.63deg, rgba(34, 34, 34, 0.5) 0%, rgba(53, 53, 53, 0.5) 100%)'
                   }}
                 />
               </div>
+
+              {/* Apellido */}
+              <div className="space-y-2">
+                <label className="block text-white text-sm sm:text-base font-medium">
+                  {t('userInfo_label_lastName')}
+                </label>
+                <input 
+                  type="text" 
+                  id="apellido" 
+                  value={apellido}
+                  onChange={e => setApellido(e.target.value)}
+                  placeholder={t('userInfo_placeholder_lastName')}
+                  className="w-full h-12 sm:h-14 px-4 sm:px-5 text-white text-sm sm:text-base font-normal font-['Poppins'] border border-[#3C3C3C] rounded-full focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-white/50"
+                  style={{ 
+                    background: 'linear-gradient(122.63deg, rgba(34, 34, 34, 0.5) 0%, rgba(53, 53, 53, 0.5) 100%)'
+                  }}
+                />
+              </div>
+
+              {/* Fecha de nacimiento */}
+              <div className="space-y-2">
+                <label className="block text-white text-sm sm:text-base font-medium">
+                  {t('userInfo_label_dob')}
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    id="fechaNacimiento"
+                    value={fechaNacimiento}
+                    onClick={() => setShowCalendar(!showCalendar)} 
+                    placeholder={t('userInfo_placeholder_dob')}
+                    className="w-full h-12 sm:h-14 px-4 sm:px-5 pr-12 text-white text-sm sm:text-base font-normal font-['Poppins'] border border-[#3C3C3C] rounded-full focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-white/50 cursor-pointer"
+                    style={{ 
+                      background: 'linear-gradient(122.63deg, rgba(34, 34, 34, 0.5) 0%, rgba(53, 53, 53, 0.5) 100%)'
+                    }}
+                    readOnly
+                  />
+                  <Calendar size={20} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#A0A0A0] pointer-events-none" />
+                  {showCalendar && renderCalendar()}
+                </div>
+              </div>
+
+              {/* Género */}
+              <div className="space-y-2">
+                <label className="block text-white text-sm sm:text-base font-medium">
+                  {t('userInfo_label_gender')}
+                </label>
+                <div className="relative">
+                  <select 
+                    id="genero" 
+                    value={genero} 
+                    onChange={e => setGenero(e.target.value)}
+                    className="w-full h-12 sm:h-14 px-4 sm:px-5 pr-12 text-white text-sm sm:text-base font-normal font-['Poppins'] border border-[#3C3C3C] rounded-full focus:outline-none focus:ring-2 focus:ring-cyan-500 appearance-none"
+                    style={{ 
+                      background: 'linear-gradient(122.63deg, rgba(34, 34, 34, 0.5) 0%, rgba(53, 53, 53, 0.5) 100%)'
+                    }}
+                  >
+                    <option value="" className="text-white/50">{t('userInfo_placeholder_gender')}</option>
+                    <option value="masculino">{t('gender_male')}</option>
+                    <option value="femenino">{t('gender_female')}</option>
+                    <option value="otro">{t('gender_other')}</option>
+                    <option value="prefiero_no_decirlo">{t('gender_preferNotToSay')}</option>
+                  </select>
+                  <ChevronDown size={20} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#A0A0A0] pointer-events-none" />
+                </div>
+              </div>
+
+              {/* País */}
+              <div className="space-y-2">
+                <label className="block text-white text-sm sm:text-base font-medium">
+                  {t('userInfo_label_country')}
+                </label>
+                <div className="relative">
+                  <select 
+                    id="pais" 
+                    value={paisSeleccionado} 
+                    onChange={e => {
+                      setPaisSeleccionado(e.target.value);
+                      // Lógica existente para actualizar código de país
+                      const normalize = str => str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+                      const selected = e.target.value;
+                      let codeObj = codigosPaisesFull.find(cp => normalize(cp.pais) === normalize(selected));
+                      if (!codeObj) {
+                        codeObj = codigosPaisesFull.find(cp => normalize(selected).includes(normalize(cp.pais)) || normalize(cp.pais).includes(normalize(selected)));
+                      }
+                      if (!codeObj) {
+                        const clean = s => normalize(s).replace(/(republic|federation|state|states|kingdom|democratic|people|islamic|arab|of|the|and|union|united|plurinational|bolivarian|province|provinces|city|country|nation|territory|islands|island|coast|north|south|east|west|central|new|old|great|little|upper|lower|mount|saint|st|sao|san|santa|la|el|los|las|le|les|de|del|da|do|das|du|di|al|el|a|o|u|i|e|y|z|x|c|d|b|g|h|j|k|l|m|n|p|q|r|s|t|v|w|z|\s+)/g, '');
+                        codeObj = codigosPaisesFull.find(cp => clean(cp.pais) === clean(selected));
+                      }
+                      if (!codeObj) {
+                        codeObj = codigosPaisesFull.find(cp => cp.pais_en && normalize(cp.pais_en) === normalize(selected));
+                      }
+                      setCodigoPais(codeObj ? codeObj.codigo : '');
+                    }}
+                    className="w-full h-12 sm:h-14 px-4 sm:px-5 pr-12 text-white text-sm sm:text-base font-normal font-['Poppins'] border border-[#3C3C3C] rounded-full focus:outline-none focus:ring-2 focus:ring-cyan-500 appearance-none"
+                    style={{ 
+                      background: 'linear-gradient(122.63deg, rgba(34, 34, 34, 0.5) 0%, rgba(53, 53, 53, 0.5) 100%)'
+                    }}
+                    disabled={cargandoPaises}
+                  >
+                    <option value="" className="text-white/50">{cargandoPaises ? t('userInfo_loading_countries') : t('userInfo_placeholder_country')}</option>
+                    {paises.map(pais => (
+                      <option key={pais.nombre} value={pais.nombre}>{pais.nombre}</option>
+                    ))}
+                  </select>
+                  <ChevronDown size={20} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#A0A0A0] pointer-events-none" />
+                </div>
+              </div>
+
+              {/* Ciudad */}
+              <div className="space-y-2">
+                <label className="block text-white text-sm sm:text-base font-medium">
+                  {t('userInfo_label_city')}
+                </label>
+                <div className="relative">
+                  <select 
+                    id="ciudad" 
+                    value={ciudadSeleccionada} 
+                    onChange={e => setCiudadSeleccionada(e.target.value)}
+                    className="w-full h-12 sm:h-14 px-4 sm:px-5 pr-12 text-white text-sm sm:text-base font-normal font-['Poppins'] border border-[#3C3C3C] rounded-full focus:outline-none focus:ring-2 focus:ring-cyan-500 appearance-none"
+                    style={{ 
+                      background: 'linear-gradient(122.63deg, rgba(34, 34, 34, 0.5) 0%, rgba(53, 53, 53, 0.5) 100%)'
+                    }}
+                    disabled={cargandoCiudades || !paisSeleccionado}
+                  >
+                    <option value="" className="text-white/50">
+                      {cargandoCiudades ? t('userInfo_loading_cities') || 'Cargando ciudades...' : 
+                       !paisSeleccionado ? 'Selecciona un país primero' : t('userInfo_placeholder_city')}
+                    </option>
+                    {ciudades.map(ciudad => (
+                      <option key={ciudad} value={ciudad}>{ciudad}</option>
+                    ))}
+                  </select>
+                  <ChevronDown size={20} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#A0A0A0] pointer-events-none" />
+                </div>
+              </div>
+
+              {/* Teléfono - Span completo en mobile, individual en desktop */}
+              <div className="space-y-2 md:col-span-2 lg:col-span-1">
+                <label className="block text-white text-sm sm:text-base font-medium">
+                  {t('userInfo_label_phone')}
+                </label>
+                <div className="flex h-12 sm:h-14">
+                  {/* Código de país */}
+                  <div className="flex items-center px-3 sm:px-4 border border-r-0 border-[#3C3C3C] rounded-l-full text-white text-sm sm:text-base font-normal font-['Poppins'] min-w-[70px] sm:min-w-[80px] justify-center"
+                       style={{ 
+                         background: 'linear-gradient(122.63deg, rgba(34, 34, 34, 0.5) 0%, rgba(53, 53, 53, 0.5) 100%)'
+                       }}>
+                    {codigoPais || '+54'}
+                  </div>
+                  {/* Número de teléfono */}
+                  <input 
+                    type="tel" 
+                    id="telefono" 
+                    value={numeroTelefono}
+                    onChange={handlePhoneChange}
+                    placeholder={t('userInfo_placeholder_phoneNumber')}
+                    className="flex-1 h-full px-3 sm:px-4 text-white text-sm sm:text-base font-normal font-['Poppins'] border border-l-0 border-[#3C3C3C] rounded-r-full focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-white/50"
+                    style={{ 
+                      background: 'linear-gradient(122.63deg, rgba(34, 34, 34, 0.5) 0%, rgba(53, 53, 53, 0.5) 100%)'
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Botón Guardar - Full width en mobile, auto en desktop */}
+            <div className="mt-6 lg:mt-8">
+              <button
+                type="button"
+                onClick={handleSaveChanges}
+                className="w-full lg:w-auto lg:min-w-[200px] h-12 sm:h-14 border border-[#1CC4F9] rounded-full text-white text-sm sm:text-base font-medium font-['Poppins'] hover:bg-cyan-900/20 transition flex items-center justify-center gap-2 px-6"
+                style={{ 
+                  background: 'linear-gradient(122.63deg, rgba(34, 34, 34, 0.5) 0%, rgba(53, 53, 53, 0.5) 100%)'
+                }}
+                disabled={isSaving}
+              >
+                {isSaving ? <Loader size={16} className="animate-spin" /> : <Save size={16} />}
+                {t('userInfo_button_saveChanges')}
+              </button>
             </div>
           </div>
-
-          {/* Botón Guardar Cambios */}
-          <div className="absolute left-[450px] top-[300px] w-[420px] h-[50px]">
-            <button
-              type="button"
-              onClick={handleSaveChanges}
-              className="w-full h-full border border-[#1CC4F9] rounded-[25px] text-white text-[16px] font-normal font-['Poppins'] leading-5 tracking-[0.1px] hover:bg-cyan-900/20 transition flex items-center justify-center gap-2"
-              style={{ 
-                background: 'linear-gradient(122.63deg, rgba(34, 34, 34, 0.5) 0%, rgba(53, 53, 53, 0.5) 100%)'
-              }}
-              disabled={isSaving}
-            >
-              {isSaving ? <Loader size={16} className="animate-spin" /> : <Save size={16} />}
-              Guardar Cambios
-            </button>
-          </div>
         </div>
+        
         {/* Mensajes de error y éxito */}
         {saveError && (
-          <div className="mt-6 bg-red-500 bg-opacity-10 text-red-500 rounded-lg px-6 py-4 flex items-center gap-2">
-            <AlertTriangle size={20} />
+          <div className="mt-6 bg-red-500 bg-opacity-10 text-red-500 rounded-lg px-4 sm:px-6 py-3 sm:py-4 flex items-center gap-2 text-sm sm:text-base">
+            <AlertTriangle size={18} className="sm:w-5 sm:h-5 flex-shrink-0" />
             <span>{saveError}</span>
           </div>
         )}
         {saveSuccess && (
-          <div className="mt-6 bg-green-500 bg-opacity-10 text-green-500 rounded-lg px-6 py-4 flex items-center gap-2">
-            <Save size={20} />
+          <div className="mt-6 bg-green-500 bg-opacity-10 text-green-500 rounded-lg px-4 sm:px-6 py-3 sm:py-4 flex items-center gap-2 text-sm sm:text-base">
+            <Save size={18} className="sm:w-5 sm:h-5 flex-shrink-0" />
             <span>{t('userInfo_success_saved')}</span>
           </div>
         )}
-        {/* Crop modal igual que antes si es necesario */}
-      {showCropModal && imageSrcForCropper && (
-        <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50 p-4 transition-opacity duration-300 ease-out" style={{ backdropFilter: 'blur(4px)' }}>
-            <div className="bg-slate-900 p-6 rounded-lg shadow-xl max-w-lg w-full">
-            <h3 className="text-xl leading-6 font-semibold text-white mb-5 text-center">
-              {t('settings_cropImage_title')}
-            </h3>
-            <div className="flex justify-center mb-5">
-              <ReactCrop
-                crop={crop}
-                onChange={(_, percentCrop) => setCrop(percentCrop)} 
+        
+        {/* Crop modal responsive */}
+        {showCropModal && imageSrcForCropper && (
+          <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50 p-4 transition-opacity duration-300 ease-out" style={{ backdropFilter: 'blur(4px)' }}>
+            <div className="bg-slate-900 p-4 sm:p-6 rounded-lg shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+              <h3 className="text-lg sm:text-xl leading-6 font-semibold text-white mb-4 sm:mb-5 text-center">
+                {t('settings_cropImage_title')}
+              </h3>
+              <div className="flex justify-center mb-4 sm:mb-5">
+                <ReactCrop
+                  crop={crop}
+                  onChange={(_, percentCrop) => setCrop(percentCrop)} 
                   onComplete={c => setCompletedCrop(c)}
-                aspect={aspect} 
-                minWidth={100}
-                minHeight={100}
-                circularCrop={false} 
-                className="max-h-[60vh]"
-              >
-                <img
-                  ref={imgRefForCropper} 
-                  alt="Crop preview"
-                  src={imageSrcForCropper} 
-                  style={{ maxHeight: '60vh', objectFit: 'contain' }}
-                  onLoad={onImageLoadForCropper} 
-                />
-              </ReactCrop>
-            </div>
-            {profilePicError && <p className="mb-3 text-sm text-red-500 text-center">{profilePicError}</p>}
-            <div className="mt-6 flex flex-col sm:flex-row-reverse gap-3">
-              <button
-                type="button"
-                className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-6 py-3 bg-cyan-600 text-base font-medium text-white hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-cyan-500 sm:text-sm transition-colors duration-150"
-                onClick={handleCropImageAndInitiateUpload} 
-                disabled={isUploadingProfilePic} 
-              >
-                {isUploadingProfilePic ? t('settings_cropImage_button_cropping') : t('settings_cropImage_button_crop')}
-              </button>
-              <button
-                type="button"
-                className="w-full inline-flex justify-center rounded-md border border-gray-600 shadow-sm px-6 py-3 bg-slate-800 text-base font-medium text-gray-300 hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-cyan-500 sm:text-sm transition-colors duration-150"
-                onClick={handleCancelProfilePicUpdateAndCloseModal} 
-                disabled={isUploadingProfilePic} 
-              >
-                {t('settings_cropImage_button_cancel')}
-              </button>
+                  aspect={aspect} 
+                  minWidth={100}
+                  minHeight={100}
+                  circularCrop={false} 
+                  className="max-h-[50vh] sm:max-h-[60vh]"
+                >
+                  <img
+                    ref={imgRefForCropper} 
+                    alt="Crop preview"
+                    src={imageSrcForCropper} 
+                    style={{ maxHeight: '50vh', objectFit: 'contain' }}
+                    className="sm:max-h-[60vh]"
+                    onLoad={onImageLoadForCropper} 
+                  />
+                </ReactCrop>
+              </div>
+              {profilePicError && <p className="mb-3 text-xs sm:text-sm text-red-500 text-center">{profilePicError}</p>}
+              <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row-reverse gap-3">
+                <button
+                  type="button"
+                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 sm:px-6 py-2 sm:py-3 bg-cyan-600 text-sm sm:text-base font-medium text-white hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-cyan-500 transition-colors duration-150"
+                  onClick={handleCropImageAndInitiateUpload} 
+                  disabled={isUploadingProfilePic} 
+                >
+                  {isUploadingProfilePic ? t('settings_cropImage_button_cropping') : t('settings_cropImage_button_crop')}
+                </button>
+                <button
+                  type="button"
+                  className="w-full inline-flex justify-center rounded-md border border-gray-600 shadow-sm px-4 sm:px-6 py-2 sm:py-3 bg-slate-800 text-sm sm:text-base font-medium text-gray-300 hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-cyan-500 transition-colors duration-150"
+                  onClick={handleCancelProfilePicUpdateAndCloseModal} 
+                  disabled={isUploadingProfilePic} 
+                >
+                  {t('settings_cropImage_button_cancel')}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
       </div>
     </div>
   );
