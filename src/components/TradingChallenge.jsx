@@ -616,7 +616,6 @@ export default function TradingChallengeUI() {
                   onChange={(e) => setSelectedPaymentMethod(e.target.value)}
                 >
                   <option value="crypto">{t('paymentMethod_crypto')}</option>
-                  <option value="card">{t('paymentMethod_card')}</option>
                 </select>
                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
                   <ChevronDown size={16} />
