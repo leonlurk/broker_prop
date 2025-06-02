@@ -388,10 +388,10 @@ const Home = ({ onViewDetails, onSettingsClick, setSelectedOption }) => {
                   </div>
 
                   {/* Badge del número de cuenta */}
-                  <div className="absolute right-[16px] sm:right-[20px] lg:left-[312px] top-[16px] sm:top-[19px] w-[100px] sm:w-[110px] lg:w-[121px] h-[36px] sm:h-[42px] lg:h-[48px]">
+                  <div className="absolute right-[16px] sm:right-[20px] lg:left-[312px] top-[38px] sm:top-[70px] lg:top-[25px] w-[80px] sm:w-[110px] lg:w-[121px] h-[28px] sm:h-[42px] lg:h-[48px]">
                     <div className="absolute inset-0 bg-gradient-to-br from-[rgba(31,31,31,0.2)] to-[rgba(35,35,35,0.2)] border border-[rgba(255,255,255,0.2)] rounded-[40px]"></div>
-                    <div className="absolute left-[10px] sm:left-[12px] lg:left-[14px] top-[11px] sm:top-[14px] lg:top-[17px] w-[80px] sm:w-[86px] lg:w-[93px] h-[12px] lg:h-[14px] flex items-center justify-center">
-                      <span className="font-['Poppins'] font-normal text-[12px] sm:text-[14px] lg:text-[16px] leading-[16px] sm:leading-[18px] lg:leading-[20px] text-white text-center truncate">
+                    <div className="absolute left-[8px] sm:left-[12px] lg:left-[14px] top-[6px] sm:top-[14px] lg:top-[17px] w-[64px] sm:w-[86px] lg:w-[93px] h-[16px] sm:h-[12px] lg:h-[14px] flex items-center justify-center">
+                      <span className="font-['Poppins'] font-normal text-[10px] sm:text-[12px] lg:text-[16px] leading-[12px] sm:leading-[18px] lg:leading-[20px] text-white text-center truncate">
                         #{account.accountNumber || account.login || '657237'}
                       </span>
                     </div>
