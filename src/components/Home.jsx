@@ -254,7 +254,7 @@ const Home = ({ onViewDetails, onSettingsClick, setSelectedOption }) => {
             style={{ outline: 'none' }}
             onClick={() => onSettingsClick && onSettingsClick()}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
@@ -262,12 +262,12 @@ const Home = ({ onViewDetails, onSettingsClick, setSelectedOption }) => {
           <div className="flex items-center space-x-2 relative">
             <button 
               onClick={toggleUserInfo}
-              className="focus:outline-none bg-transparent p-0.5 sm:p-1 hover:ring-1 hover:ring-cyan-400 rounded-full transition-all duration-200"
+              className="focus:outline-none bg-transparent p-1.5 sm:p-2 hover:ring-1 hover:ring-cyan-400 rounded-full transition-all duration-200"
             >
               <img 
                 src={currentUser?.photoURL || "/Perfil.png"} 
                 alt="Avatar" 
-                className="w-7 h-7 sm:w-8 sm:h-8 md:w-12 md:h-12 rounded-full object-cover" 
+                className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 rounded-full object-cover" 
                 onError={(e) => {
                   e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%23555'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='20' fill='white'%3ES%3C/text%3E%3C/svg%3E";
                 }}
@@ -277,7 +277,7 @@ const Home = ({ onViewDetails, onSettingsClick, setSelectedOption }) => {
           <div className="flex items-center space-x-1 md:space-x-2 relative">
             <button 
               onClick={toggleLanguageMenu}
-              className="flex items-center space-x-1 focus:outline-none bg-transparent p-0.5 sm:p-1 hover:ring-1 hover:ring-cyan-400 rounded-full transition-all duration-200"
+              className="flex items-center space-x-1 focus:outline-none bg-transparent p-1.5 sm:p-2 hover:ring-1 hover:ring-cyan-400 rounded-full transition-all duration-200"
             >
               <img 
                 src={resolvedImagePath} 
@@ -361,8 +361,8 @@ const Home = ({ onViewDetails, onSettingsClick, setSelectedOption }) => {
         )}
         {console.log('[Home.jsx] Dashboard Accounts Data:', dashboardAccounts)}
         {!isLoadingDashboardAccounts && dashboardAccounts.length > 0 && (
-          <div className="w-full flex justify-center">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 w-full">
+          <div className="w-full flex justify-start pr-4 sm:pr-8">
+            <div className="flex gap-4 sm:gap-8 lg:gap-20 w-full overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-300">
             {dashboardAccounts.map((account) => {
               const amount = getChallengeAmount(account);
               let displayAmount;
@@ -378,54 +378,94 @@ const Home = ({ onViewDetails, onSettingsClick, setSelectedOption }) => {
               }
 
               return (
-                <div key={account.id} className="bg-gradient-to-br from-[#232323] to-[#2d2d2d] p-4 sm:p-5 rounded-3xl border border-[#333] flex flex-col justify-between min-h-[280px] max-w-lg">
-                  <div>
-                    <div className="flex justify-between items-start mb-3 sm:mb-4">
-                      <h3 className="font-medium text-lg sm:text-xl md:text-2xl">
+                <div key={account.id} className="relative bg-gradient-to-br from-[rgba(34,34,34,0.5)] to-[rgba(53,53,53,0.5)] border border-[#373737] rounded-[30px] sm:rounded-[30px] flex-shrink-0 w-[280px] sm:w-[350px] lg:w-[452px] h-[240px] sm:h-[280px] lg:h-[320px]">
+                  
+                  {/* Título Principal */}
+                  <div className="absolute left-[16px] sm:left-[20px] top-[16px] sm:top-[22px] w-[200px] sm:w-[250px] lg:w-[270px] h-[45px] sm:h-[55px] lg:h-[60px] overflow-hidden">
+                    <h3 className="font-['Poppins'] font-semibold text-[18px] sm:text-[22px] lg:text-[28px] leading-[20px] sm:leading-[26px] lg:leading-[32px] text-white uppercase flex items-start break-words">
                       {getPhaseDisplayLabel(account)}
                     </h3>
-                      <span className="text-gray-400 text-xs sm:text-sm">#{account.accountNumber}</span>
                   </div>
 
-                    <div className="mb-3 sm:mb-4">
-                      <p className="text-gray-400 text-xs sm:text-sm">Balance Actual</p>
-                      <p className="text-xl sm:text-2xl font-medium">{formatBalance(amount)}</p>
+                  {/* Badge del número de cuenta */}
+                  <div className="absolute right-[16px] sm:right-[20px] lg:left-[312px] top-[16px] sm:top-[19px] w-[100px] sm:w-[110px] lg:w-[121px] h-[36px] sm:h-[42px] lg:h-[48px]">
+                    <div className="absolute inset-0 bg-gradient-to-br from-[rgba(31,31,31,0.2)] to-[rgba(35,35,35,0.2)] border border-[rgba(255,255,255,0.2)] rounded-[40px]"></div>
+                    <div className="absolute left-[10px] sm:left-[12px] lg:left-[14px] top-[11px] sm:top-[14px] lg:top-[17px] w-[80px] sm:w-[86px] lg:w-[93px] h-[12px] lg:h-[14px] flex items-center justify-center">
+                      <span className="font-['Poppins'] font-normal text-[12px] sm:text-[14px] lg:text-[16px] leading-[16px] sm:leading-[18px] lg:leading-[20px] text-white text-center truncate">
+                        #{account.accountNumber || account.login || '657237'}
+                      </span>
+                    </div>
                   </div>
 
-                    <div className="grid grid-cols-3 gap-2 sm:gap-4 text-xs sm:text-sm mb-4 sm:mb-6">
-                    <div>
-                      <p className="text-gray-400">PNL Hoy</p>
-                        <p className={`truncate ${(account.pnlToday || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        {(account.pnlToday || 0) >= 0 ? '+' : ''}{((account.pnlToday || 0) / (amount || 1) * 100).toFixed(2)}%<br />
+                  {/* Balance Actual Label */}
+                  <div className="absolute left-[16px] sm:left-[20px] top-[65px] sm:top-[75px] lg:top-[90px] w-[140px] sm:w-[150px] lg:w-[162px] h-[24px] sm:h-[28px] lg:h-[32px]">
+                    <p className="font-['Poppins'] font-normal text-[14px] sm:text-[16px] lg:text-[20px] leading-[28px] sm:leading-[35px] lg:leading-[40px] text-[rgba(255,255,255,0.5)] flex items-center">
+                      Balance Actual
+                    </p>
+                  </div>
+
+                  {/* Balance Amount */}
+                  <div className="absolute left-[16px] sm:left-[20px] top-[85px] sm:top-[100px] lg:top-[120px] w-[180px] sm:w-[190px] lg:w-[200px] h-[32px] sm:h-[36px] lg:h-[42px]">
+                    <p className="font-['Poppins'] font-normal text-[20px] sm:text-[24px] lg:text-[28px] leading-[26px] sm:text-[30px] lg:leading-[36px] text-white flex items-center">
+                      {formatBalance(amount)}
+                    </p>
+                  </div>
+
+                  {/* PNL Section */}
+                  <div className="absolute left-[16px] sm:left-[20px] top-[120px] sm:top-[140px] lg:top-[164px] w-[250px] sm:w-[320px] lg:w-[411px] h-[70px] sm:h-[80px] lg:h-[90px] flex flex-row items-center gap-[4px] sm:gap-[6px] lg:gap-[8px]">
+                    
+                    {/* PNL Hoy */}
+                    <div className="flex flex-col items-start w-[80px] sm:w-[100px] lg:w-[130px] h-[70px] sm:h-[80px] lg:h-[90px]">
+                      <div className="w-full h-[20px] sm:h-[24px] lg:h-[28px] font-['Poppins'] font-normal text-[12px] sm:text-[14px] lg:text-[18px] leading-[20px] sm:leading-[24px] lg:leading-[28px] text-[rgba(255,255,255,0.5)] flex items-center">
+                        PNL Hoy
+                      </div>
+                      <div className={`w-full h-[20px] sm:h-[24px] lg:h-[28px] font-['Poppins'] font-normal text-[12px] sm:text-[14px] lg:text-[18px] leading-[20px] sm:leading-[24px] lg:leading-[28px] text-white flex items-center ${(account.pnlToday || 0) >= 0 ? 'text-white' : 'text-white'}`}>
+                        {(account.pnlToday || 0) >= 0 ? '+' : ''}{((account.pnlToday || 0) / (amount || 1) * 100).toFixed(2)}%
+                      </div>
+                      <div className={`w-full h-[20px] sm:h-[24px] lg:h-[28px] font-['Poppins'] font-normal text-[10px] sm:text-[12px] lg:text-[16px] leading-[20px] sm:leading-[24px] lg:leading-[28px] text-white flex items-center ${(account.pnlToday || 0) >= 0 ? 'text-white' : 'text-white'}`}>
                         {(account.pnlToday || 0) >= 0 ? '+' : ''}{formatBalance(account.pnlToday || 0)}
-                      </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-gray-400">PNL 7 días</p>
-                        <p className={`truncate ${(account.pnl7Days || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        {(account.pnl7Days || 0) >= 0 ? '+' : ''}{((account.pnl7Days || 0) / (amount || 1) * 100).toFixed(2)}%<br />
+
+                    {/* PNL 7 días */}
+                    <div className="flex flex-col items-start w-[80px] sm:w-[100px] lg:w-[130px] h-[70px] sm:h-[80px] lg:h-[90px]">
+                      <div className="w-full h-[20px] sm:h-[24px] lg:h-[28px] font-['Poppins'] font-normal text-[12px] sm:text-[14px] lg:text-[18px] leading-[20px] sm:leading-[24px] lg:leading-[28px] text-[rgba(255,255,255,0.5)] flex items-center">
+                        PNL 7 días
+                      </div>
+                      <div className={`w-full h-[20px] sm:h-[24px] lg:h-[28px] font-['Poppins'] font-normal text-[12px] sm:text-[14px] lg:text-[18px] leading-[20px] sm:leading-[24px] lg:leading-[28px] text-white flex items-center ${(account.pnl7Days || 0) >= 0 ? 'text-white' : 'text-white'}`}>
+                        {(account.pnl7Days || 0) >= 0 ? '+' : ''}{((account.pnl7Days || 0) / (amount || 1) * 100).toFixed(2)}%
+                      </div>
+                      <div className={`w-full h-[20px] sm:h-[24px] lg:h-[28px] font-['Poppins'] font-normal text-[10px] sm:text-[12px] lg:text-[16px] leading-[20px] sm:leading-[24px] lg:leading-[28px] text-white flex items-center ${(account.pnl7Days || 0) >= 0 ? 'text-white' : 'text-white'}`}>
                         {(account.pnl7Days || 0) >= 0 ? '+' : ''}{formatBalance(account.pnl7Days || 0)}
-                      </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-gray-400">PNL 30 días</p>
-                        <p className={`truncate ${(account.pnl30Days || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        {(account.pnl30Days || 0) >= 0 ? '+' : ''}{((account.pnl30Days || 0) / (amount || 1) * 100).toFixed(2)}%<br />
+
+                    {/* PNL 30 días */}
+                    <div className="flex flex-col items-start w-[80px] sm:w-[100px] lg:w-[130px] h-[70px] sm:h-[80px] lg:h-[90px]">
+                      <div className="w-full h-[20px] sm:h-[24px] lg:h-[28px] font-['Poppins'] font-normal text-[12px] sm:text-[14px] lg:text-[18px] leading-[20px] sm:leading-[24px] lg:leading-[28px] text-[rgba(255,255,255,0.5)] flex items-center">
+                        PNL 30 días
+                      </div>
+                      <div className={`w-full h-[20px] sm:h-[24px] lg:h-[28px] font-['Poppins'] font-normal text-[12px] sm:text-[14px] lg:text-[18px] leading-[20px] sm:leading-[24px] lg:leading-[28px] text-white flex items-center ${(account.pnl30Days || 0) >= 0 ? 'text-white' : 'text-white'}`}>
+                        {(account.pnl30Days || 0) >= 0 ? '+' : ''}{((account.pnl30Days || 0) / (amount || 1) * 100).toFixed(2)}%
+                      </div>
+                      <div className={`w-full h-[20px] sm:h-[24px] lg:h-[28px] font-['Poppins'] font-normal text-[10px] sm:text-[12px] lg:text-[16px] leading-[20px] sm:leading-[24px] lg:leading-[28px] text-white flex items-center ${(account.pnl30Days || 0) >= 0 ? 'text-white' : 'text-white'}`}>
                         {(account.pnl30Days || 0) >= 0 ? '+' : ''}{formatBalance(account.pnl30Days || 0)}
-                      </p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex justify-center mt-auto">
+                  {/* Botón Ver Detalles */}
+                  <div className="absolute left-[50%] transform -translate-x-1/2 sm:left-[80px] lg:left-[106px] sm:transform-none bottom-[16px] sm:bottom-[20px] lg:top-[267px] w-[180px] sm:w-[200px] lg:w-[240px] h-[32px] sm:h-[36px] lg:h-[42px]">
                     <button 
-                      className="border border-cyan-500 border-opacity-50 text-white py-1 sm:py-1.5 px-4 sm:px-6 rounded-full hover:bg-gray-800 transition text-xs sm:text-sm"
+                      className="w-full h-full bg-gradient-to-br from-[#1F1F1F] to-[#232323] border border-[#1CC4F9] rounded-[40px] flex items-center justify-center hover:opacity-90 transition"
                       style={{ outline: 'none' }}
                       onClick={() => {
                         onViewDetails && onViewDetails(account.id);
                       }}
                     >
-                      Ver Detalles
+                      <span className="font-['Poppins'] font-normal text-[14px] sm:text-[16px] lg:text-[20px] leading-[20px] sm:leading-[24px] lg:leading-[30px] text-white capitalize">
+                        Ver Detalles
+                      </span>
                     </button>
                   </div>
                 </div>

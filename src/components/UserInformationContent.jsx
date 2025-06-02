@@ -754,38 +754,46 @@ const UserInformationContent = ({ onBack }) => {
   return (
     <div className={styles.container}>
       {/* Botón volver tipo dashboard - arriba del contenedor interno */}
-      <button
-        type="button"
-        onClick={onBack}
-        className="mb-4 flex items-center justify-center w-10 h-10 md:w-11 md:h-11 rounded-full border border-cyan-400 bg-[#232323] text-white hover:bg-cyan-900/20 transition shadow-lg"
-        style={{ boxShadow: '0 2px 8px 0 rgba(28,196,249,0.08)' }}
-        aria-label={t('common_back')}
-      >
-        <ChevronDown style={{ transform: 'rotate(90deg)' }} size={40} className="text-cyan-400" />
-      </button>
+      <div className="mb-4 md:mb-6">
+        <div className="flex items-center mb-2 sm:mb-4">
+          <button
+            onClick={onBack}
+            className="text-white bg-[#2c2c2c] hover:bg-[#252525] rounded-full p-1.5 sm:p-2 border border-cyan-500 focus:outline-none transition-colors"
+            aria-label={t('common_back')}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 sm:w-6 sm:h-6">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+            </svg>
+          </button>
+        </div>
+      </div>
       
       <div className="p-4 md:p-6 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-2xl w-full flex flex-col gap-6 relative bg-opacity-90 mb-4 md:mb-6 pb-[100px] md:pb-6">
         {/* Header: Título */}
         <div className="mt-2 md:mt-4 mb-6">
           <h2 className="text-2xl md:text-3xl font-semibold text-white text-left">{t('userInfo_title')}</h2>
-        </div>
+      </div>
         {/* Foto de perfil y formulario */}
-        <div className="flex flex-col md:flex-row gap-8 items-start w-full">
+        <div className="relative w-full h-[450px]">
           {/* Foto de perfil */}
-          <div className="flex flex-col items-center justify-start pt-2 mb-4 md:mb-0">
+          <div className="absolute left-3 top-0">
             <div className="relative">
               <img
                 src={profileImageUrl || fallbackUserPhoto}
                 alt="Foto de perfil"
-                className="w-24 h-24 md:w-28 md:h-28 rounded-full object-cover border-4 border-[#232323] shadow-md"
+                className="w-[120px] h-[120px] rounded-full object-cover border border-[#3C3C3C] shadow-lg"
+                style={{ boxShadow: 'inset 0px 4px 4px rgba(0, 0, 0, 0.5)' }}
               />
               <button
                 type="button"
-                className="absolute bottom-2 right-2 bg-[#232323] border border-cyan-400 rounded-full p-2 flex items-center justify-center hover:bg-cyan-900/30 transition"
+                className="absolute bottom-0 right-0 w-[40px] h-[40px] rounded-full border border-[#3C3C3C] flex items-center justify-center hover:bg-cyan-900/30 transition"
+                style={{ 
+                  background: 'linear-gradient(122.63deg, #222222 0%, #353535 100%)'
+                }}
                 onClick={() => document.getElementById('profilePicInputUserInfo').click()}
                 aria-label={t('userInfo_button_changePhoto')}
               >
-                <Camera size={20} className="text-cyan-400" />
+                <Camera size={24} className="text-white" />
               </button>
               <input
                 id="profilePicInputUserInfo"
@@ -797,70 +805,104 @@ const UserInformationContent = ({ onBack }) => {
               />
             </div>
           </div>
-          {/* Formulario */}
-          <form className="flex-1 w-full grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8" autoComplete="off" onSubmit={e => { e.preventDefault(); handleSaveChanges(); }}>
-            {/* Nombre */}
-            <div>
+
+          {/* Labels y campos */}
+          
+          {/* Label Nombre */}
+          <div className="absolute left-[150px] top-[20px]">
+            <span className="text-white text-[18px] font-normal font-['Poppins'] leading-5 tracking-[0.1px]">
+              Nombre
+            </span>
+          </div>
+          
+          {/* Campo Nombre */}
+          <div className="absolute left-[150px] top-[45px] w-[292px] h-[50px]">
+            <input 
+              type="text" 
+              id="nombre" 
+              value={nombre}
+              onChange={e => setNombre(e.target.value)}
+              placeholder="Nombre"
+              className="w-full h-full px-[20px] text-white text-[16px] font-normal font-['Poppins'] leading-5 tracking-[0.1px] border border-[#3C3C3C] rounded-[25px] focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-white/50"
+              style={{ 
+                background: 'linear-gradient(122.63deg, rgba(34, 34, 34, 0.5) 0%, rgba(53, 53, 53, 0.5) 100%)'
+              }}
+            />
+          </div>
+
+          {/* Label Apellido */}
+          <div className="absolute left-[450px] top-[20px]">
+            <span className="text-white text-[18px] font-normal font-['Poppins'] leading-5 tracking-[0.1px]">
+              Apellido
+            </span>
+          </div>
+          
+          {/* Campo Apellido */}
+          <div className="absolute left-[450px] top-[45px] w-[420px] h-[50px]">
+            <input 
+              type="text" 
+              id="apellido" 
+              value={apellido}
+              onChange={e => setApellido(e.target.value)}
+              placeholder="Apellido"
+              className="w-full h-full px-[20px] text-white text-[16px] font-normal font-['Poppins'] leading-5 tracking-[0.1px] border border-[#3C3C3C] rounded-[25px] focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-white/50"
+              style={{ 
+                background: 'linear-gradient(122.63deg, rgba(34, 34, 34, 0.5) 0%, rgba(53, 53, 53, 0.5) 100%)'
+              }}
+            />
+          </div>
+
+          {/* Campo Fecha de nacimiento */}
+          <div className="absolute left-3 top-[140px] w-[430px] h-[50px]">
+            <div className="relative w-full h-full">
               <input
                 type="text"
-                id="nombre"
-                value={nombre}
-                onChange={e => setNombre(e.target.value)}
-                placeholder={t('userInfo_placeholder_firstName')}
-                className="bg-[#232323]/80 border border-[#444] rounded-[28px] px-6 h-14 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-gray-500 w-full"
+                id="fechaNacimiento"
+                value={fechaNacimiento}
+                onClick={() => setShowCalendar(!showCalendar)} 
+                placeholder="Fecha de nacimiento"
+                className="w-full h-full px-[20px] pr-[50px] text-white text-[16px] font-normal font-['Poppins'] leading-5 tracking-[0.1px] border border-[#3C3C3C] rounded-[25px] focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-white/50 cursor-pointer"
+                style={{ 
+                  background: 'linear-gradient(122.63deg, rgba(34, 34, 34, 0.5) 0%, rgba(53, 53, 53, 0.5) 100%)'
+                }}
+                readOnly
               />
+              <Calendar size={20} className="absolute right-[15px] top-1/2 -translate-y-1/2 text-[#A0A0A0] pointer-events-none" />
             </div>
-            {/* Apellido */}
-            <div>
-              <input
-                type="text"
-                id="apellido"
-                value={apellido}
-                onChange={e => setApellido(e.target.value)}
-                placeholder={t('userInfo_placeholder_lastName')}
-                className="bg-[#232323]/80 border border-[#444] rounded-[28px] px-6 h-14 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-gray-500 w-full"
-              />
-            </div>
-            {/* Fecha de nacimiento */}
-            <div>
-              <div className="relative">
-                <input
-                  type="text"
-                  id="fechaNacimiento"
-                  value={fechaNacimiento}
-                  onClick={() => setShowCalendar(!showCalendar)}
-                  placeholder={t('userInfo_placeholder_dob')}
-                  className="bg-[#232323]/80 border border-[#444] rounded-[28px] px-6 h-14 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-gray-500 pr-10 cursor-pointer w-full"
-                  readOnly
-                />
-                <Calendar size={20} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-              </div>
-              {showCalendar && renderCalendar()}
-            </div>
-            {/* Género */}
-            <div className="relative">
-              <select
-                id="genero"
-                value={genero}
+            {showCalendar && renderCalendar()}
+          </div>
+
+          {/* Campo Género */}
+          <div className="absolute left-[450px] top-[140px] w-[420px] h-[50px]">
+            <div className="relative w-full h-full">
+              <select 
+                id="genero" 
+                value={genero} 
                 onChange={e => setGenero(e.target.value)}
-                className="bg-[#232323]/80 border border-[#444] rounded-[28px] px-6 h-14 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-gray-500 w-full appearance-none"
+                className="w-full h-full px-[20px] pr-[50px] text-white text-[16px] font-normal font-['Poppins'] leading-5 tracking-[0.1px] border border-[#3C3C3C] rounded-[25px] focus:outline-none focus:ring-2 focus:ring-cyan-500 appearance-none"
+                style={{ 
+                  background: 'linear-gradient(122.63deg, rgba(34, 34, 34, 0.5) 0%, rgba(53, 53, 53, 0.5) 100%)'
+                }}
               >
-                <option value="" className="text-gray-500">{t('userInfo_placeholder_gender')}</option>
+                <option value="" className="text-white/50">Género</option>
                 <option value="masculino">{t('gender_male')}</option>
                 <option value="femenino">{t('gender_female')}</option>
                 <option value="otro">{t('gender_other')}</option>
                 <option value="prefiero_no_decirlo">{t('gender_preferNotToSay')}</option>
               </select>
-              <ChevronDown size={24} className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400" style={{paddingRight: 5}} />
+              <ChevronDown size={24} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A0A0A0] pointer-events-none" />
             </div>
-            {/* País */}
-            <div className="relative">
-              <select
-                id="pais"
-                value={paisSeleccionado}
+          </div>
+
+          {/* Campo País */}
+          <div className="absolute left-3 top-[220px] w-[430px] h-[50px]">
+            <div className="relative w-full h-full">
+              <select 
+                id="pais" 
+                value={paisSeleccionado} 
                 onChange={e => {
                   setPaisSeleccionado(e.target.value);
-                  // Buscar el código del país seleccionado y actualizar codigoPais
+                  // Lógica existente para actualizar código de país
                   const normalize = str => str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
                   const selected = e.target.value;
                   let codeObj = codigosPaisesFull.find(cp => normalize(cp.pais) === normalize(selected));
@@ -876,62 +918,88 @@ const UserInformationContent = ({ onBack }) => {
                   }
                   setCodigoPais(codeObj ? codeObj.codigo : '');
                 }}
-                className="bg-[#232323]/80 border border-[#444] rounded-[28px] px-6 h-14 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-gray-500 w-full appearance-none"
+                className="w-full h-full px-[20px] pr-[50px] text-white text-[16px] font-normal font-['Poppins'] leading-5 tracking-[0.1px] border border-[#3C3C3C] rounded-[25px] focus:outline-none focus:ring-2 focus:ring-cyan-500 appearance-none"
+                style={{ 
+                  background: 'linear-gradient(122.63deg, rgba(34, 34, 34, 0.5) 0%, rgba(53, 53, 53, 0.5) 100%)'
+                }}
                 disabled={cargandoPaises}
               >
-                <option value="" className="text-gray-500">{cargandoPaises ? t('userInfo_loading_countries') : t('userInfo_placeholder_country')}</option>
+                <option value="" className="text-white/50">{cargandoPaises ? t('userInfo_loading_countries') : 'Argentina'}</option>
                 {paises.map(pais => (
                   <option key={pais.nombre} value={pais.nombre}>{pais.nombre}</option>
                 ))}
               </select>
-              <ChevronDown size={24} className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400" style={{paddingRight: 5}} />
+              <ChevronDown size={24} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A0A0A0] pointer-events-none" />
             </div>
-            {/* Ciudad */}
-            <div className="relative">
-              <select
-                id="ciudad"
-                value={ciudadSeleccionada}
+          </div>
+
+          {/* Campo Ciudad */}
+          <div className="absolute left-[450px] top-[220px] w-[420px] h-[50px]">
+            <div className="relative w-full h-full">
+              <select 
+                id="ciudad" 
+                value={ciudadSeleccionada} 
                 onChange={e => setCiudadSeleccionada(e.target.value)}
-                className="bg-[#232323]/80 border border-[#444] rounded-[28px] px-6 h-14 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-gray-500 w-full appearance-none"
+                className="w-full h-full px-[20px] pr-[50px] text-white text-[16px] font-normal font-['Poppins'] leading-5 tracking-[0.1px] border border-[#3C3C3C] rounded-[25px] focus:outline-none focus:ring-2 focus:ring-cyan-500 appearance-none"
+                style={{ 
+                  background: 'linear-gradient(122.63deg, rgba(34, 34, 34, 0.5) 0%, rgba(53, 53, 53, 0.5) 100%)'
+                }}
                 disabled={cargandoCiudades || !paisSeleccionado}
               >
-                <option value="" className="text-gray-500">
-                  {cargandoCiudades ? t('userInfo_loading_cities') :
-                    (ciudades.length === 0 && paisSeleccionado ? t('userInfo_noCitiesAvailable') : t('userInfo_placeholder_city'))}
+                <option value="" className="text-white/50">
+                  {cargandoCiudades ? t('userInfo_loading_cities') || 'Cargando ciudades...' : 
+                   !paisSeleccionado ? 'Selecciona un país primero' : 'Selecciona una ciudad'}
                 </option>
                 {ciudades.map(ciudad => (
                   <option key={ciudad} value={ciudad}>{ciudad}</option>
                 ))}
               </select>
-              <ChevronDown size={24} className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400" style={{paddingRight: 5}} />
+              <ChevronDown size={24} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A0A0A0] pointer-events-none" />
             </div>
-            {/* Teléfono */}
-            <div className="flex flex-row items-center w-full">
-              {codigoPais && (
-                <span className="bg-[#232323]/80 border border-[#444] rounded-l-[28px] px-5 h-14 flex items-center text-white text-base select-none" style={{ borderRight: 'none' }}>{codigoPais}</span>
-              )}
-              <input
-                type="tel"
-                id="telefono"
-                value={numeroTelefono}
-                onChange={handlePhoneChange}
-                placeholder={t('userInfo_placeholder_phoneNumber')}
-                className={`bg-[#232323]/80 border border-[#444] ${codigoPais ? 'rounded-r-[28px]' : 'rounded-[28px]'} px-6 h-14 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-gray-500 w-full`}
-                style={codigoPais ? { borderLeft: 'none' } : {}}
-              />
+          </div>
+
+          {/* Campo Teléfono */}
+          <div className="absolute left-3 top-[300px] w-[430px] h-[50px]">
+            <div className="relative w-full h-full">
+              <div className="flex h-full">
+                {/* Código de país */}
+                <div className="flex items-center px-3 border border-r-0 border-[#3C3C3C] rounded-l-[25px] text-white text-[16px] font-normal font-['Poppins'] min-w-[80px] justify-center"
+                     style={{ 
+                       background: 'linear-gradient(122.63deg, rgba(34, 34, 34, 0.5) 0%, rgba(53, 53, 53, 0.5) 100%)'
+                     }}>
+                  {codigoPais || '+54'}
+                </div>
+                {/* Número de teléfono */}
+                <input 
+                  type="tel" 
+                  id="telefono" 
+                  value={numeroTelefono}
+                  onChange={handlePhoneChange}
+                  placeholder="Número de teléfono"
+                  className="flex-1 h-full px-[15px] text-white text-[16px] font-normal font-['Poppins'] leading-5 tracking-[0.1px] border border-l-0 border-[#3C3C3C] rounded-r-[25px] focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-white/50"
+                  style={{ 
+                    background: 'linear-gradient(122.63deg, rgba(34, 34, 34, 0.5) 0%, rgba(53, 53, 53, 0.5) 100%)'
+                  }}
+                />
+              </div>
             </div>
-            <div className="flex items-end w-full mt-0">
-              <button
-                type="button"
-                onClick={handleSaveChanges}
-                className="w-full border border-cyan-400 rounded-[28px] px-10 h-14 text-white font-medium bg-transparent hover:bg-cyan-900/20 transition whitespace-nowrap flex items-center justify-center gap-2 text-lg"
-                disabled={isSaving}
-              >
-                {isSaving ? <Loader size={20} className="animate-spin mr-2" /> : <Save size={20} className="mr-2" />}
-                {t('userInfo_button_saveChanges')}
-              </button>
-            </div>
-          </form>
+          </div>
+
+          {/* Botón Guardar Cambios */}
+          <div className="absolute left-[450px] top-[300px] w-[420px] h-[50px]">
+            <button
+              type="button"
+              onClick={handleSaveChanges}
+              className="w-full h-full border border-[#1CC4F9] rounded-[25px] text-white text-[16px] font-normal font-['Poppins'] leading-5 tracking-[0.1px] hover:bg-cyan-900/20 transition flex items-center justify-center gap-2"
+              style={{ 
+                background: 'linear-gradient(122.63deg, rgba(34, 34, 34, 0.5) 0%, rgba(53, 53, 53, 0.5) 100%)'
+              }}
+              disabled={isSaving}
+            >
+              {isSaving ? <Loader size={16} className="animate-spin" /> : <Save size={16} />}
+              Guardar Cambios
+            </button>
+          </div>
         </div>
         {/* Mensajes de error y éxito */}
         {saveError && (
@@ -947,54 +1015,54 @@ const UserInformationContent = ({ onBack }) => {
           </div>
         )}
         {/* Crop modal igual que antes si es necesario */}
-        {showCropModal && imageSrcForCropper && (
-          <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50 p-4 transition-opacity duration-300 ease-out" style={{ backdropFilter: 'blur(4px)' }}>
+      {showCropModal && imageSrcForCropper && (
+        <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50 p-4 transition-opacity duration-300 ease-out" style={{ backdropFilter: 'blur(4px)' }}>
             <div className="bg-slate-900 p-6 rounded-lg shadow-xl max-w-lg w-full">
-              <h3 className="text-xl leading-6 font-semibold text-white mb-5 text-center">
-                {t('settings_cropImage_title')}
-              </h3>
-              <div className="flex justify-center mb-5">
-                <ReactCrop
-                  crop={crop}
-                  onChange={(_, percentCrop) => setCrop(percentCrop)}
+            <h3 className="text-xl leading-6 font-semibold text-white mb-5 text-center">
+              {t('settings_cropImage_title')}
+            </h3>
+            <div className="flex justify-center mb-5">
+              <ReactCrop
+                crop={crop}
+                onChange={(_, percentCrop) => setCrop(percentCrop)} 
                   onComplete={c => setCompletedCrop(c)}
-                  aspect={aspect}
-                  minWidth={100}
-                  minHeight={100}
-                  circularCrop={false}
-                  className="max-h-[60vh]"
-                >
-                  <img
-                    ref={imgRefForCropper}
-                    alt="Crop preview"
-                    src={imageSrcForCropper}
-                    style={{ maxHeight: '60vh', objectFit: 'contain' }}
-                    onLoad={onImageLoadForCropper}
-                  />
-                </ReactCrop>
-              </div>
-              {profilePicError && <p className="mb-3 text-sm text-red-500 text-center">{profilePicError}</p>}
-              <div className="mt-6 flex flex-col sm:flex-row-reverse gap-3">
-                <button
-                  type="button"
-                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-6 py-3 bg-cyan-600 text-base font-medium text-white hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-cyan-500 sm:text-sm transition-colors duration-150"
-                  onClick={handleCropImageAndInitiateUpload}
-                  disabled={isUploadingProfilePic}
-                >
-                  {isUploadingProfilePic ? t('settings_cropImage_button_cropping') : t('settings_cropImage_button_crop')}
-                </button>
-                <button
-                  type="button"
-                  className="w-full inline-flex justify-center rounded-md border border-gray-600 shadow-sm px-6 py-3 bg-slate-800 text-base font-medium text-gray-300 hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-cyan-500 sm:text-sm transition-colors duration-150"
-                  onClick={handleCancelProfilePicUpdateAndCloseModal}
-                  disabled={isUploadingProfilePic}
-                >
-                  {t('settings_cropImage_button_cancel')}
-                </button>
-              </div>
+                aspect={aspect} 
+                minWidth={100}
+                minHeight={100}
+                circularCrop={false} 
+                className="max-h-[60vh]"
+              >
+                <img
+                  ref={imgRefForCropper} 
+                  alt="Crop preview"
+                  src={imageSrcForCropper} 
+                  style={{ maxHeight: '60vh', objectFit: 'contain' }}
+                  onLoad={onImageLoadForCropper} 
+                />
+              </ReactCrop>
+            </div>
+            {profilePicError && <p className="mb-3 text-sm text-red-500 text-center">{profilePicError}</p>}
+            <div className="mt-6 flex flex-col sm:flex-row-reverse gap-3">
+              <button
+                type="button"
+                className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-6 py-3 bg-cyan-600 text-base font-medium text-white hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-cyan-500 sm:text-sm transition-colors duration-150"
+                onClick={handleCropImageAndInitiateUpload} 
+                disabled={isUploadingProfilePic} 
+              >
+                {isUploadingProfilePic ? t('settings_cropImage_button_cropping') : t('settings_cropImage_button_crop')}
+              </button>
+              <button
+                type="button"
+                className="w-full inline-flex justify-center rounded-md border border-gray-600 shadow-sm px-6 py-3 bg-slate-800 text-base font-medium text-gray-300 hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-cyan-500 sm:text-sm transition-colors duration-150"
+                onClick={handleCancelProfilePicUpdateAndCloseModal} 
+                disabled={isUploadingProfilePic} 
+              >
+                {t('settings_cropImage_button_cancel')}
+              </button>
             </div>
           </div>
-        )}
+        </div>
+      )}
       </div>
     </div>
   );

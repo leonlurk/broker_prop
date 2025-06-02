@@ -373,12 +373,12 @@ export const translations = {
     en: "10% Commission",
   },
   afiliadosDashboard_tier_commission_2: {
-    es: "Comisión 15% + 5% (Tier 1 Referidos)",
-    en: "15% Commission + 5% (Tier 1 Referrals)",
+    es: "Comisión 12% + 3%",
+    en: "12% Commission + 3%",
   },
   afiliadosDashboard_tier_commission_3: {
-    es: "Comisión 20% + 5% (Tier 1) + 10% Pagos",
-    en: "20% Commission + 5% (Tier 1) + 10% Payments",
+    es: "Comisión 15% + 3% + 1%",
+    en: "15% Commission + 3% + 1%",
   },
   afiliadosDashboard_error_userNotAuthenticated: {
     es: "Usuario no autenticado.",
@@ -1201,7 +1201,7 @@ export const translations = {
   tradingDashboard_accountTypeLabel: { es: "Tipo de cuenta:", en: "Account Type:" },
   tradingDashboard_accountDetailsTitle: { es: "Detalles de cuenta", en: "Account Details" },
   tradingDashboard_statusActive: { es: "Activa", en: "Active" },
-  tradingDashboard_loginLabel: { es: "Log In", en: "Log In" },
+  tradingDashboard_loginLabel: { es: "Login", en: "Login" },
   tradingDashboard_investorPassLabel: { es: "Investor Pass", en: "Investor Pass" },
   tradingDashboard_setPasswordButton: { es: "Set Password", en: "Set Password" }, 
   tradingDashboard_masterPassLabel: { es: "Master pass.", en: "Master pass." },

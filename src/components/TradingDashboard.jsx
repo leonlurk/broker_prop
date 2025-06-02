@@ -789,7 +789,7 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
               <div className="border border-gray-700 rounded-md p-2 sm:p-2.5">
                 <div className="flex items-center justify-between">
                     <span className="text-gray-400">Server</span>
-                    <span className="">Alpha global market - demo</span>
+                    <span className="">AlphaGlobalMarket-Server</span>
                 </div>
               </div>
             </div>

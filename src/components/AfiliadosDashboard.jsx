@@ -32,8 +32,8 @@ const AfiliadosDashboard = () => {
   // Moved TIER_COMMISSIONS here to use t()
   const TIER_COMMISSIONS = {
     1: { direct: '10%', sub_tier_1: null, payments: null, labelKey: 'afiliadosDashboard_tier_commission_1' },
-    2: { direct: '15%', sub_tier_1: '5%', payments: null, labelKey: 'afiliadosDashboard_tier_commission_2' },
-    3: { direct: '20%', sub_tier_1: '5%', payments: '10%', labelKey: 'afiliadosDashboard_tier_commission_3' }, 
+    2: { direct: '12%', sub_tier_1: '3%', payments: null, labelKey: 'afiliadosDashboard_tier_commission_2' },
+    3: { direct: '15%', sub_tier_1: '3%', payments: '1%', labelKey: 'afiliadosDashboard_tier_commission_3' }, 
   };
 
   const [activeTab, setActiveTab] = useState('panel');
