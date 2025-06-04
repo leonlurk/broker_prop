@@ -71,12 +71,12 @@ const ForgotPassword = ({ onContinue, onLoginClick }) => {
           </div>
 
           <button
-            type="submit"
-            disabled={loading}
+          type="submit"
+          disabled={loading}
             className="w-full py-4 px-4 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-medium shadow-lg relative overflow-hidden group mt-8 mb-8"
           >
-            <span className="absolute inset-0 bg-gradient-to-r from-cyan-600 to-blue-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
-            <span className="relative z-10">{loading ? t('forgotPassword_button_sending') : t('forgotPassword_button_continue')}</span>
+          <span className="absolute inset-0 bg-gradient-to-r from-cyan-600 to-blue-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+          <span className="relative z-10">{loading ? t('forgotPassword_button_sending') : t('forgotPassword_button_continue')}</span>
           </button>
 
           <div className="mt-8 text-center">

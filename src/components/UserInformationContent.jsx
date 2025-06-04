@@ -762,10 +762,10 @@ const UserInformationContent = ({ onBack }) => {
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 sm:w-6 sm:h-6">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
             </svg>
-          </button>
+        </button>
         </div>
       </div>
-      
+
       <div className="p-4 sm:p-6 lg:p-8 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-2xl w-full flex flex-col gap-6 relative bg-opacity-90 mb-4 md:mb-6">
         {/* Header: Título */}
         <div className="mt-2 md:mt-4 mb-6">
@@ -826,48 +826,48 @@ const UserInformationContent = ({ onBack }) => {
                 <label className="block text-white text-sm sm:text-base font-medium">
                   {t('userInfo_label_firstName')}
                 </label>
-                <input 
-                  type="text" 
-                  id="nombre" 
-                  value={nombre}
+            <input 
+              type="text" 
+              id="nombre" 
+              value={nombre}
                   onChange={e => setNombre(e.target.value)}
-                  placeholder={t('userInfo_placeholder_firstName')}
+              placeholder={t('userInfo_placeholder_firstName')}
                   className="w-full h-12 sm:h-14 px-4 sm:px-5 text-white text-sm sm:text-base font-normal font-['Poppins'] border border-[#3C3C3C] rounded-full focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-white/50"
                   style={{ 
                     background: 'linear-gradient(122.63deg, rgba(34, 34, 34, 0.5) 0%, rgba(53, 53, 53, 0.5) 100%)'
                   }}
-                />
-              </div>
+            />
+          </div>
 
               {/* Apellido */}
               <div className="space-y-2">
                 <label className="block text-white text-sm sm:text-base font-medium">
                   {t('userInfo_label_lastName')}
                 </label>
-                <input 
-                  type="text" 
-                  id="apellido" 
-                  value={apellido}
+            <input 
+              type="text" 
+              id="apellido" 
+              value={apellido}
                   onChange={e => setApellido(e.target.value)}
-                  placeholder={t('userInfo_placeholder_lastName')}
+              placeholder={t('userInfo_placeholder_lastName')}
                   className="w-full h-12 sm:h-14 px-4 sm:px-5 text-white text-sm sm:text-base font-normal font-['Poppins'] border border-[#3C3C3C] rounded-full focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-white/50"
                   style={{ 
                     background: 'linear-gradient(122.63deg, rgba(34, 34, 34, 0.5) 0%, rgba(53, 53, 53, 0.5) 100%)'
                   }}
-                />
-              </div>
+            />
+        </div>
 
               {/* Fecha de nacimiento */}
               <div className="space-y-2">
                 <label className="block text-white text-sm sm:text-base font-medium">
                   {t('userInfo_label_dob')}
                 </label>
-                <div className="relative">
+          <div className="relative">
                   <input
                     type="text"
                     id="fechaNacimiento"
                     value={fechaNacimiento}
-                    onClick={() => setShowCalendar(!showCalendar)} 
+              onClick={() => setShowCalendar(!showCalendar)} 
                     placeholder={t('userInfo_placeholder_dob')}
                     className="w-full h-12 sm:h-14 px-4 sm:px-5 pr-12 text-white text-sm sm:text-base font-normal font-['Poppins'] border border-[#3C3C3C] rounded-full focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-white/50 cursor-pointer"
                     style={{ 
@@ -876,8 +876,8 @@ const UserInformationContent = ({ onBack }) => {
                     readOnly
                   />
                   <Calendar size={20} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#A0A0A0] pointer-events-none" />
-                  {showCalendar && renderCalendar()}
-                </div>
+            {showCalendar && renderCalendar()}
+          </div>
               </div>
 
               {/* Género */}
@@ -886,24 +886,24 @@ const UserInformationContent = ({ onBack }) => {
                   {t('userInfo_label_gender')}
                 </label>
                 <div className="relative">
-                  <select 
-                    id="genero" 
-                    value={genero} 
+            <select 
+              id="genero" 
+              value={genero} 
                     onChange={e => setGenero(e.target.value)}
                     className="w-full h-12 sm:h-14 px-4 sm:px-5 pr-12 text-white text-sm sm:text-base font-normal font-['Poppins'] border border-[#3C3C3C] rounded-full focus:outline-none focus:ring-2 focus:ring-cyan-500 appearance-none"
                     style={{ 
                       background: 'linear-gradient(122.63deg, rgba(34, 34, 34, 0.5) 0%, rgba(53, 53, 53, 0.5) 100%)'
                     }}
-                  >
+            >
                     <option value="" className="text-white/50">{t('userInfo_placeholder_gender')}</option>
-                    <option value="masculino">{t('gender_male')}</option>
-                    <option value="femenino">{t('gender_female')}</option>
-                    <option value="otro">{t('gender_other')}</option>
-                    <option value="prefiero_no_decirlo">{t('gender_preferNotToSay')}</option>
-                  </select>
+              <option value="masculino">{t('gender_male')}</option>
+              <option value="femenino">{t('gender_female')}</option>
+              <option value="otro">{t('gender_other')}</option>
+              <option value="prefiero_no_decirlo">{t('gender_preferNotToSay')}</option>
+            </select>
                   <ChevronDown size={20} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#A0A0A0] pointer-events-none" />
-                </div>
-              </div>
+          </div>
+        </div>
 
               {/* País */}
               <div className="space-y-2">
@@ -911,9 +911,9 @@ const UserInformationContent = ({ onBack }) => {
                   {t('userInfo_label_country')}
                 </label>
                 <div className="relative">
-                  <select 
-                    id="pais" 
-                    value={paisSeleccionado} 
+            <select 
+              id="pais" 
+              value={paisSeleccionado} 
                     onChange={e => {
                       setPaisSeleccionado(e.target.value);
                       // Lógica existente para actualizar código de país
@@ -936,15 +936,15 @@ const UserInformationContent = ({ onBack }) => {
                     style={{ 
                       background: 'linear-gradient(122.63deg, rgba(34, 34, 34, 0.5) 0%, rgba(53, 53, 53, 0.5) 100%)'
                     }}
-                    disabled={cargandoPaises}
-                  >
+              disabled={cargandoPaises}
+            >
                     <option value="" className="text-white/50">{cargandoPaises ? t('userInfo_loading_countries') : t('userInfo_placeholder_country')}</option>
-                    {paises.map(pais => (
-                      <option key={pais.nombre} value={pais.nombre}>{pais.nombre}</option>
-                    ))}
-                  </select>
+              {paises.map(pais => (
+                <option key={pais.nombre} value={pais.nombre}>{pais.nombre}</option>
+              ))}
+            </select>
                   <ChevronDown size={20} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#A0A0A0] pointer-events-none" />
-                </div>
+          </div>
               </div>
 
               {/* Ciudad */}
@@ -953,27 +953,27 @@ const UserInformationContent = ({ onBack }) => {
                   {t('userInfo_label_city')}
                 </label>
                 <div className="relative">
-                  <select 
-                    id="ciudad" 
-                    value={ciudadSeleccionada} 
+            <select 
+              id="ciudad" 
+              value={ciudadSeleccionada} 
                     onChange={e => setCiudadSeleccionada(e.target.value)}
                     className="w-full h-12 sm:h-14 px-4 sm:px-5 pr-12 text-white text-sm sm:text-base font-normal font-['Poppins'] border border-[#3C3C3C] rounded-full focus:outline-none focus:ring-2 focus:ring-cyan-500 appearance-none"
                     style={{ 
                       background: 'linear-gradient(122.63deg, rgba(34, 34, 34, 0.5) 0%, rgba(53, 53, 53, 0.5) 100%)'
                     }}
-                    disabled={cargandoCiudades || !paisSeleccionado}
-                  >
+              disabled={cargandoCiudades || !paisSeleccionado}
+            >
                     <option value="" className="text-white/50">
                       {cargandoCiudades ? t('userInfo_loading_cities') || 'Cargando ciudades...' : 
                        !paisSeleccionado ? 'Selecciona un país primero' : t('userInfo_placeholder_city')}
-                    </option>
-                    {ciudades.map(ciudad => (
-                      <option key={ciudad} value={ciudad}>{ciudad}</option>
-                    ))}
-                  </select>
+              </option>
+              {ciudades.map(ciudad => (
+                <option key={ciudad} value={ciudad}>{ciudad}</option>
+              ))}
+            </select>
                   <ChevronDown size={20} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#A0A0A0] pointer-events-none" />
-                </div>
-              </div>
+          </div>
+        </div>
 
               {/* Teléfono - Span completo en mobile, individual en desktop */}
               <div className="space-y-2 md:col-span-2 lg:col-span-1">
@@ -989,39 +989,39 @@ const UserInformationContent = ({ onBack }) => {
                     {codigoPais || '+54'}
                   </div>
                   {/* Número de teléfono */}
-                  <input 
-                    type="tel" 
-                    id="telefono" 
-                    value={numeroTelefono}
-                    onChange={handlePhoneChange}
-                    placeholder={t('userInfo_placeholder_phoneNumber')}
+            <input 
+              type="tel" 
+              id="telefono" 
+              value={numeroTelefono}
+              onChange={handlePhoneChange}
+              placeholder={t('userInfo_placeholder_phoneNumber')}
                     className="flex-1 h-full px-3 sm:px-4 text-white text-sm sm:text-base font-normal font-['Poppins'] border border-l-0 border-[#3C3C3C] rounded-r-full focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-white/50"
                     style={{ 
                       background: 'linear-gradient(122.63deg, rgba(34, 34, 34, 0.5) 0%, rgba(53, 53, 53, 0.5) 100%)'
                     }}
-                  />
-                </div>
-              </div>
-            </div>
+            />
+          </div>
+        </div>
+                    </div>
 
             {/* Botón Guardar - Full width en mobile, auto en desktop */}
             <div className="mt-6 lg:mt-8">
-              <button
-                type="button"
+                <button
+                    type="button"
                 onClick={handleSaveChanges}
                 className="w-full lg:w-auto lg:min-w-[200px] h-12 sm:h-14 border border-[#1CC4F9] rounded-full text-white text-sm sm:text-base font-medium font-['Poppins'] hover:bg-cyan-900/20 transition flex items-center justify-center gap-2 px-6"
                 style={{ 
                   background: 'linear-gradient(122.63deg, rgba(34, 34, 34, 0.5) 0%, rgba(53, 53, 53, 0.5) 100%)'
                 }}
                 disabled={isSaving}
-              >
+                >
                 {isSaving ? <Loader size={16} className="animate-spin" /> : <Save size={16} />}
                 {t('userInfo_button_saveChanges')}
-              </button>
+                </button>
             </div>
-          </div>
+            </div>
         </div>
-        
+
         {/* Mensajes de error y éxito */}
         {saveError && (
           <div className="mt-6 bg-red-500 bg-opacity-10 text-red-500 rounded-lg px-4 sm:px-6 py-3 sm:py-4 flex items-center gap-2 text-sm sm:text-base">
@@ -1037,55 +1037,55 @@ const UserInformationContent = ({ onBack }) => {
         )}
         
         {/* Crop modal responsive */}
-        {showCropModal && imageSrcForCropper && (
-          <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50 p-4 transition-opacity duration-300 ease-out" style={{ backdropFilter: 'blur(4px)' }}>
+      {showCropModal && imageSrcForCropper && (
+        <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50 p-4 transition-opacity duration-300 ease-out" style={{ backdropFilter: 'blur(4px)' }}>
             <div className="bg-slate-900 p-4 sm:p-6 rounded-lg shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
               <h3 className="text-lg sm:text-xl leading-6 font-semibold text-white mb-4 sm:mb-5 text-center">
-                {t('settings_cropImage_title')}
-              </h3>
+              {t('settings_cropImage_title')}
+            </h3>
               <div className="flex justify-center mb-4 sm:mb-5">
-                <ReactCrop
-                  crop={crop}
-                  onChange={(_, percentCrop) => setCrop(percentCrop)} 
+              <ReactCrop
+                crop={crop}
+                onChange={(_, percentCrop) => setCrop(percentCrop)} 
                   onComplete={c => setCompletedCrop(c)}
-                  aspect={aspect} 
-                  minWidth={100}
-                  minHeight={100}
-                  circularCrop={false} 
+                aspect={aspect} 
+                minWidth={100}
+                minHeight={100}
+                circularCrop={false} 
                   className="max-h-[50vh] sm:max-h-[60vh]"
-                >
-                  <img
-                    ref={imgRefForCropper} 
-                    alt="Crop preview"
-                    src={imageSrcForCropper} 
+              >
+                <img
+                  ref={imgRefForCropper} 
+                  alt="Crop preview"
+                  src={imageSrcForCropper} 
                     style={{ maxHeight: '50vh', objectFit: 'contain' }}
                     className="sm:max-h-[60vh]"
-                    onLoad={onImageLoadForCropper} 
-                  />
-                </ReactCrop>
-              </div>
+                  onLoad={onImageLoadForCropper} 
+                />
+              </ReactCrop>
+            </div>
               {profilePicError && <p className="mb-3 text-xs sm:text-sm text-red-500 text-center">{profilePicError}</p>}
               <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row-reverse gap-3">
-                <button
-                  type="button"
+              <button
+                type="button"
                   className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 sm:px-6 py-2 sm:py-3 bg-cyan-600 text-sm sm:text-base font-medium text-white hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-cyan-500 transition-colors duration-150"
-                  onClick={handleCropImageAndInitiateUpload} 
-                  disabled={isUploadingProfilePic} 
-                >
-                  {isUploadingProfilePic ? t('settings_cropImage_button_cropping') : t('settings_cropImage_button_crop')}
-                </button>
-                <button
-                  type="button"
+                onClick={handleCropImageAndInitiateUpload} 
+                disabled={isUploadingProfilePic} 
+              >
+                {isUploadingProfilePic ? t('settings_cropImage_button_cropping') : t('settings_cropImage_button_crop')}
+              </button>
+              <button
+                type="button"
                   className="w-full inline-flex justify-center rounded-md border border-gray-600 shadow-sm px-4 sm:px-6 py-2 sm:py-3 bg-slate-800 text-sm sm:text-base font-medium text-gray-300 hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-cyan-500 transition-colors duration-150"
-                  onClick={handleCancelProfilePicUpdateAndCloseModal} 
-                  disabled={isUploadingProfilePic} 
-                >
-                  {t('settings_cropImage_button_cancel')}
-                </button>
-              </div>
+                onClick={handleCancelProfilePicUpdateAndCloseModal} 
+                disabled={isUploadingProfilePic} 
+              >
+                {t('settings_cropImage_button_cancel')}
+              </button>
             </div>
           </div>
-        )}
+        </div>
+      )}
       </div>
     </div>
   );

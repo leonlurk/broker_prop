@@ -165,7 +165,7 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
         name: type === 'total' ? 'Inicio' : 'Día 1',
         value: initialBalance
       }];
-    }
+      }
 
     setBalanceData(data);
   };
@@ -625,7 +625,7 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
     login: account.login || account.accountNumber || '(No Login)',
     serverType: account.serverType || 'MT5',
     investorPassword: account.investorPassword || '',
-    masterPassword: account.masterPassword || '********',
+    masterPassword: account.masterpass || '********',
     initialChallengeAmount: realMetrics.initialBalance,
     currentBalance: realMetrics.currentBalance,
     balanceGrowth: realMetrics.profitGrowth,
@@ -772,8 +772,8 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
                   <div className="flex items-center">
                     <span className="mr-1.5 sm:mr-2">{safeAccount.masterPassword}</span>
                       <img
-                        src="/Visibilidad.png"
-                        alt={t('tradingDashboard_iconAlt_visibility', 'Visibility')}
+                        src="/Copy.png"
+                        alt={t('tradingDashboard_iconAlt_copy', 'Copy')}
                         className="w-3 h-3 sm:w-4 sm:h-4 cursor-pointer"
                         title={copiedMasterPass ? t('common_copied', 'Copiado!') : t('common_copy', 'Copiar')}
                         onClick={() => handleCopy(safeAccount.masterPassword, 'master')}

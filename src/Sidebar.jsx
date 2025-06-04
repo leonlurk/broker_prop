@@ -110,15 +110,15 @@ const Sidebar = ({ selectedOption, setSelectedOption, onLogout }) => {
                 <div className="fixed top-0 left-0 right-0 z-50 bg-[#232323] border-b border-gray-700 shadow-lg">
                     <div className="flex items-center justify-between px-4 py-3">
                         {/* Botón hamburguesa */}
-                        <button 
-                            onClick={toggleMobileMenu}
+                <button 
+                    onClick={toggleMobileMenu}
                             className="p-2 rounded-md hover:bg-[#2a2a2a] transition-colors text-white"
-                        >
-                            {isMobileMenuOpen ? 
-                                <RiCloseLine className="w-6 h-6" /> : 
-                                <RiMenuLine className="w-6 h-6" />
-                            }
-                        </button>
+                >
+                    {isMobileMenuOpen ? 
+                        <RiCloseLine className="w-6 h-6" /> : 
+                        <RiMenuLine className="w-6 h-6" />
+                    }
+                </button>
                         
                         {/* Logo/Título centrado */}
                         <div className="flex items-center">
@@ -156,16 +156,16 @@ const Sidebar = ({ selectedOption, setSelectedOption, onLogout }) => {
             >
                 {/* Logo section - fixed (solo desktop) */}
                 {!isMobile && (
-                    <div className="flex justify-center px-4 pt-8 pb-4">
-                        <img 
-                            src="/logo.png" 
-                            alt={t('sidebar_alt_agmLogo')} 
-                            className="w-20 h-auto"
-                            onError={(e) => {
-                                e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Crect width='64' height='64' fill='%23333333'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='16' fill='white'%3EAGM%3C/text%3E%3C/svg%3E";
-                            }}
-                        />
-                    </div>
+                <div className="flex justify-center px-4 pt-8 pb-4">
+                    <img 
+                        src="/logo.png" 
+                        alt={t('sidebar_alt_agmLogo')} 
+                        className="w-20 h-auto"
+                        onError={(e) => {
+                            e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Crect width='64' height='64' fill='%23333333'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='16' fill='white'%3EAGM%3C/text%3E%3C/svg%3E";
+                        }}
+                    />
+                </div>
                 )}
                 
                 {/* Plataformas button - ahora con flecha y desplegable */}
