@@ -25,8 +25,13 @@ export const registerUser = async (username, email, password, refId = null) => {
       displayName: username
     });
     
-    // Send email verification
-    await sendEmailVerification(user);
+    // Send email verification with custom redirect
+    const actionCodeSettings = {
+      url: `${window.location.origin}/registration-success`,
+      handleCodeInApp: true
+    };
+    
+    await sendEmailVerification(user, actionCodeSettings);
     
     // Prepare user data for Firestore
     const userData = {
@@ -139,8 +144,13 @@ export const updateUserEmail = async (newEmail, currentPassword) => {
     // Update email in Firebase Auth
     await firebaseUpdateEmail(user, newEmail);
     
-    // Send verification email
-    await sendEmailVerification(user);
+    // Send verification email with custom redirect
+    const actionCodeSettings = {
+      url: `${window.location.origin}/registration-success`,
+      handleCodeInApp: true
+    };
+    
+    await sendEmailVerification(user, actionCodeSettings);
     
     // Update email in Firestore
     await updateDoc(doc(db, "users", user.uid), {

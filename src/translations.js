@@ -1852,5 +1852,31 @@ export const translations = {
   paymentPage_time_remaining: {
     es: "Tiempo restante",
     en: "Time remaining"
+  },
+
+  // RegistrationSuccess.jsx translations
+  registrationSuccess_verifying: {
+    es: "Verificando tu correo electrónico...",
+    en: "Verifying your email..."
+  },
+  registrationSuccess_title: {
+    es: "¡Registro Exitoso!",
+    en: "Registration Successful!"
+  },
+  registrationSuccess_message: {
+    es: "Tu correo electrónico ha sido verificado correctamente. Ya puedes acceder a tu cuenta.",
+    en: "Your email has been verified successfully. You can now access your account."
+  },
+  registrationSuccess_button_dashboard: {
+    es: "Ingresar al Dashboard",
+    en: "Go to Dashboard"
+  },
+  registrationSuccess_error_title: {
+    es: "Error de Verificación",
+    en: "Verification Error"
+  },
+  registrationSuccess_button_login: {
+    es: "Ir al Login",
+    en: "Go to Login"
   }
 }; 

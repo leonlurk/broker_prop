@@ -4,6 +4,7 @@ import Login from './components/Login';
 import Register from './components/Register';
 import ForgotPassword from './components/ForgotPassword';
 import VerificationCode from './components/VerificationCode';
+import RegistrationSuccess from './components/RegistrationSuccess';
 import Dashboard from './Dashboard';
 import PaymentPage from './components/PaymentPage';
 import PaymentStatusPage from './components/PaymentStatusPage';
@@ -122,6 +123,24 @@ function App() {
             ) : (
               <Navigate to="/login" replace />
             )
+          } 
+        />
+        
+        <Route 
+          path="/registration-success" 
+          element={
+            <AuthPageWrapper>
+              <RegistrationSuccess />
+            </AuthPageWrapper>
+          } 
+        />
+        
+        <Route 
+          path="/action" 
+          element={
+            <AuthPageWrapper>
+              <ActionRedirector />
+            </AuthPageWrapper>
           } 
         />
         
