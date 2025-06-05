@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { loginUser } from '../firebase/auth';
+import { loginUser, resendEmailVerification } from '../firebase/auth';
 import { useAuth } from '../contexts/AuthContext';
 import { getTranslator } from '../utils/i18n';
 import { useLocation } from 'react-router-dom';
@@ -15,6 +15,9 @@ const Login = ({ onRegisterClick, onForgotClick, onLoginSuccess }) => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [showEmailNotVerified, setShowEmailNotVerified] = useState(false);
+  const [resendingEmail, setResendingEmail] = useState(false);
+  const [lastEmail, setLastEmail] = useState('');
 
   // Check for registration success parameter
   useEffect(() => {
@@ -27,6 +30,14 @@ const Login = ({ onRegisterClick, onForgotClick, onLoginSuccess }) => {
       }, 5000);
     }
   }, [location]);
+
+  // Clear error states when user starts typing
+  useEffect(() => {
+    if (error) {
+      setError('');
+      setShowEmailNotVerified(false);
+    }
+  }, [username, password]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -41,7 +52,15 @@ const Login = ({ onRegisterClick, onForgotClick, onLoginSuccess }) => {
       const { user, error } = await loginUser(email, password);
       
       if (error) {
-        throw new Error(error.message || t('login_error_loginFailed'));
+        // Handle specific error for unverified email
+        if (error.code === 'auth/email-not-verified') {
+          setError(t('login_error_emailNotVerified'));
+          setShowEmailNotVerified(true);
+          setLastEmail(email);
+        } else {
+          setError(error.message || t('login_error_loginFailed'));
+        }
+        return;
       }
       
       console.log('Login successful:', user);
@@ -51,6 +70,19 @@ const Login = ({ onRegisterClick, onForgotClick, onLoginSuccess }) => {
       setError(err.message || t('login_error_loginFailed'));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendEmail = async () => {
+    setResendingEmail(true);
+    try {
+      await resendEmailVerification(lastEmail);
+      setError(t('login_error_emailResent'));
+    } catch (err) {
+      console.error('Error resending email:', err);
+      setError(err.message || t('login_error_emailResendFailed'));
+    } finally {
+      setResendingEmail(false);
     }
   };
 
@@ -81,7 +113,16 @@ const Login = ({ onRegisterClick, onForgotClick, onLoginSuccess }) => {
         
         {error && (
           <div className="bg-red-500 bg-opacity-20 border border-red-600 text-white px-4 py-2 rounded-lg mb-8">
-            {error}
+            <div className="mb-2">{error}</div>
+            {showEmailNotVerified && (
+              <button
+                onClick={handleResendEmail}
+                disabled={resendingEmail}
+                className="mt-2 text-sm bg-red-600 hover:bg-red-700 disabled:bg-red-800 text-white px-3 py-1 rounded transition-colors"
+              >
+                {resendingEmail ? 'Enviando...' : t('login_button_resendEmail')}
+              </button>
+            )}
           </div>
         )}
         

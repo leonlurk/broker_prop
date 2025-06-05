@@ -64,6 +64,22 @@ export const translations = {
     es: "Error al iniciar sesión. Por favor, verifica tus credenciales.",
     en: "Login failed. Please check your credentials.",
   },
+  login_error_emailNotVerified: {
+    es: "Por favor verifica tu correo electrónico antes de iniciar sesión. Revisa tu bandeja de entrada y haz clic en el enlace de verificación.",
+    en: "Please verify your email address before logging in. Check your inbox and click the verification link.",
+  },
+  login_error_emailResent: {
+    es: "Se ha enviado un nuevo email de verificación. Revisa tu bandeja de entrada (y spam).",
+    en: "A new verification email has been sent. Check your inbox (and spam folder).",
+  },
+  login_error_emailResendFailed: {
+    es: "Error al reenviar el email de verificación. Por favor, inténtalo más tarde.",
+    en: "Error resending verification email. Please try again later.",
+  },
+  login_button_resendEmail: {
+    es: "Reenviar Email de Verificación",
+    en: "Resend Verification Email",
+  },
   // Register.jsx translations
   register_error_passwordsDoNotMatch: {
     es: "Las contraseñas no coinciden",

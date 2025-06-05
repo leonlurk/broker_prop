@@ -93,6 +93,20 @@ export const registerUser = async (username, email, password, refId = null) => {
 export const loginUser = async (email, password) => {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+    
+    // Check if email is verified
+    if (!user.emailVerified) {
+      // Sign out the user if email is not verified
+      await signOut(auth);
+      return { 
+        error: { 
+          message: "Por favor verifica tu correo electrónico antes de iniciar sesión. Revisa tu bandeja de entrada y haz clic en el enlace de verificación.",
+          code: 'auth/email-not-verified'
+        } 
+      };
+    }
+    
     return { user: userCredential.user };
   } catch (error) {
     console.error("[loginUser] Login process error:", error);
@@ -199,4 +213,33 @@ export const getCurrentUser = () => {
 // Set up auth state listener
 export const onAuthStateChange = (callback) => {
   return onAuthStateChanged(auth, callback);
+};
+
+// Re-send email verification
+export const resendEmailVerification = async (email) => {
+  try {
+    // If there's a current user, use them, otherwise try to sign in temporarily
+    let user = auth.currentUser;
+    
+    if (!user && email) {
+      // We can't resend verification without the user being authenticated
+      // Return instructions to check email instead
+      throw new Error('Para reenviar el email de verificación, necesitas intentar hacer login primero.');
+    }
+    
+    if (!user) {
+      throw new Error('No se puede reenviar el email de verificación en este momento.');
+    }
+    
+    // Send verification email with custom redirect
+    const actionCodeSettings = {
+      url: `${window.location.origin}/registration-success`,
+      handleCodeInApp: true
+    };
+    
+    await sendEmailVerification(user, actionCodeSettings);
+    return { success: true };
+  } catch (error) {
+    return { error };
+  }
 };
