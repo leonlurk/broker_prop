@@ -602,7 +602,7 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
   const fetchMt5AccountInfo = async (login) => {
     try {
       const token = await currentUser.getIdToken();
-      const response = await fetch(`http://62.171.177.212:5000/api/accounts/${login}`, {
+      const response = await fetch(`https://62.171.177.212:5000/api/accounts/${login}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -621,7 +621,7 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
   const fetchMt5Operations = async (login, fromDate, toDate) => {
     try {
       const token = await currentUser.getIdToken();
-      const response = await fetch('http://62.171.177.212:5000/accounts/history', {
+      const response = await fetch('https://62.171.177.212:5000/accounts/history', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -1231,7 +1231,7 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
                   console.log('Token obtenido, intentando actualizar datos...');
                   
                   // Call the API endpoint to refresh data with auth token
-                  const response = await fetch(`http://62.171.177.212:5000/api/accounts/${accountId}/strategies`, {
+                  const response = await fetch(`https://62.171.177.212/api/accounts/${accountId}/strategies`, {
                     method: 'GET',
                     headers: {
                       'Authorization': `Bearer ${token}`,
