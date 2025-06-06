@@ -49,6 +49,8 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
   const [error, setError] = useState(null); // Added error state
   const [copiedLogin, setCopiedLogin] = useState(false);
   const [copiedMasterPass, setCopiedMasterPass] = useState(false);
+  const [copiedInvestorPass, setCopiedInvestorPass] = useState(false);
+  const [showInvestorPass, setShowInvestorPass] = useState(false);
 
   useEffect(() => {
     const today = new Date();
@@ -109,65 +111,133 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
 
   // Generate balance data from real operations
   const generateBalanceData = (account, type) => {
-    if (!account || !operationsData) {
-      setBalanceData([]);
+    if (!account || !operationsData || operationsData.length === 0) {
+      // Create placeholder data if no operations exist
+      const initialBalance = getChallengeAmount(account) || 100000;
+      let data = [];
+      
+      if (type === 'total') {
+        // Generate monthly placeholder data
+        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep"];
+        data = monthNames.map((month, index) => ({
+          name: month,
+          value: initialBalance // Flat line at initial balance
+        }));
+      } else {
+        // Generate daily placeholder data for current month
+        const daysInMonth = 30;
+        for (let i = 1; i <= daysInMonth; i++) {
+          data.push({ 
+            name: `Day ${i}`, 
+            value: initialBalance // Flat line at initial balance
+          });
+        }
+      }
+      
+      setBalanceData(data);
       return;
     }
 
-    const initialBalance = account.challengeAmountNumber || 100000;
-    let data = [];
-    let currentValue = initialBalance;
-
+    const initialBalance = getChallengeAmount(account) || 100000;
+    
     // Sort operations by date
-    const sortedOperations = [...operationsData].sort((a, b) => 
-      new Date(a.openTime) - new Date(b.openTime)
-    );
+    const sortedOperations = [...operationsData].sort((a, b) => {
+      const dateA = a.openTime instanceof Date ? a.openTime : new Date(a.openTime);
+      const dateB = b.openTime instanceof Date ? b.openTime : new Date(b.openTime);
+      return dateA - dateB;
+    });
 
+    // Initialize with starting point
+    let chartData = [];
+    let runningBalance = initialBalance;
+    
     if (type === 'total') {
       // Group operations by month
       const monthlyData = {};
+      
+      // Add initial balance point for first month
+      const firstDate = sortedOperations.length > 0 ? 
+        new Date(sortedOperations[0].openTime) : new Date();
+      const firstMonthKey = `${firstDate.getFullYear()}-${firstDate.getMonth() + 1}`;
+      
+      monthlyData[firstMonthKey] = {
+        name: firstDate.toLocaleString('default', { month: 'short' }),
+        value: initialBalance,
+        timestamp: firstDate
+      };
+      
+      // Process operations
       sortedOperations.forEach(op => {
         const date = new Date(op.openTime);
         const monthKey = `${date.getFullYear()}-${date.getMonth() + 1}`;
+        
+        // Create entry for this month if it doesn't exist
         if (!monthlyData[monthKey]) {
           monthlyData[monthKey] = {
             name: date.toLocaleString('default', { month: 'short' }),
-            value: currentValue
+            value: runningBalance,
+            timestamp: date
           };
         }
-        currentValue += op.profit || 0;
-        monthlyData[monthKey].value = currentValue;
+        
+        // Update balance
+        runningBalance += parseFloat(op.profit) || 0;
+        monthlyData[monthKey].value = runningBalance;
       });
-
-      data = Object.values(monthlyData);
-    } else { // type === 'daily'
+      
+      // Convert to array and sort by date
+      chartData = Object.values(monthlyData)
+        .sort((a, b) => a.timestamp - b.timestamp)
+        .map(item => ({ name: item.name, value: item.value }));
+    } else { // daily chart
       // Group operations by day
       const dailyData = {};
+      
+      // Add initial balance point
+      const firstDate = sortedOperations.length > 0 ? 
+        new Date(sortedOperations[0].openTime) : new Date();
+      const firstDayKey = `${firstDate.getFullYear()}-${firstDate.getMonth() + 1}-${firstDate.getDate()}`;
+      
+      dailyData[firstDayKey] = {
+        name: `Day ${firstDate.getDate()}`,
+        value: initialBalance,
+        timestamp: firstDate
+      };
+      
+      // Process operations
       sortedOperations.forEach(op => {
         const date = new Date(op.openTime);
         const dayKey = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+        
+        // Create entry for this day if it doesn't exist
         if (!dailyData[dayKey]) {
           dailyData[dayKey] = {
-            name: `Día ${date.getDate()}`,
-            value: currentValue
+            name: `Day ${date.getDate()}`,
+            value: runningBalance,
+            timestamp: date
           };
         }
-        currentValue += op.profit || 0;
-        dailyData[dayKey].value = currentValue;
+        
+        // Update balance
+        runningBalance += parseFloat(op.profit) || 0;
+        dailyData[dayKey].value = runningBalance;
       });
-
-      data = Object.values(dailyData);
+      
+      // Convert to array and sort by date
+      chartData = Object.values(dailyData)
+        .sort((a, b) => a.timestamp - b.timestamp)
+        .map(item => ({ name: item.name, value: item.value }));
     }
-
-    // Ensure we always have at least the initial balance point
-    if (data.length === 0) {
-      data = [{
-        name: type === 'total' ? 'Inicio' : 'Día 1',
+    
+    // Ensure we have at least one data point
+    if (chartData.length === 0) {
+      chartData = [{
+        name: type === 'total' ? 'Start' : 'Day 1',
         value: initialBalance
       }];
-      }
-
-    setBalanceData(data);
+    }
+    
+    setBalanceData(chartData);
   };
 
   // Helper functions for formatting values
@@ -495,8 +565,16 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
       } else if (type === 'master') {
         setCopiedMasterPass(true);
         setTimeout(() => setCopiedMasterPass(false), 1500);
+      } else if (type === 'investor') {
+        setCopiedInvestorPass(true);
+        setTimeout(() => setCopiedInvestorPass(false), 1500);
       }
     });
+  };
+
+  // Toggle investor password visibility
+  const toggleInvestorPassVisibility = () => {
+    setShowInvestorPass(!showInvestorPass);
   };
 
   // Calcular métricas reales a partir de operaciones y balance inicial
@@ -624,8 +702,9 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
     status: account.status || 'Active',
     login: account.login || account.accountNumber || '(No Login)',
     serverType: account.serverType || 'MT5',
+    server: account.server || account.serverName || 'AlphaGlobalMarket-Server',
     investorPassword: account.investorPassword || '',
-    masterPassword: account.masterpass || '********',
+    masterPassword: account.masterPassword || account.masterpass || '********',
     initialChallengeAmount: realMetrics.initialBalance,
     currentBalance: realMetrics.currentBalance,
     balanceGrowth: realMetrics.profitGrowth,
@@ -647,7 +726,8 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
     allowedLossToday: account.allowedLossToday || (realMetrics.initialBalance * 0.02) || 2000,
     tradingDays: {
       min: account.tradingDays?.min || 5,
-      current: account.tradingDays?.current || 0
+      current: account.tradingDays?.current || operationsData?.length > 0 ? 
+        new Set(operationsData.map(op => new Date(op.openTime).toDateString())).size : 0
     },
     minProfitTarget: account.minProfitTarget || (realMetrics.initialBalance * 0.08) || 8000,
     currentProfit: realMetrics.profit
@@ -762,7 +842,41 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
               <div className="border border-gray-700 rounded-md p-2 sm:p-2.5">
                 <div className="flex items-center justify-between">
                   <span className="text-gray-400">{t('tradingDashboard_investorPassLabel')}</span>
-                  <span className="text-gray-300 underline cursor-pointer">{t('tradingDashboard_setPasswordButton')}</span> {/* Added cursor-pointer */}
+                  <div className="flex items-center">
+                    {showInvestorPass ? (
+                      <>
+                        <span className="mr-1.5 sm:mr-2">{safeAccount.investorPassword || t('tradingDashboard_noPasswordSet')}</span>
+                        <img
+                          src="/Copy.png"
+                          alt={t('tradingDashboard_iconAlt_copy')}
+                          className="w-3 h-3 sm:w-4 sm:h-4 cursor-pointer mr-1.5"
+                          title={copiedInvestorPass ? t('common_copied') : t('common_copy')}
+                          onClick={() => handleCopy(safeAccount.investorPassword, 'investor')}
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath d='M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z' fill='%23555'/%3E%3C/svg%3E";
+                          }}
+                        />
+                      </>
+                    ) : (
+                      <span className="text-gray-300 underline cursor-pointer" onClick={toggleInvestorPassVisibility}>
+                        {t('tradingDashboard_showPasswordButton')}
+                      </span>
+                    )}
+                    {showInvestorPass && (
+                      <img
+                        src="/Visibilidad.png"
+                        alt={t('tradingDashboard_hidePassword')}
+                        className="w-3 h-3 sm:w-4 sm:h-4 cursor-pointer"
+                        title={t('tradingDashboard_hidePassword')}
+                        onClick={toggleInvestorPassVisibility}
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath d='M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z' fill='%23555'/%3E%3C/svg%3E";
+                        }}
+                      />
+                    )}
+                  </div>
                 </div>
               </div>
               
@@ -773,9 +887,9 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
                     <span className="mr-1.5 sm:mr-2">{safeAccount.masterPassword}</span>
                       <img
                         src="/Copy.png"
-                        alt={t('tradingDashboard_iconAlt_copy', 'Copy')}
+                        alt={t('tradingDashboard_iconAlt_copy')}
                         className="w-3 h-3 sm:w-4 sm:h-4 cursor-pointer"
-                        title={copiedMasterPass ? t('common_copied', 'Copiado!') : t('common_copy', 'Copiar')}
+                        title={copiedMasterPass ? t('common_copied') : t('common_copy')}
                         onClick={() => handleCopy(safeAccount.masterPassword, 'master')}
                         onError={(e) => {
                       e.target.onerror = null;
@@ -789,7 +903,7 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
               <div className="border border-gray-700 rounded-md p-2 sm:p-2.5">
                 <div className="flex items-center justify-between">
                     <span className="text-gray-400">Server</span>
-                    <span className="">AlphaGlobalMarket-Server</span>
+                    <span className="">{safeAccount.server}</span>
                 </div>
               </div>
             </div>
@@ -991,8 +1105,18 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
           <div className="p-3 sm:p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl">
             <div className="flex flex-wrap justify-between items-center mb-2 sm:mb-4 gap-1">
               <h3 className="text-sm sm:text-base md:text-lg font-medium">{t('tradingDashboard_dailyLossLimitTitle')}</h3>
-              <span className="px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-2xs xs:text-xs whitespace-nowrap bg-yellow-800 bg-opacity-30 text-yellow-400">
-                {t('tradingDashboard_status_inProgress')}
+              <span className={`px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-2xs xs:text-xs whitespace-nowrap ${
+                safeAccount.dailyDrawdown < -safeAccount.maxLossLimit
+                  ? 'bg-red-800 bg-opacity-30 text-red-400'
+                  : safeAccount.dailyDrawdown < -safeAccount.maxLossLimit * 0.7
+                  ? 'bg-yellow-800 bg-opacity-30 text-yellow-400'
+                  : 'bg-green-800 bg-opacity-30 text-green-400'
+              }`}>
+                {safeAccount.dailyDrawdown < -safeAccount.maxLossLimit 
+                  ? t('tradingDashboard_status_lost')
+                  : safeAccount.dailyDrawdown < -safeAccount.maxLossLimit * 0.7
+                  ? t('tradingDashboard_status_inProgress') 
+                  : t('tradingDashboard_status_surpassed')}
               </span>
             </div>
             <div className="flex justify-between items-center mb-1 sm:mb-2 text-xs sm:text-sm">
@@ -1012,8 +1136,18 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
           <div className="p-3 sm:p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl">
             <div className="flex flex-wrap justify-between items-center mb-2 sm:mb-4 gap-1">
               <h3 className="text-sm sm:text-base md:text-lg font-medium">{t('tradingDashboard_globalLossLimitTitle')}</h3>
-              <span className="px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-2xs xs:text-xs whitespace-nowrap bg-yellow-800 bg-opacity-30 text-yellow-400">
-                {t('tradingDashboard_status_inProgress')}
+              <span className={`px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-2xs xs:text-xs whitespace-nowrap ${
+                safeAccount.totalDrawdown < -safeAccount.maxLossLimit
+                  ? 'bg-red-800 bg-opacity-30 text-red-400'
+                  : safeAccount.totalDrawdown < -safeAccount.maxLossLimit * 0.7
+                  ? 'bg-yellow-800 bg-opacity-30 text-yellow-400'
+                  : 'bg-green-800 bg-opacity-30 text-green-400'
+              }`}>
+                {safeAccount.totalDrawdown < -safeAccount.maxLossLimit 
+                  ? t('tradingDashboard_status_lost')
+                  : safeAccount.totalDrawdown < -safeAccount.maxLossLimit * 0.7
+                  ? t('tradingDashboard_status_inProgress') 
+                  : t('tradingDashboard_status_surpassed')}
               </span>
             </div>
             <div className="flex justify-between items-center mb-1 sm:mb-2 text-xs sm:text-sm">
@@ -1035,8 +1169,14 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
           <div className="p-3 sm:p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl">
             <div className="flex flex-wrap justify-between items-center mb-2 sm:mb-4 gap-1">
               <h3 className="text-sm sm:text-base md:text-lg font-medium">{t('tradingDashboard_minTradingDaysTitle')}</h3>
-              <span className="px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-2xs xs:text-xs whitespace-nowrap bg-yellow-800 bg-opacity-30 text-yellow-400">
-                {t('tradingDashboard_status_inProgress')}
+              <span className={`px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-2xs xs:text-xs whitespace-nowrap ${
+                safeAccount.tradingDays.current >= safeAccount.tradingDays.min
+                  ? 'bg-green-800 bg-opacity-30 text-green-400'
+                  : 'bg-yellow-800 bg-opacity-30 text-yellow-400'
+              }`}>
+                {safeAccount.tradingDays.current >= safeAccount.tradingDays.min
+                  ? t('tradingDashboard_status_surpassed')
+                  : t('tradingDashboard_status_inProgress')}
               </span>
             </div>
             <div className="flex justify-between items-center mb-1 sm:mb-2 text-xs sm:text-sm">
@@ -1056,8 +1196,14 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
           <div className="p-3 sm:p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl">
             <div className="flex flex-wrap justify-between items-center mb-2 sm:mb-4 gap-1">
               <h3 className="text-sm sm:text-base md:text-lg font-medium">{t('tradingDashboard_profitTargetTitle')}</h3>
-              <span className="px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-2xs xs:text-xs whitespace-nowrap bg-yellow-800 bg-opacity-30 text-yellow-400">
-                {t('tradingDashboard_status_inProgress')}
+              <span className={`px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-2xs xs:text-xs whitespace-nowrap ${
+                safeAccount.currentProfit >= safeAccount.minProfitTarget
+                  ? 'bg-green-800 bg-opacity-30 text-green-400'
+                  : 'bg-yellow-800 bg-opacity-30 text-yellow-400'
+              }`}>
+                {safeAccount.currentProfit >= safeAccount.minProfitTarget
+                  ? t('tradingDashboard_status_surpassed')
+                  : t('tradingDashboard_status_inProgress')}
               </span>
             </div>
             <div className="flex justify-between items-center mb-1 sm:mb-2 text-xs sm:text-sm">

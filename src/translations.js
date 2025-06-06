@@ -1894,5 +1894,8 @@ export const translations = {
   registrationSuccess_button_login: {
     es: "Ir al Login",
     en: "Go to Login"
-  }
+  },
+  tradingDashboard_showPasswordButton: { es: "Mostrar", en: "Show" },
+  tradingDashboard_hidePassword: { es: "Ocultar", en: "Hide" },
+  tradingDashboard_noPasswordSet: { es: "No establecida", en: "Not set" },
 }; 
