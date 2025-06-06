@@ -1111,15 +1111,11 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
               <span className={`px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-2xs xs:text-xs whitespace-nowrap ${
                 safeAccount.dailyDrawdown < -safeAccount.maxLossLimit
                   ? 'bg-red-800 bg-opacity-30 text-red-400'
-                  : safeAccount.dailyDrawdown < -safeAccount.maxLossLimit * 0.7
-                  ? 'bg-yellow-800 bg-opacity-30 text-yellow-400'
-                  : 'bg-green-800 bg-opacity-30 text-green-400'
+                  : 'bg-yellow-800 bg-opacity-30 text-yellow-400'
               }`}>
                 {safeAccount.dailyDrawdown < -safeAccount.maxLossLimit 
                   ? t('tradingDashboard_status_lost')
-                  : safeAccount.dailyDrawdown < -safeAccount.maxLossLimit * 0.7
-                  ? t('tradingDashboard_status_inProgress') 
-                  : t('tradingDashboard_status_surpassed')}
+                  : t('tradingDashboard_status_inProgress')}
               </span>
             </div>
             <div className="flex justify-between items-center mb-1 sm:mb-2 text-xs sm:text-sm">
@@ -1142,15 +1138,11 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
               <span className={`px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-2xs xs:text-xs whitespace-nowrap ${
                 safeAccount.totalDrawdown < -safeAccount.maxLossLimit
                   ? 'bg-red-800 bg-opacity-30 text-red-400'
-                  : safeAccount.totalDrawdown < -safeAccount.maxLossLimit * 0.7
-                  ? 'bg-yellow-800 bg-opacity-30 text-yellow-400'
-                  : 'bg-green-800 bg-opacity-30 text-green-400'
+                  : 'bg-yellow-800 bg-opacity-30 text-yellow-400'
               }`}>
                 {safeAccount.totalDrawdown < -safeAccount.maxLossLimit 
                   ? t('tradingDashboard_status_lost')
-                  : safeAccount.totalDrawdown < -safeAccount.maxLossLimit * 0.7
-                  ? t('tradingDashboard_status_inProgress') 
-                  : t('tradingDashboard_status_surpassed')}
+                  : t('tradingDashboard_status_inProgress')}
               </span>
             </div>
             <div className="flex justify-between items-center mb-1 sm:mb-2 text-xs sm:text-sm">
