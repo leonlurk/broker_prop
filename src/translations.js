@@ -1898,4 +1898,16 @@ export const translations = {
   tradingDashboard_showPasswordButton: { es: "Mostrar", en: "Show" },
   tradingDashboard_hidePassword: { es: "Ocultar", en: "Hide" },
   tradingDashboard_noPasswordSet: { es: "No establecida", en: "Not set" },
+  tradingDashboard_refreshButton: {
+    en: 'Refresh Data',
+    es: 'Actualizar Datos'
+  },
+  tradingDashboard_error_connection: {
+    en: "Unable to connect to the server. Please check your internet connection and try again.",
+    es: "No se puede conectar al servidor. Por favor, verifica tu conexión a internet e inténtalo de nuevo."
+  },
+  tradingDashboard_error_cors: {
+    en: "Connection blocked by security policy. Please contact support.",
+    es: "Conexión bloqueada por política de seguridad. Por favor, contacta con soporte."
+  },
 }; 

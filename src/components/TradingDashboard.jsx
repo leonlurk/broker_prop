@@ -51,6 +51,8 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
   const [copiedMasterPass, setCopiedMasterPass] = useState(false);
   const [copiedInvestorPass, setCopiedInvestorPass] = useState(false);
   const [showInvestorPass, setShowInvestorPass] = useState(false);
+  const [accountMt5Info, setAccountMt5Info] = useState(null);
+  const [mt5Operations, setMt5Operations] = useState([]);
 
   useEffect(() => {
     const today = new Date();
@@ -58,64 +60,63 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
   }, [language, t]);
 
   // Fetch account data from Firebase
+  const fetchAccountData = async () => {
+    setIsLoading(true);
+    setError(null); // Reset error state before fetching
+    try {
+      // Get main account document
+      const accountDocRef = doc(db, 'tradingAccounts', accountId);
+      const accountDocSnap = await getDoc(accountDocRef);
+      
+      if (accountDocSnap.exists()) {
+        const accountData = { id: accountDocSnap.id, ...accountDocSnap.data() };
+        console.log("Fetched account data:", accountData);
+        setAccount(accountData);
+        
+        // Fetch operations for this account
+        const operationsQuery = query(
+          collection(db, 'operations'), 
+          where('accountId', '==', accountId)
+        );
+        
+        const operationsSnapshot = await getDocs(operationsQuery);
+        const operations = [];
+        
+        operationsSnapshot.forEach(doc => {
+          operations.push({ id: doc.id, ...doc.data() });
+        });
+        
+        console.log("Fetched operations:", operations);
+        setOperationsData(operations);
+        
+        generateBalanceData(accountData, drawdownType); // Pass drawdownType here
+      } else {
+        console.error("Account document not found");
+        setError(t('tradingDashboard_accountNotFound', 'Account details could not be loaded.'));
+      }
+    } catch (error) {
+      console.error("Error fetching account data:", error);
+      setError(error.message || t('common_errorLoadingData', 'Error loading data'));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (!accountId) {
       setIsLoading(false);
       return;
     }
-
-    const fetchAccountData = async () => {
-      setIsLoading(true);
-      setError(null); // Reset error state before fetching
-      try {
-        // Get main account document
-        const accountDocRef = doc(db, 'tradingAccounts', accountId);
-        const accountDocSnap = await getDoc(accountDocRef);
-        
-        if (accountDocSnap.exists()) {
-          const accountData = { id: accountDocSnap.id, ...accountDocSnap.data() };
-          console.log("Fetched account data:", accountData);
-          setAccount(accountData);
-          
-          // Fetch operations for this account
-          const operationsQuery = query(
-            collection(db, 'operations'), 
-            where('accountId', '==', accountId)
-          );
-          
-          const operationsSnapshot = await getDocs(operationsQuery);
-          const operations = [];
-          
-          operationsSnapshot.forEach(doc => {
-            operations.push({ id: doc.id, ...doc.data() });
-          });
-          
-          console.log("Fetched operations:", operations);
-          setOperationsData(operations);
-          
-          generateBalanceData(accountData, drawdownType); // Pass drawdownType here
-        } else {
-          console.error("Account document not found");
-          setError(t('tradingDashboard_accountNotFound', 'Account details could not be loaded.'));
-        }
-      } catch (error) {
-        console.error("Error fetching account data:", error);
-        setError(error.message || t('common_errorLoadingData', 'Error loading data'));
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchAccountData();
-  }, [accountId, drawdownType]); // REMOVED t from dependencies
+  }, [accountId, drawdownType]);
 
-  // Generate balance data from real operations
+  // Generate balance data from real MT5 data
   const generateBalanceData = (account, type) => {
-    if (!account || !operationsData || operationsData.length === 0) {
-      // Create placeholder data if no operations exist
+    if (!account || !accountMt5Info) {
+      // Create placeholder data if no MT5 data exists
       const initialBalance = getChallengeAmount(account) || 100000;
       let data = [];
-      
+
       if (type === 'total') {
         // Generate monthly placeholder data
         const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep"];
@@ -138,26 +139,21 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
       return;
     }
 
-    const initialBalance = getChallengeAmount(account) || 100000;
+    const initialBalance = getChallengeAmount(account);
+    const currentBalance = accountMt5Info.balance;
+    const profit = accountMt5Info.profit;
+    const equity = accountMt5Info.equity;
+    const margin = accountMt5Info.margin;
     
-    // Sort operations by date
-    const sortedOperations = [...operationsData].sort((a, b) => {
-      const dateA = a.openTime instanceof Date ? a.openTime : new Date(a.openTime);
-      const dateB = b.openTime instanceof Date ? b.openTime : new Date(b.openTime);
-      return dateA - dateB;
-    });
-
     // Initialize with starting point
     let chartData = [];
-    let runningBalance = initialBalance;
     
     if (type === 'total') {
-      // Group operations by month
+      // Group data by month
       const monthlyData = {};
       
       // Add initial balance point for first month
-      const firstDate = sortedOperations.length > 0 ? 
-        new Date(sortedOperations[0].openTime) : new Date();
+      const firstDate = new Date();
       const firstMonthKey = `${firstDate.getFullYear()}-${firstDate.getMonth() + 1}`;
       
       monthlyData[firstMonthKey] = {
@@ -166,36 +162,26 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
         timestamp: firstDate
       };
       
-      // Process operations
-      sortedOperations.forEach(op => {
-        const date = new Date(op.openTime);
-        const monthKey = `${date.getFullYear()}-${date.getMonth() + 1}`;
-        
-        // Create entry for this month if it doesn't exist
-        if (!monthlyData[monthKey]) {
-          monthlyData[monthKey] = {
-            name: date.toLocaleString('default', { month: 'short' }),
-            value: runningBalance,
-            timestamp: date
-          };
-        }
-        
-        // Update balance
-        runningBalance += parseFloat(op.profit) || 0;
-        monthlyData[monthKey].value = runningBalance;
-      });
+      // Add current balance point for current month
+      const currentDate = new Date();
+      const currentMonthKey = `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}`;
+      
+      monthlyData[currentMonthKey] = {
+        name: currentDate.toLocaleString('default', { month: 'short' }),
+        value: currentBalance,
+        timestamp: currentDate
+      };
       
       // Convert to array and sort by date
       chartData = Object.values(monthlyData)
         .sort((a, b) => a.timestamp - b.timestamp)
         .map(item => ({ name: item.name, value: item.value }));
     } else { // daily chart
-      // Group operations by day
+      // Group data by day
       const dailyData = {};
       
       // Add initial balance point
-      const firstDate = sortedOperations.length > 0 ? 
-        new Date(sortedOperations[0].openTime) : new Date();
+      const firstDate = new Date();
       const firstDayKey = `${firstDate.getFullYear()}-${firstDate.getMonth() + 1}-${firstDate.getDate()}`;
       
       dailyData[firstDayKey] = {
@@ -204,24 +190,15 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
         timestamp: firstDate
       };
       
-      // Process operations
-      sortedOperations.forEach(op => {
-        const date = new Date(op.openTime);
-        const dayKey = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
-        
-        // Create entry for this day if it doesn't exist
-        if (!dailyData[dayKey]) {
-          dailyData[dayKey] = {
-            name: `Day ${date.getDate()}`,
-            value: runningBalance,
-            timestamp: date
-          };
-        }
-        
-        // Update balance
-        runningBalance += parseFloat(op.profit) || 0;
-        dailyData[dayKey].value = runningBalance;
-      });
+      // Add current balance point for current day
+      const currentDate = new Date();
+      const currentDayKey = `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${currentDate.getDate()}`;
+      
+      dailyData[currentDayKey] = {
+        name: `Day ${currentDate.getDate()}`,
+        value: currentBalance,
+        timestamp: currentDate
+      };
       
       // Convert to array and sort by date
       chartData = Object.values(dailyData)
@@ -361,48 +338,56 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
       selectedProfitTargetP2: account.selectedProfitTargetP2
     });
     
+    // Normalize strings to lowercase for comparison
+    const normalizeString = (str) => {
+      if (!str) return '';
+      return str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    };
+
+    const challengeType = normalizeString(account.challengeType);
+    const accountType = normalizeString(account.accountType);
+    const accountStyle = normalizeString(account.accountStyle);
+    const originalType = normalizeString(account.originalChallengeType);
+
     // First priority: Check originalChallengeType (direct user selection from UI)
-    if (account.originalChallengeType === 'Estándar') {
+    if (originalType === 'estandar' || originalType === 'standard') {
       return t('tradingChallenge_button_standard');
     }
-    if (account.originalChallengeType === 'Swing') {
+    if (originalType === 'swing') {
       return t('tradingChallenge_button_swim');
     }
     
-    // Second priority: Check Spanish challengeType strings
-    if (account.challengeType === 'Estándar') {
+    // Second priority: Check challengeType
+    if (challengeType === 'estandar' || challengeType === 'standard') {
       return t('tradingChallenge_button_standard');
     }
-    if (account.challengeType === 'Swing') {
+    if (challengeType === 'swing') {
       return t('tradingChallenge_button_swim');
     }
     
-    // Third priority: Check lowercase accountType/accountStyle
-    if (account.accountType === 'swing' || account.accountStyle === 'swing') {
+    // Third priority: Check accountType/accountStyle
+    if (accountType === 'swing' || accountStyle === 'swing') {
       return t('tradingChallenge_button_swim');
     }
-    if (account.accountType === 'standard' || account.accountStyle === 'standard') {
+    if (accountType === 'standard' || accountStyle === 'standard' || 
+        accountType === 'estandar' || accountStyle === 'estandar') {
       return t('tradingChallenge_button_standard');
     }
     
-    // Fourth priority: Identify based on two_step/one_step and additional properties
-    if (account.challengeType === 'two_step') {
-      // For two_step accounts, we need to determine if it's Swing or Standard
-      // Check if there's evidence this is a Swing account
+    // Fourth priority: Check for two_step/one_step
+    if (challengeType === 'two_step' || challengeType === 'two step') {
+      // For two_step accounts, check if it's Swing
       if (
-        // If it has Phase 2 profit target but not Phase 1, it's likely Swing
         (account.selectedProfitTargetP2 && !account.selectedProfitTargetP1) ||
-        // Any other swing indicators
         String(account.challengePhase).toLowerCase().includes('swing')
       ) {
         return t('tradingChallenge_button_swim');
       }
-      // Default two_step without swing indicators is still Standard
       return t('tradingChallenge_button_standard');
     }
     
     // If explicitly one_step, it's Standard
-    if (account.challengeType === 'one_step') {
+    if (challengeType === 'one_step' || challengeType === 'one step') {
       return t('tradingChallenge_button_standard');
     }
     
@@ -415,6 +400,7 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
     }
     
     // Default fallback: Standard
+    console.log("Using default account type (Standard) for account:", account);
     return t('tradingChallenge_button_standard');
   };
 
@@ -577,80 +563,23 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
     setShowInvestorPass(!showInvestorPass);
   };
 
-  // Calcular métricas reales a partir de operaciones y balance inicial
+  // Calcular métricas reales a partir de datos de MT5
   const getRealMetrics = () => {
     const initialBalance = getChallengeAmount(account);
-    let currentBalance = initialBalance;
-    let profit = 0;
-    let profitGrowth = 0;
-    let dailyDrawdown = 0;
-    let totalDrawdown = 0;
-    let maxBalance = initialBalance;
-    let minBalance = initialBalance;
-    let balanceHistory = [initialBalance];
-    let avgLossPerOperation = 0;
-    let avgProfitPerOperation = 0;
-    let avgLotPerOperation = 0;
-    let avgTradeDuration = '00:00:00';
-    let riskRewardRatio = 0;
-    let winRate = 0;
-    let losses = [];
-    let profits = [];
-    let totalLots = 0;
-    let totalDuration = 0;
-    let winCount = 0;
-    let lossCount = 0;
+    const currentBalance = accountMt5Info?.balance ?? initialBalance;
+    const profit = accountMt5Info?.profit ?? 0;
+    const profitGrowth = initialBalance ? (currentBalance - initialBalance) / initialBalance * 100 : 0;
+    const equity = accountMt5Info?.equity ?? currentBalance;
+    const margin = accountMt5Info?.margin ?? 0;
+    const dailyDrawdown = 0; // TODO: Calcular con datos reales
+    const totalDrawdown = 0; // TODO: Calcular con datos reales
+    const avgLossPerOperation = 0; // TODO: Calcular con datos reales
+    const avgProfitPerOperation = 0; // TODO: Calcular con datos reales
+    const avgLotPerOperation = 0; // TODO: Calcular con datos reales
+    const avgTradeDuration = '00:00:00'; // TODO: Calcular con datos reales
+    const riskRewardRatio = 0; // TODO: Calcular con datos reales
+    const winRate = 0; // TODO: Calcular con datos reales
 
-    if (operationsData && operationsData.length > 0) {
-      operationsData.forEach(op => {
-        const opProfit = op.profit || 0;
-        currentBalance += opProfit;
-        balanceHistory.push(currentBalance);
-        profit += opProfit;
-        totalLots += op.volume || 0;
-        if (opProfit > 0) {
-          profits.push(opProfit);
-          winCount++;
-        } else if (opProfit < 0) {
-          losses.push(opProfit);
-          lossCount++;
-        }
-        // Duración de la operación
-        if (op.openTime && op.closeTime) {
-          const open = new Date(op.openTime).getTime();
-          const close = new Date(op.closeTime).getTime();
-          if (!isNaN(open) && !isNaN(close)) {
-            totalDuration += (close - open);
-          }
-        }
-        if (currentBalance > maxBalance) maxBalance = currentBalance;
-        if (currentBalance < minBalance) minBalance = currentBalance;
-      });
-      // Cálculo de drawdown
-      totalDrawdown = minBalance - maxBalance;
-      dailyDrawdown = Math.min(...balanceHistory.map((b, i, arr) => i > 0 ? b - arr[i - 1] : 0));
-      // Promedios
-      avgLossPerOperation = losses.length ? losses.reduce((a, b) => a + b, 0) / losses.length : 0;
-      avgProfitPerOperation = profits.length ? profits.reduce((a, b) => a + b, 0) / profits.length : 0;
-      avgLotPerOperation = operationsData.length ? totalLots / operationsData.length : 0;
-      // Duración promedio
-      if (operationsData.length) {
-        const avgMs = totalDuration / operationsData.length;
-        const hours = Math.floor(avgMs / 3600000);
-        const minutes = Math.floor((avgMs % 3600000) / 60000);
-        const seconds = Math.floor((avgMs % 60000) / 1000);
-        avgTradeDuration = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-      }
-      // Ratio riesgo/beneficio
-      const avgLossAbs = Math.abs(avgLossPerOperation);
-      riskRewardRatio = avgLossAbs ? avgProfitPerOperation / avgLossAbs : 0;
-      // Win rate
-      winRate = operationsData.length ? (winCount / operationsData.length) * 100 : 0;
-      // Growth
-      profitGrowth = initialBalance ? (currentBalance - initialBalance) / initialBalance * 100 : 0;
-    } else {
-      currentBalance = initialBalance;
-    }
     return {
       initialBalance,
       currentBalance,
@@ -668,6 +597,79 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
   };
 
   const realMetrics = getRealMetrics();
+
+  // Función para obtener datos reales de MT5
+  const fetchMt5AccountInfo = async (login) => {
+    try {
+      const token = await currentUser.getIdToken();
+      const response = await fetch(`http://62.171.177.212:5000/api/accounts/${login}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      if (!response.ok) throw new Error('No se pudo obtener info MT5');
+      const data = await response.json();
+      setAccountMt5Info(data);
+    } catch (err) {
+      console.error('Error obteniendo info MT5:', err);
+      setAccountMt5Info(null);
+    }
+  };
+
+  // Función para obtener historial de operaciones reales de MT5
+  const fetchMt5Operations = async (login, fromDate, toDate) => {
+    try {
+      const token = await currentUser.getIdToken();
+      const response = await fetch('http://62.171.177.212:5000/accounts/history', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          login: Number(login),
+          from_date: fromDate,
+          to_date: toDate
+        })
+      });
+      if (!response.ok) throw new Error('No se pudo obtener historial MT5');
+      const data = await response.json();
+      setMt5Operations(data.operations || []);
+    } catch (err) {
+      console.error('Error obteniendo historial MT5:', err);
+      setMt5Operations([]);
+    }
+  };
+
+  // Lógica para obtener el login MT5 desde Firestore (accountNumber)
+  useEffect(() => {
+    if (account && account.accountNumber) {
+      fetchMt5AccountInfo(account.accountNumber);
+      // Por defecto, traer operaciones del último mes
+      const today = new Date();
+      const toDate = today.toISOString().slice(0, 10);
+      const fromDate = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate()).toISOString().slice(0, 10);
+      fetchMt5Operations(account.accountNumber, fromDate, toDate);
+    }
+  }, [account]);
+  
+  // Actualizar gráfica y otros datos cuando se reciban datos reales de MT5
+  useEffect(() => {
+    if (account && accountMt5Info) {
+      // Actualizar la gráfica con datos reales
+      generateBalanceData(account, drawdownType);
+      console.log("MT5 datos actualizados:", accountMt5Info);
+    }
+  }, [accountMt5Info, account, drawdownType]);
+  
+  // Actualizar operaciones cuando se reciban de MT5
+  useEffect(() => {
+    if (mt5Operations && mt5Operations.length > 0) {
+      console.log("MT5 operaciones actualizadas:", mt5Operations);
+      // Si tienes alguna lógica adicional para procesar operaciones, agrégala aquí
+    }
+  }, [mt5Operations]);
 
   if (isLoading) {
     return (
@@ -696,7 +698,7 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
     );
   }
 
-  // Create a safe account object with default values
+  // Create a safe account object with default values, priorizando datos reales de MT5 si existen
   const safeAccount = {
     id: account.id || '',
     status: account.status || 'Active',
@@ -705,32 +707,33 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
     server: account.server || account.serverName || 'AlphaGlobalMarket-Server',
     investorPassword: account.investorPassword || '',
     masterPassword: account.masterPassword || account.masterpass || '********',
-    initialChallengeAmount: realMetrics.initialBalance,
-    currentBalance: realMetrics.currentBalance,
-    balanceGrowth: realMetrics.profitGrowth,
-    profit: realMetrics.profit,
-    profitGrowth: realMetrics.profitGrowth,
-    dailyDrawdown: realMetrics.dailyDrawdown,
+    initialChallengeAmount: realMetrics.initialBalance || 0,
+    currentBalance: accountMt5Info?.balance ?? account.balanceActual ?? realMetrics.currentBalance ?? 0,
+    balanceGrowth: realMetrics.profitGrowth || 0,
+    profit: accountMt5Info?.profit ?? account.profit ?? realMetrics.profit ?? 0,
+    profitGrowth: realMetrics.profitGrowth || 0,
+    equity: accountMt5Info?.equity ?? account.equity ?? 0,
+    margin: accountMt5Info?.margin ?? account.margin ?? 0,
+    dailyDrawdown: realMetrics.dailyDrawdown || 0,
     dailyDrawdownPercentage: realMetrics.initialBalance ? (realMetrics.dailyDrawdown / realMetrics.initialBalance) * 100 : 0,
-    totalDrawdown: realMetrics.totalDrawdown,
+    totalDrawdown: realMetrics.totalDrawdown || 0,
     totalDrawdownPercentage: realMetrics.initialBalance ? (realMetrics.totalDrawdown / realMetrics.initialBalance) * 100 : 0,
-    avgLossPerOperation: realMetrics.avgLossPerOperation,
+    avgLossPerOperation: realMetrics.avgLossPerOperation || 0,
     avgLossPercentage: realMetrics.initialBalance ? (realMetrics.avgLossPerOperation / realMetrics.initialBalance) * 100 : 0,
-    avgProfitPerOperation: realMetrics.avgProfitPerOperation,
+    avgProfitPerOperation: realMetrics.avgProfitPerOperation || 0,
     avgProfitPercentage: realMetrics.initialBalance ? (realMetrics.avgProfitPerOperation / realMetrics.initialBalance) * 100 : 0,
-    avgLotPerOperation: realMetrics.avgLotPerOperation,
-    avgTradeDuration: realMetrics.avgTradeDuration,
-    riskRewardRatio: realMetrics.riskRewardRatio,
-    winRate: realMetrics.winRate,
-    maxLossLimit: account.maxLossLimit || (realMetrics.initialBalance * 0.05) || 5000,
-    allowedLossToday: account.allowedLossToday || (realMetrics.initialBalance * 0.02) || 2000,
+    avgLotPerOperation: realMetrics.avgLotPerOperation || 0,
+    avgTradeDuration: realMetrics.avgTradeDuration || '0m',
+    riskRewardRatio: realMetrics.riskRewardRatio || 0,
+    winRate: realMetrics.winRate || 0,
     tradingDays: {
-      min: account.tradingDays?.min || 5,
-      current: account.tradingDays?.current || operationsData?.length > 0 ? 
-        new Set(operationsData.map(op => new Date(op.openTime).toDateString())).size : 0
+      current: account.tradingDays?.current || 0,
+      min: account.tradingDays?.min || 0
     },
-    minProfitTarget: account.minProfitTarget || (realMetrics.initialBalance * 0.08) || 8000,
-    currentProfit: realMetrics.profit
+    maxLossLimit: realMetrics.maxLossLimit || 0,
+    allowedLossToday: realMetrics.allowedLossToday || 0,
+    minProfitTarget: realMetrics.minProfitTarget || 0,
+    currentProfit: realMetrics.currentProfit || 0
   };
 
   return (
@@ -1225,12 +1228,63 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
       <div className="p-3 sm:p-4 md:p-6 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl flex-1 flex flex-col">
         <div className="flex flex-wrap justify-between items-center mb-3 sm:mb-4 gap-2">
           <h2 className="text-base sm:text-lg md:text-xl font-bold">{t('tradingDashboard_operationsTableTitle')}</h2>
+          <div className="flex gap-2">
+            <button 
+              onClick={async () => {
+                try {
+                  setIsLoading(true);
+                  setError(null);
+                  // Get the current user's token
+                  const token = await currentUser.getIdToken();
+                  console.log('Token obtenido, intentando actualizar datos...');
+                  
+                  // Call the API endpoint to refresh data with auth token
+                  const response = await fetch(`http://62.171.177.212:5000/api/accounts/${accountId}/strategies`, {
+                    method: 'GET',
+                    headers: {
+                      'Authorization': `Bearer ${token}`,
+                      'Content-Type': 'application/json'
+                    },
+                    credentials: 'include'
+                  });
+                  
+                  if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.message || `Error ${response.status}: ${response.statusText}`);
+                  }
+                  
+                  const data = await response.json();
+                  console.log('Datos actualizados:', data);
+                  
+                  // Re-fetch account data after refresh
+                  await fetchAccountData();
+                } catch (error) {
+                  console.error("Error refreshing data:", error);
+                  if (error.message.includes('Failed to fetch')) {
+                    setError(t('tradingDashboard_error_connection'));
+                  } else if (error.message.includes('CORS')) {
+                    setError(t('tradingDashboard_error_cors'));
+                  } else {
+                    setError(error.message || t('common_errorLoadingData'));
+                  }
+                } finally {
+                  setIsLoading(false);
+                }
+              }}
+              className="bg-cyan-600 hover:bg-cyan-700 text-white text-xs sm:text-sm py-1.5 px-3 sm:py-2 sm:px-4 rounded-md transition-colors flex items-center"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+              </svg>
+              {t('tradingDashboard_refreshButton')}
+            </button>
           <button className="bg-cyan-600 hover:bg-cyan-700 text-white text-xs sm:text-sm py-1.5 px-3 sm:py-2 sm:px-4 rounded-md transition-colors flex items-center">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2">
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
                           </svg>
             {t('tradingDashboard_downloadCsvButton')}
           </button>
+          </div>
                         </div>
 
         {isLoading && (
