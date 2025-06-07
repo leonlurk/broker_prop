@@ -66,22 +66,21 @@ export const registerUser = async (username, email, password, refId = null) => {
       }
     }
 
-    // Generar y enviar código de verificación personalizado
-    try {
-      const verificationResult = await emailVerificationService.generateAndSendCode(
-        email, 
-        user.uid, 
-        username
-      );
-      
-      if (!verificationResult.success) {
+    // Generar y enviar código de verificación personalizado en segundo plano
+    // No esperamos el resultado para hacer la redirección más rápida
+    emailVerificationService.generateAndSendCode(
+      email, 
+      user.uid, 
+      username
+    ).then(verificationResult => {
+      if (verificationResult.success) {
+        console.log('✅ Email de verificación enviado exitosamente');
+      } else {
         console.error('Error enviando código de verificación:', verificationResult.error);
-        // No fallar el registro, pero registrar el error
       }
-    } catch (verificationError) {
+    }).catch(verificationError => {
       console.error('Error con servicio de verificación:', verificationError);
-      // No fallar el registro por esto
-    }
+    });
     
     return { user, needsVerification: true };
   } catch (error) {

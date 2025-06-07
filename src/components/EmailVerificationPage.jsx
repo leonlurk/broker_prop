@@ -173,7 +173,10 @@ const EmailVerificationPage = () => {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen w-full bg-no-repeat bg-cover bg-center overflow-hidden m-0 p-0 inset-0 fixed px-[20px] sm:px-[60px] lg:px-[100px] py-[120px]">
+    <div 
+      className="flex items-center justify-center min-h-screen w-full bg-no-repeat bg-cover bg-center overflow-hidden m-0 p-0 inset-0 fixed px-[20px] sm:px-[60px] lg:px-[100px] py-[120px]"
+      style={{ backgroundImage: 'url(/fondo.png)', width: '100vw', height: '100vh' }}
+    >
       <div className="w-[90vw] max-w-[380px] sm:w-[420px] sm:max-w-[420px] md:w-[430px] md:max-w-[430px] lg:max-w-[450px] max-h-[80vh] px-[30px] py-12 rounded-3xl bg-black bg-opacity-60 border border-gray-800 shadow-xl flex flex-col mx-auto overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-300">
         
         {/* Logo */}
