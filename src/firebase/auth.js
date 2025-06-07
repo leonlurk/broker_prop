@@ -11,9 +11,10 @@ import {
   EmailAuthProvider
 } from "firebase/auth";
 import { auth, db } from "./config";
-import { doc, setDoc, getDoc, serverTimestamp, updateDoc, increment } from "firebase/firestore";
+import { doc, setDoc, getDoc, serverTimestamp, updateDoc, increment, collection, query, where, getDocs } from "firebase/firestore";
+import emailVerificationService from "../services/emailVerificationService";
 
-// Register a new user
+// Register a new user with custom email verification
 export const registerUser = async (username, email, password, refId = null) => {
   try {
     // Create user with email and password
@@ -25,13 +26,11 @@ export const registerUser = async (username, email, password, refId = null) => {
       displayName: username
     });
     
-    // Send email verification with custom redirect
-    const actionCodeSettings = {
-      url: `${window.location.origin}/registration-success`,
-      handleCodeInApp: true
-    };
+    // NO enviar email automático de Firebase - usamos nuestro sistema personalizado
+    // await sendEmailVerification(user, actionCodeSettings);
     
-    await sendEmailVerification(user, actionCodeSettings);
+    // Logout immediately to prevent auto-login until email is verified
+    await signOut(auth);
     
     // Prepare user data for Firestore
     const userData = {
@@ -40,35 +39,51 @@ export const registerUser = async (username, email, password, refId = null) => {
       email,
       display_name: username,
       created_time: serverTimestamp(),
-      referralCount: 0, // Initialize for the new user
-      withdrawals_wallet: "", // Initialize for the new user
-      preferredLanguage: 'es', // Default language preference
+      referralCount: 0,
+      withdrawals_wallet: "",
+      preferredLanguage: 'es',
+      emailVerified: false, // Manejaremos la verificación manualmente
+      needsEmailVerification: true, // Flag para nuestro sistema
     };
 
     if (refId) {
       userData.referredBy = refId;
     }
 
-    // Store additional user data in Firestore for the new user
+    // Store additional user data in Firestore
     await setDoc(doc(db, "users", user.uid), userData);
 
     // If referred, increment referrer's count
     if (refId) {
       try {
         const referrerDocRef = doc(db, "users", refId);
-        // Atomically increment the referralCount by 1
         await updateDoc(referrerDocRef, {
           referralCount: increment(1)
         });
         console.log(`Referral count incremented for referrer: ${refId}`);
       } catch (referrerError) {
         console.error(`Failed to update referral count for referrer ${refId}:`, referrerError);
-        // Optionally, decide how to handle this error. 
-        // For now, the new user registration will still succeed.
       }
     }
+
+    // Generar y enviar código de verificación personalizado
+    try {
+      const verificationResult = await emailVerificationService.generateAndSendCode(
+        email, 
+        user.uid, 
+        username
+      );
+      
+      if (!verificationResult.success) {
+        console.error('Error enviando código de verificación:', verificationResult.error);
+        // No fallar el registro, pero registrar el error
+      }
+    } catch (verificationError) {
+      console.error('Error con servicio de verificación:', verificationError);
+      // No fallar el registro por esto
+    }
     
-    return { user };
+    return { user, needsVerification: true };
   } catch (error) {
     console.error("Registration error:", error);
     
@@ -89,24 +104,76 @@ export const registerUser = async (username, email, password, refId = null) => {
   }
 };
 
+// Verify email with custom code system
+export const verifyEmailWithCode = async (email, code) => {
+  try {
+    console.log("[verifyEmailWithCode] Verifying code for email:", email);
+    
+    // Validate code using our custom service
+    const result = await emailVerificationService.validateCode(email, code);
+    
+    if (!result.isValid) {
+      return { error: { message: result.error || 'Código de verificación inválido' } };
+    }
+
+    // Get user document from Firestore to get the UID
+    const usersRef = collection(db, 'users');
+    const q = query(usersRef, where('email', '==', email));
+    const querySnapshot = await getDocs(q);
+    
+    if (querySnapshot.empty) {
+      return { error: { message: 'Usuario no encontrado' } };
+    }
+
+    const userDoc = querySnapshot.docs[0];
+    const userId = userDoc.id;
+
+    // Mark email as verified in Firestore
+    await updateDoc(doc(db, "users", userId), {
+      emailVerified: true,
+      needsEmailVerification: false,
+      emailVerifiedAt: serverTimestamp()
+    });
+
+    console.log("[verifyEmailWithCode] Email verified successfully");
+    return { success: true };
+    
+  } catch (error) {
+    console.error("[verifyEmailWithCode] Error:", error);
+    return { error: { message: 'Error al verificar el código' } };
+  }
+};
+
 // Sign in existing user
 export const loginUser = async (email, password) => {
   try {
+    console.log("[loginUser] Attempting login for email:", email);
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
     
-    // Check if email is verified
-    if (!user.emailVerified) {
-      // Sign out the user if email is not verified
-      await signOut(auth);
-      return { 
-        error: { 
-          message: "Por favor verifica tu correo electrónico antes de iniciar sesión. Revisa tu bandeja de entrada y haz clic en el enlace de verificación.",
-          code: 'auth/email-not-verified'
-        } 
-      };
+    console.log("[loginUser] Login successful, checking email verification...");
+    
+    // Check our custom email verification status in Firestore
+    const userDocRef = doc(db, "users", user.uid);
+    const userDoc = await getDoc(userDocRef);
+    
+    if (userDoc.exists()) {
+      const userData = userDoc.data();
+      
+      // Check if email needs verification using our custom system
+      if (userData.needsEmailVerification === true || userData.emailVerified === false) {
+        console.log("[loginUser] Email not verified with custom system, signing out user");
+        await signOut(auth);
+        return { 
+          error: { 
+            message: "Por favor verifica tu correo electrónico antes de iniciar sesión. Revisa tu bandeja de entrada e ingresa el código de verificación.",
+            code: 'auth/email-not-verified'
+          } 
+        };
+      }
     }
     
+    console.log("[loginUser] Email verified, login successful");
     return { user: userCredential.user };
   } catch (error) {
     console.error("[loginUser] Login process error:", error);

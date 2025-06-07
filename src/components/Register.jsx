@@ -13,7 +13,7 @@ import { getTranslator } from '../utils/i18n';
 const Register = ({ onLoginClick }) => {
   const { language } = useAuth();
   const t = getTranslator(language);
-
+  
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -39,6 +39,8 @@ const Register = ({ onLoginClick }) => {
     }
   }, [location.search]);
 
+
+
   const countryOptions = useMemo(() => countryList().getData(), []);
 
   const handleCountryChange = (selectedOption) => {
@@ -53,6 +55,8 @@ const Register = ({ onLoginClick }) => {
         setCountry(newCountry);
     }
   };
+
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -73,7 +77,10 @@ const Register = ({ onLoginClick }) => {
     
     try {
       console.log('Starting registration process...');
-      const { user, error } = await registerUser(username, email, password, refId);
+      const result = await registerUser(username, email, password, refId);
+      console.log('🔍 Registration result:', result);
+      const { user, error, needsVerification } = result;
+      console.log('🔍 Destructured values:', { user: !!user, error: !!error, needsVerification });
       
       if (error) {
         console.error('Firebase Auth registration error:', error);
@@ -100,15 +107,15 @@ const Register = ({ onLoginClick }) => {
         
         // Save additional user data
         try {
-        const userDocRef = doc(db, "users", user.uid);
+          const userDocRef = doc(db, "users", user.uid);
           await setDoc(userDocRef, {
             firstName: firstName,
             lastName: lastName,
             country: country.label,
             countryCode: country.value,
             phoneNumber: phoneNumber,
-              registrationCompleted: true,
-              lastUpdated: serverTimestamp(),
+            registrationCompleted: true,
+            lastUpdated: serverTimestamp(),
           }, { merge: true });
           
           console.log('User additional data saved successfully');
@@ -117,13 +124,28 @@ const Register = ({ onLoginClick }) => {
           // Don't fail the whole process, but log the error
           setError('Usuario creado pero algunos datos adicionales no se guardaron. Puedes completarlos en tu perfil.');
         }
+
+        // Si necesita verificación, redirigir a página de verificación
+        console.log('🔍 Checking needsVerification:', needsVerification);
+        if (needsVerification) {
+          console.log('✅ Redirecting to verification page');
+          
+          // Guardar datos en sessionStorage para la página de verificación
+          sessionStorage.setItem('verification_email', email);
+          sessionStorage.setItem('verification_username', username);
+          
+          // Redirigir a la página de verificación
+          navigate(`/verify-email?email=${encodeURIComponent(email)}&username=${encodeURIComponent(username)}`);
+          return; // Return early to prevent further execution
+        } else {
+          console.log('❌ Going to fallback - no verification needed');
+          // Fallback al flujo anterior
+          setMessage(t('register_message_registrationSuccess'));
+          navigate('/login?registered=true');
+        }
       }
 
       console.log('Registration successful:', user);
-      setMessage(t('register_message_registrationSuccess'));
-      
-      // Redirect immediately to login with success message
-      navigate('/login?registered=true');
     } catch (err) {
       console.error('Registration error:', err);
       setError(err.message || t('register_error_registrationFailed'));
@@ -131,6 +153,8 @@ const Register = ({ onLoginClick }) => {
       setLoading(false);
     }
   };
+
+
 
   return (
     <div className="flex items-center justify-center min-h-screen w-full bg-no-repeat bg-cover bg-center overflow-hidden m-0 p-0 inset-0 fixed px-[20px] sm:px-[60px] lg:px-[100px] py-[120px]">

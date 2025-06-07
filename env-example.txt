@@ -1,0 +1,16 @@
+# EJEMPLO DE ARCHIVO .env PARA SENDGRID
+# Copia este archivo como .env y completa con tus datos reales
+
+# SendGrid Configuration
+SENDGRID_API_KEY=SG.tu-api-key-de-sendgrid-aqui
+SENDGRID_FROM_EMAIL=noreply@agmtrading.com
+SENDGRID_FROM_NAME=AGM Trading
+
+# Server Configuration
+PORT=3001
+
+# INSTRUCCIONES:
+# 1. Copia este archivo como .env (sin .txt)
+# 2. Obtén tu API Key de SendGrid (Settings > API Keys)
+# 3. Configura tu email verificado en SendGrid
+# 4. Ejecuta: npm install && npm start 

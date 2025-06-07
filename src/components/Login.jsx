@@ -19,6 +19,11 @@ const Login = ({ onRegisterClick, onForgotClick, onLoginSuccess }) => {
   const [resendingEmail, setResendingEmail] = useState(false);
   const [lastEmail, setLastEmail] = useState('');
 
+  // Debug: Log state changes
+  useEffect(() => {
+    console.log("[Login] State updated - error:", error, "showEmailNotVerified:", showEmailNotVerified);
+  }, [error, showEmailNotVerified]);
+
   // Check for registration success parameter
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -29,15 +34,23 @@ const Login = ({ onRegisterClick, onForgotClick, onLoginSuccess }) => {
         setShowSuccessMessage(false);
       }, 5000);
     }
+    if (params.get('verified') === 'true') {
+      setShowSuccessMessage(true);
+      // Hide the message after 5 seconds
+      setTimeout(() => {
+        setShowSuccessMessage(false);
+      }, 5000);
+    }
   }, [location]);
 
   // Clear error states when user starts typing
   useEffect(() => {
-    if (error) {
+    if (error && (username.length > 0 || password.length > 0)) {
+      console.log("[Login] Clearing error because user is typing");
       setError('');
       setShowEmailNotVerified(false);
     }
-  }, [username, password]);
+  }, [username, password, error]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -49,15 +62,21 @@ const Login = ({ onRegisterClick, onForgotClick, onLoginSuccess }) => {
       const isEmail = /\S+@\S+\.\S+/.test(username);
       const email = isEmail ? username : `${username}@example.com`; // Adjust as needed
       
+      console.log("[Login] Calling loginUser with email:", email);
       const { user, error } = await loginUser(email, password);
       
+      console.log("[Login] loginUser response:", { user, error });
+      
       if (error) {
+        console.log("[Login] Error received:", error);
         // Handle specific error for unverified email
         if (error.code === 'auth/email-not-verified') {
+          console.log("[Login] Email not verified error detected");
           setError(t('login_error_emailNotVerified'));
           setShowEmailNotVerified(true);
           setLastEmail(email);
         } else {
+          console.log("[Login] Other error:", error.message);
           setError(error.message || t('login_error_loginFailed'));
         }
         return;
@@ -94,7 +113,11 @@ const Login = ({ onRegisterClick, onForgotClick, onLoginSuccess }) => {
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
           </svg>
-          <span className="font-medium">¡Registro Exitoso!</span>
+          <span className="font-medium">
+            {new URLSearchParams(location.search).get('verified') === 'true' 
+              ? '¡Email Verificado Exitosamente!' 
+              : '¡Registro Exitoso!'}
+          </span>
           <button 
             onClick={() => setShowSuccessMessage(false)}
             className="ml-2 text-white hover:text-gray-200"
@@ -125,6 +148,9 @@ const Login = ({ onRegisterClick, onForgotClick, onLoginSuccess }) => {
             )}
           </div>
         )}
+        
+        {/* Debug: Show current state */}
+        {console.log("[Login] Rendering - error:", error, "showEmailNotVerified:", showEmailNotVerified)}
         
         <form onSubmit={handleSubmit} className="space-y-8">
           <div className="space-y-6">

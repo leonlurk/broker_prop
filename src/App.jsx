@@ -5,6 +5,7 @@ import Register from './components/Register';
 import ForgotPassword from './components/ForgotPassword';
 import VerificationCode from './components/VerificationCode';
 import RegistrationSuccess from './components/RegistrationSuccess';
+import EmailVerificationPage from './components/EmailVerificationPage';
 import Dashboard from './Dashboard';
 import PaymentPage from './components/PaymentPage';
 import PaymentStatusPage from './components/PaymentStatusPage';
@@ -90,6 +91,13 @@ function App() {
             <AuthPageWrapper>
               <Verification />
             </AuthPageWrapper>
+          } 
+        />
+        
+        <Route 
+          path="/verify-email" 
+          element={
+            <EmailVerificationPage />
           } 
         />
         
