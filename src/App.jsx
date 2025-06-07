@@ -3,6 +3,8 @@ import { useEffect } from 'react';
 import Login from './components/Login';
 import Register from './components/Register';
 import ForgotPassword from './components/ForgotPassword';
+import PasswordResetPage from './components/PasswordResetPage';
+import FirebasePasswordReset from './components/FirebasePasswordReset';
 import VerificationCode from './components/VerificationCode';
 import RegistrationSuccess from './components/RegistrationSuccess';
 import EmailVerificationPage from './components/EmailVerificationPage';
@@ -37,9 +39,19 @@ function App() {
  
   // Common background wrapper for auth pages
   const AuthPageWrapper = ({ children }) => (
-    <div className="min-h-screen w-full flex items-center justify-end bg-black bg-no-repeat bg-cover bg-center"
+    <div className="min-h-screen w-full flex items-center justify-center md:justify-end bg-black bg-no-repeat bg-cover bg-center"
       style={{ backgroundImage: 'url(/fondo.png)', width: '100vw', height: '100vh' }}>
-      <div className="mr-6 md:mr-6 sm:mx-auto">
+      <div className="mx-auto md:mr-6 md:mx-0">
+        {children}
+      </div>
+    </div>
+  );
+
+  // Centered wrapper specifically for forgot password page
+  const CenteredAuthPageWrapper = ({ children }) => (
+    <div className="min-h-screen w-full flex items-center justify-center bg-black bg-no-repeat bg-cover bg-center"
+      style={{ backgroundImage: 'url(/fondo.png)', width: '100vw', height: '100vh' }}>
+      <div className="mx-auto">
         {children}
       </div>
     </div>
@@ -47,7 +59,7 @@ function App() {
 
   return (
     <div className="dark">
-      <ActionRedirector />
+      {/* <ActionRedirector /> */}
       {isAuthenticated && <PaymentMonitor />}
       
       <Routes>
@@ -76,13 +88,23 @@ function App() {
         <Route 
           path="/forgot-password" 
           element={
-            <AuthPageWrapper>
+            <CenteredAuthPageWrapper>
               <ForgotPassword 
                 onContinue={() => navigate('/verification')} 
                 onLoginClick={() => navigate('/login')} 
               />
-            </AuthPageWrapper>
+            </CenteredAuthPageWrapper>
           } 
+        />
+        
+        <Route 
+          path="/reset-password" 
+          element={<PasswordResetPage />} 
+        />
+        
+        <Route 
+          path="/firebase-reset" 
+          element={<FirebasePasswordReset />} 
         />
         
         <Route 
@@ -143,14 +165,14 @@ function App() {
           } 
         />
         
-        <Route 
+        {/* <Route 
           path="/action" 
           element={
             <AuthPageWrapper>
               <ActionRedirector />
             </AuthPageWrapper>
           } 
-        />
+        /> */}
         
         {/* Redirect all other routes to login */}
         <Route path="*" element={<Navigate to="/login" replace />} />

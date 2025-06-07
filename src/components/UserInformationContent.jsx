@@ -804,7 +804,7 @@ const UserInformationContent = ({ onBack }) => {
                 onClick={() => document.getElementById('profilePicInputUserInfo').click()}
                 aria-label={t('userInfo_button_changePhoto')}
               >
-                <Camera size={24} className="text-white" />
+                <Camera size={32} className="text-white" />
               </button>
               <input
                 id="profilePicInputUserInfo"
@@ -914,31 +914,31 @@ const UserInformationContent = ({ onBack }) => {
             <select 
               id="pais" 
               value={paisSeleccionado} 
-                    onChange={e => {
-                      setPaisSeleccionado(e.target.value);
-                      // Lógica existente para actualizar código de país
-                      const normalize = str => str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-                      const selected = e.target.value;
-                      let codeObj = codigosPaisesFull.find(cp => normalize(cp.pais) === normalize(selected));
-                      if (!codeObj) {
-                        codeObj = codigosPaisesFull.find(cp => normalize(selected).includes(normalize(cp.pais)) || normalize(cp.pais).includes(normalize(selected)));
-                      }
-                      if (!codeObj) {
-                        const clean = s => normalize(s).replace(/(republic|federation|state|states|kingdom|democratic|people|islamic|arab|of|the|and|union|united|plurinational|bolivarian|province|provinces|city|country|nation|territory|islands|island|coast|north|south|east|west|central|new|old|great|little|upper|lower|mount|saint|st|sao|san|santa|la|el|los|las|le|les|de|del|da|do|das|du|di|al|el|a|o|u|i|e|y|z|x|c|d|b|g|h|j|k|l|m|n|p|q|r|s|t|v|w|z|\s+)/g, '');
-                        codeObj = codigosPaisesFull.find(cp => clean(cp.pais) === clean(selected));
-                      }
-                      if (!codeObj) {
-                        codeObj = codigosPaisesFull.find(cp => cp.pais_en && normalize(cp.pais_en) === normalize(selected));
-                      }
-                      setCodigoPais(codeObj ? codeObj.codigo : '');
-                    }}
-                    className="w-full h-12 sm:h-14 px-4 sm:px-5 pr-12 text-white text-sm sm:text-base font-normal font-['Poppins'] border border-[#3C3C3C] rounded-full focus:outline-none focus:ring-2 focus:ring-cyan-500 appearance-none"
-                    style={{ 
-                      background: 'linear-gradient(122.63deg, rgba(34, 34, 34, 0.5) 0%, rgba(53, 53, 53, 0.5) 100%)'
-                    }}
+              onChange={e => {
+                setPaisSeleccionado(e.target.value);
+                // Lógica existente para actualizar código de país
+                const normalize = str => str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+                const selected = e.target.value;
+                let codeObj = codigosPaisesFull.find(cp => normalize(cp.pais) === normalize(selected));
+                if (!codeObj) {
+                  codeObj = codigosPaisesFull.find(cp => normalize(selected).includes(normalize(cp.pais)) || normalize(cp.pais).includes(normalize(selected)));
+                }
+                if (!codeObj) {
+                  const clean = s => normalize(s).replace(/(republic|federation|state|states|kingdom|democratic|people|islamic|arab|of|the|and|union|united|plurinational|bolivarian|province|provinces|city|country|nation|territory|islands|island|coast|north|south|east|west|central|new|old|great|little|upper|lower|mount|saint|st|sao|san|santa|la|el|los|las|le|les|de|del|da|do|das|du|di|al|el|a|o|u|i|e|y|z|x|c|d|b|g|h|j|k|l|m|n|p|q|r|s|t|v|w|z|\s+)/g, '');
+                  codeObj = codigosPaisesFull.find(cp => clean(cp.pais) === clean(selected));
+                }
+                if (!codeObj) {
+                  codeObj = codigosPaisesFull.find(cp => cp.pais_en && normalize(cp.pais_en) === normalize(selected));
+                }
+                setCodigoPais(codeObj ? codeObj.codigo : '');
+              }}
+              className="w-full h-12 sm:h-14 px-4 sm:px-5 pr-12 text-white text-sm sm:text-base font-normal font-['Poppins'] border border-[#3C3C3C] rounded-full focus:outline-none focus:ring-2 focus:ring-cyan-500 appearance-none"
+              style={{ 
+                background: 'linear-gradient(122.63deg, rgba(34, 34, 34, 0.5) 0%, rgba(53, 53, 53, 0.5) 100%)'
+              }}
               disabled={cargandoPaises}
             >
-                    <option value="" className="text-white/50">{cargandoPaises ? t('userInfo_loading_countries') : t('userInfo_placeholder_country')}</option>
+              <option value="" className="text-white/50">{cargandoPaises ? t('userInfo_loading_countries') : t('userInfo_placeholder_country')}</option>
               {paises.map(pais => (
                 <option key={pais.nombre} value={pais.nombre}>{pais.nombre}</option>
               ))}
@@ -956,16 +956,16 @@ const UserInformationContent = ({ onBack }) => {
             <select 
               id="ciudad" 
               value={ciudadSeleccionada} 
-                    onChange={e => setCiudadSeleccionada(e.target.value)}
-                    className="w-full h-12 sm:h-14 px-4 sm:px-5 pr-12 text-white text-sm sm:text-base font-normal font-['Poppins'] border border-[#3C3C3C] rounded-full focus:outline-none focus:ring-2 focus:ring-cyan-500 appearance-none"
-                    style={{ 
-                      background: 'linear-gradient(122.63deg, rgba(34, 34, 34, 0.5) 0%, rgba(53, 53, 53, 0.5) 100%)'
-                    }}
+              onChange={e => setCiudadSeleccionada(e.target.value)}
+              className="w-full h-12 sm:h-14 px-4 sm:px-5 pr-12 text-white text-sm sm:text-base font-normal font-['Poppins'] border border-[#3C3C3C] rounded-full focus:outline-none focus:ring-2 focus:ring-cyan-500 appearance-none"
+              style={{ 
+                background: 'linear-gradient(122.63deg, rgba(34, 34, 34, 0.5) 0%, rgba(53, 53, 53, 0.5) 100%)'
+              }}
               disabled={cargandoCiudades || !paisSeleccionado}
             >
-                    <option value="" className="text-white/50">
-                      {cargandoCiudades ? t('userInfo_loading_cities') || 'Cargando ciudades...' : 
-                       !paisSeleccionado ? 'Selecciona un país primero' : t('userInfo_placeholder_city')}
+              <option value="" className="text-white/50">
+                {cargandoCiudades ? t('userInfo_loading_cities') || 'Cargando ciudades...' : 
+                 !paisSeleccionado ? 'Selecciona un país primero' : t('userInfo_placeholder_city')}
               </option>
               {ciudades.map(ciudad => (
                 <option key={ciudad} value={ciudad}>{ciudad}</option>

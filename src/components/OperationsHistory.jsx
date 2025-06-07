@@ -2,8 +2,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Search, Calendar, ArrowDown, ChevronDown, Copy, DollarSign, Loader, Save, AlertTriangle } from 'lucide-react';
 import { doc, getDoc, setDoc, addDoc, collection, serverTimestamp, query, where, onSnapshot, orderBy } from 'firebase/firestore';
 import { auth, db } from '../firebase/config';
+import { useAuth } from '../contexts/AuthContext';
+import { getTranslator } from '../utils/i18n';
 
 const OperationsHistory = () => {
+  const { language } = useAuth();
+  const t = getTranslator(language);
   const [operaciones, setOperaciones] = useState([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const [showSnackbar, setShowSnackbar] = useState(false);
@@ -55,6 +59,14 @@ const getDaysInMonth = (year, month) => {
 // Función para obtener el primer día de la semana del mes
 const getFirstDayOfMonth = (year, month) => {
   return new Date(year, month, 1).getDay();
+};
+
+// Función para convertir fecha de formato DD/MM/YYYY a MM/DD/YYYY para comparación
+const convertirFecha = (fecha) => {
+  if (!fecha) return '';
+  const partes = fecha.split('/');
+  if (partes.length !== 3) return fecha; // Si no tiene el formato esperado, devolver como está
+  return `${partes[1]}/${partes[0]}/${partes[2]}`;
 };
 
 // Función para cambiar de mes en el calendario
@@ -255,12 +267,12 @@ const renderCalendar = (isStartDate) => {
   // Función para manejar el retiro de ganancias
   const handleWithdraw = async () => {
     if (typeof gananciaRetirable === 'string' && parseFloat(gananciaRetirable.replace(/[^\d.-]/g, '')) <= 0) {
-      setWithdrawError('No hay ganancias disponibles para retirar');
+      setWithdrawError(t('operations_no_earnings_error'));
       return;
     }
     
     if (!walletAddress) {
-      setWithdrawError('Debe configurar una dirección de wallet antes de retirar');
+      setWithdrawError(t('operations_wallet_required_error'));
       return;
     }
     
@@ -303,11 +315,11 @@ const renderCalendar = (isStartDate) => {
         }, 3000);
       } else {
         // Simulación de error
-        setWithdrawError('Error en la red de la blockchain. Intente nuevamente.');
+        setWithdrawError(t('operations_blockchain_error'));
       }
     } catch (error) {
       console.error('Error al procesar el retiro:', error); // Log the actual error
-      setWithdrawError('Error al procesar el retiro. Intente más tarde.');
+      setWithdrawError(t('operations_processing_error'));
     } finally {
       setIsWithdrawing(false);
     }
@@ -324,7 +336,7 @@ const renderCalendar = (isStartDate) => {
   const saveWalletAddress = async () => {
     // Validación básica
     if (!editWalletAddress.trim()) {
-      setWalletError('Por favor, introduzca una dirección de wallet válida.');
+      setWalletError(t('operations_wallet_invalid'));
       return;
     }
     
@@ -340,7 +352,7 @@ const renderCalendar = (isStartDate) => {
         await setDoc(userDocRef, { withdrawals_wallet: editWalletAddress.trim() }, { merge: true });
         
         setWalletAddress(editWalletAddress.trim());
-        setWalletSuccessMessage('Dirección de wallet actualizada correctamente');
+        setWalletSuccessMessage(t('operations_wallet_success'));
         
         // Ocultar mensaje de éxito después de 3 segundos
         setTimeout(() => {
@@ -349,11 +361,11 @@ const renderCalendar = (isStartDate) => {
         
         setIsEditingWallet(false);
       } else {
-        setWalletError('Debe iniciar sesión para actualizar la dirección de wallet.');
+        setWalletError(t('operations_wallet_error'));
       }
     } catch (err) {
       console.error('Error al actualizar la wallet:', err);
-      setWalletError('Error al guardar los cambios. Intente de nuevo más tarde.');
+      setWalletError(t('operations_wallet_error'));
     } finally {
       setIsSavingWallet(false);
     }
@@ -547,13 +559,18 @@ const renderCalendar = (isStartDate) => {
     setCurrentPage(1); // Reset to first page on filter change
   }, [searchQuery, fechaInicio, fechaFin, estadoFilter, metodoFilter, operaciones, isLoadingHistory]);
 
-  
-  // Función para convertir fecha de formato DD/MM/YYYY a MM/DD/YYYY para comparación
-  const convertirFecha = (fecha) => {
-    if (!fecha) return '';
-    const partes = fecha.split('/');
-    if (partes.length !== 3) return fecha; // Si no tiene el formato esperado, devolver como está
-    return `${partes[1]}/${partes[0]}/${partes[2]}`;
+  // Función para traducir estados
+  const translateStatus = (estado) => {
+    switch (estado) {
+      case 'Terminado':
+        return t('operations_status_terminado');
+      case 'Pendiente':
+        return t('operations_status_pendiente');
+      case 'Vencido':
+        return t('operations_status_vencido');
+      default:
+        return estado;
+    }
   };
 
   // Estado del color de cada fila
@@ -621,7 +638,7 @@ const renderCalendar = (isStartDate) => {
         {/* Ganancia Retirable */}
         <div className="p-4 md:p-6 bg-gradient-to-br from-[#232323] to-[#2d2d2d] rounded-xl border border-[#333] relative">
           <h2 className="text-2xl md:text-3xl font-medium mb-2 flex items-center">
-            Ganancia Retirable
+            {t('operations_withdrawable_earnings')}
             {isLoading && (
               <Loader size={18} className="ml-2 animate-spin text-cyan-500" />
             )}
@@ -629,33 +646,33 @@ const renderCalendar = (isStartDate) => {
           <div className="flex items-center mb-1">
             <p className="text-2xl md:text-3xl font-regular">
               {isLoading ? (
-                <span className="text-gray-400">Cargando...</span>
+                <span className="text-gray-400">{t('operations_loading')}</span>
               ) : (
                 gananciaRetirable // Display the string directly
               )}
             </p>
             {!isLoading && lastUpdate && (
               <span className="text-xs text-gray-400 ml-2">
-                Actualizado: {lastUpdate.toLocaleTimeString()}
+                {t('operations_updated')} {lastUpdate.toLocaleTimeString()}
               </span>
             )}
           </div>
           
           {!isLoading && gananciaRetirable > 0 && (
             <p className="text-sm text-gray-400 mb-4">
-              Mínimo de retiro: {formatCurrency(100)} - Disponible para retirar
+              {t('operations_minimum_withdrawal')} {formatCurrency(100)} - {t('operations_available_to_withdraw')}
             </p>
           )}
           {!isLoading && gananciaRetirable <= 0 && (
             <p className="text-sm text-yellow-400 mb-4">
-              No hay ganancias disponibles para retirar
+              {t('operations_no_earnings_available')}
             </p>
           )}
           
           <div className="mb-4">
             {withdrawSuccess && (
               <div className="text-green-400 text-sm mb-2 bg-green-900/20 p-2 rounded">
-                Solicitud de retiro enviada con éxito. El proceso puede tardar hasta 24 horas.
+                {t('operations_withdrawal_success')}
               </div>
             )}
             {withdrawError && (
@@ -679,19 +696,19 @@ const renderCalendar = (isStartDate) => {
               <>
                 <span className="flex items-center justify-center">
                   <Loader size={16} className="animate-spin mr-2" />
-                  Procesando...
+                  {t('operations_processing')}
                 </span>
               </>
             ) : (
-              "Retirar Ganancia"
+              t('operations_withdraw_earnings')
             )}
           </button>
         </div>
 
         {/* Billetera de retiros */}
         <div className="p-4 md:p-6 bg-gradient-to-br from-[#202c36] to-[#0a5a72] rounded-xl border border-[#333] relative">
-          <h2 className="text-2xl md:text-3xl font-medium mb-2">Billetera de retiros</h2>
-          <p className="text-lg md:text-2xl text-gray-300 mb-1">Tether USDT (Tron TRC20 Network)</p>
+          <h2 className="text-2xl md:text-3xl font-medium mb-2">{t('operations_withdrawal_wallet')}</h2>
+          <p className="text-lg md:text-2xl text-gray-300 mb-1">{t('operations_tether_usdt_network')}</p>
 
           {walletSuccessMessage && (
             <div className="bg-green-900/20 border border-green-600 text-green-400 p-3 rounded-lg mb-3">
@@ -713,7 +730,7 @@ const renderCalendar = (isStartDate) => {
                 className="flex-grow p-3 bg-[#1a1a1a] rounded-lg border border-[#333] text-white"
                 value={editWalletAddress}
                 onChange={(e) => setEditWalletAddress(e.target.value)}
-                placeholder="Ingrese su dirección TRC20 USDT"
+                placeholder={t('operations_wallet_placeholder')}
               />
               <div className="flex flex-col sm:flex-row gap-3">
                 <button 
@@ -724,12 +741,12 @@ const renderCalendar = (isStartDate) => {
                   {isSavingWallet ? (
                     <>
                       <Loader size={16} className="animate-spin mr-2" />
-                      Guardando...
+                      {t('operations_saving')}
                     </>
                   ) : (
                     <>
                       <Save size={16} className="mr-2" />
-                      Guardar
+                      {t('operations_save_wallet')}
                     </>
                   )}
                 </button>
@@ -738,7 +755,7 @@ const renderCalendar = (isStartDate) => {
                   onClick={toggleWalletEditMode}
                   disabled={isSavingWallet}
                 >
-                  Cancelar
+                  {t('operations_cancel')}
                 </button>
               </div>
             </div>
@@ -746,7 +763,7 @@ const renderCalendar = (isStartDate) => {
             <>
               <div className="bg-[#1a1a1a] p-3 rounded-md mb-4 flex items-center">
                 <span className="text-gray-400 font-mono text-sm truncate">
-                  {walletAddress || 'No se ha establecido una dirección de wallet'}
+                  {walletAddress || t('operations_no_wallet_set')}
                 </span>
                 {walletAddress && (
                   <button 
@@ -762,7 +779,7 @@ const renderCalendar = (isStartDate) => {
                 style={{ outline: 'none' }}
                 onClick={toggleWalletEditMode}
               >
-                Cambiar Billetera
+                {t('operations_change_wallet')}
               </button>
             </>
           )}
@@ -773,12 +790,12 @@ const renderCalendar = (isStartDate) => {
       <div className="p-4 md:p-6 bg-gradient-to-br from-[#232323] to-[#2d2d2d] rounded-xl border border-[#333] mb-6">
         {/* Título y buscador */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-          <h2 className="text-2xl md:text-3xl font-semibold">Historial de Operaciones</h2>
+          <h2 className="text-2xl md:text-3xl font-semibold">{t('operations_operations_history')}</h2>
           
           <div className="relative w-full md:w-64 mt-2 md:mt-0">
             <input
               type="text"
-              placeholder="Numero de orden"
+              placeholder={t('operations_order_number')}
               className="pl-4 pr-10 py-2 rounded-full bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] w-full text-sm"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -792,12 +809,12 @@ const renderCalendar = (isStartDate) => {
   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
     {/* Filtro de fecha */}
     <div className="flex flex-col space-y-2">
-      <span className="text-lg font-medium">Fecha</span>
+      <span className="text-lg font-medium">{t('operations_date')}</span>
       <div className="grid grid-cols-2 gap-2">
         <div className="relative" ref={startCalendarRef}>
           <input
             type="text"
-            placeholder="De"
+            placeholder={t('operations_from')}
             className="pl-4 pr-9 py-5 rounded-full bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] w-full text-lg cursor-pointer"
             value={fechaInicio}
             readOnly
@@ -888,7 +905,7 @@ const renderCalendar = (isStartDate) => {
         <div className="relative" ref={endCalendarRef}>
           <input
             type="text"
-            placeholder="A"
+            placeholder={t('operations_to')}
             className="pl-4 pr-9 py-5 rounded-full bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] w-full text-lg cursor-pointer"
             value={fechaFin}
             readOnly
@@ -980,17 +997,17 @@ const renderCalendar = (isStartDate) => {
     
     {/* Filtro de Estado */}
     <div className="flex flex-col space-y-2">
-      <span className="text-lg font-medium">Estado</span>
+      <span className="text-lg font-medium">{t('operations_status')}</span>
       <div className="relative">
         <select 
           className="appearance-none pl-4 pr-9 py-5 rounded-full bg-gradient-to-br text-[#929292] from-[#232323] to-[#2d2d2d] border border-[#333] w-full text-lg"
           value={estadoFilter}
           onChange={(e) => setEstadoFilter(e.target.value)}
         >
-          <option value="">Todo</option>
-          <option value="Terminado">Terminado</option>
-          <option value="Pendiente">Pendiente</option>
-          <option value="Vencido">Vencido</option>
+          <option value="">{t('operations_all')}</option>
+          <option value="Terminado">{t('operations_status_terminado')}</option>
+          <option value="Pendiente">{t('operations_status_pendiente')}</option>
+          <option value="Vencido">{t('operations_status_vencido')}</option>
         </select>
         <ChevronDown size={14} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
       </div>
@@ -998,16 +1015,16 @@ const renderCalendar = (isStartDate) => {
     
     {/* Filtro de Tipo de pago */}
     <div className="flex flex-col space-y-2">
-      <span className="text-lg font-medium">Tipo de pago</span>
+      <span className="text-lg font-medium">{t('operations_payment_type')}</span>
       <div className="relative">
         <select 
           className="appearance-none pl-4 pr-9 py-5 bg-gradient-to-br from-[#232323] to-[#2d2d2d] text-[#929292] rounded-full border border-[#333] w-full text-lg"
           value={metodoFilter}
           onChange={(e) => setMetodoFilter(e.target.value)}
         >
-          <option value="">Todo</option>
-          <option value="Criptomoneda">Criptomoneda</option>
-          <option value="Tarjeta">Tarjeta</option>
+          <option value="">{t('operations_all')}</option>
+          <option value="Criptomoneda">{t('operations_payment_method_crypto')}</option>
+          <option value="Tarjeta">{t('operations_payment_method_card')}</option>
         </select>
         <ChevronDown size={14} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
       </div>
@@ -1020,21 +1037,21 @@ const renderCalendar = (isStartDate) => {
       <div className="bg-gradient-to-br from-[#232323] to-[#2d2d2d] rounded-xl border border-[#333] p-4 md:p-6 mb-6">
         {/* Cabecera de la tabla */}
         <div className="hidden md:grid grid-cols-8 items-center text-left text-gray-300 border-b border-gray-700 py-3 mb-3 gap-2">
-          <div className="font-semibold text-sm px-2">Estado</div>
-          <div className="font-semibold text-sm px-2">Fecha De Solicitud</div>
-          <div className="font-semibold text-sm px-2">Tiempo De Pago</div>
+          <div className="font-semibold text-sm px-2">{t('operations_table_status')}</div>
+          <div className="font-semibold text-sm px-2">{t('operations_table_request_date')}</div>
+          <div className="font-semibold text-sm px-2">{t('operations_table_payment_time')}</div>
           <div className="font-semibold text-sm px-2 flex justify-between items-center">
-            <span>Hash</span>
+            <span>{t('operations_table_hash')}</span>
     <div className="w-6"></div>
   </div>
-          <div className="font-semibold text-sm px-2">Cuenta</div>
-          <div className="font-semibold text-sm px-2">Tipo De Producto</div>
-          <div className="font-semibold text-sm px-2">Cantidad</div>
-          <div className="font-semibold text-sm px-2">Retiros Totales</div>
+          <div className="font-semibold text-sm px-2">{t('operations_table_account')}</div>
+          <div className="font-semibold text-sm px-2">{t('operations_table_product_type')}</div>
+          <div className="font-semibold text-sm px-2">{t('operations_table_amount')}</div>
+          <div className="font-semibold text-sm px-2">{t('operations_table_total_withdrawals')}</div>
 </div>
         
         {/* Tabla de operaciones - con mensaje si no hay resultados */}
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto -webkit-overflow-scrolling-touch">
           {paginatedOperaciones.length > 0 ? (
             paginatedOperaciones.map((op, index) => {
               const fechaParts = op.fecha.split(' ');
@@ -1056,7 +1073,7 @@ const renderCalendar = (isStartDate) => {
                   cuentaDisplay = `${challengeDetails} (${numOrdenSuffix})`;
                 }
               } else if (op.tipo === 'Withdrawal') {
-                cuentaDisplay = `Retiro Wallet (${numOrdenSuffix})`;
+                cuentaDisplay = `${t('operations_withdrawal_wallet_suffix')} (${numOrdenSuffix})`;
               }
 
               let retirosTotalesDisplay;
@@ -1073,18 +1090,18 @@ const renderCalendar = (isStartDate) => {
               >
                 {/* Para móvil */}
                 <div className="md:hidden grid grid-cols-2 gap-2 px-2">
-                  <div className="text-gray-400">Estado:</div>
+                  <div className="text-gray-400">{t('operations_mobile_status')}</div>
                     <div className={`px-4 py-2 rounded-full text-xs font-medium text-white ${getEstadoColor(op.estado)} inline-block w-fit`}>
-                    {op.estado}
+                    {translateStatus(op.estado)}
                   </div>
                   
-                    <div className="text-gray-400">Fecha De Solicitud:</div>
+                    <div className="text-gray-400">{t('operations_mobile_request_date')}</div>
                     <div>{fechaSolicitud}</div>
                   
-                    <div className="text-gray-400">Tiempo De Pago:</div>
+                    <div className="text-gray-400">{t('operations_mobile_payment_time')}</div>
                     <div>{tiempoDePago}</div>
                     
-                    <div className="text-gray-400">Hash:</div>
+                    <div className="text-gray-400">{t('operations_mobile_hash')}</div>
                     <div className="flex items-center justify-between">
                       <span>{op.numOrden.substring(0, 10)}...</span>
                       <button 
@@ -1096,23 +1113,23 @@ const renderCalendar = (isStartDate) => {
                       </button>
                     </div>
                   
-                    <div className="text-gray-400">Cuenta:</div>
+                    <div className="text-gray-400">{t('operations_mobile_account')}</div>
                     <div>{cuentaDisplay}</div>
                     
-                    <div className="text-gray-400">Tipo De Producto:</div>
+                    <div className="text-gray-400">{t('operations_mobile_product_type')}</div>
                   <div>{op.tipo}</div>
                   
-                  <div className="text-gray-400">Cantidad:</div>
-                  <div className="font-medium">{op.cantidad}</div>
+                                      <div className="text-gray-400">{t('operations_table_amount')}:</div>
+                    <div className="font-medium">{op.cantidad}</div>
 
-                    <div className="text-gray-400">Retiros Totales:</div>
+                    <div className="text-gray-400">{t('operations_table_total_withdrawals')}:</div>
                     <div>{retirosTotalesDisplay}</div>
                 </div>
                 
                 {/* Para desktop */}
                 <div className="hidden md:block px-2">
                     <div className={`px-4 py-2 rounded-full text-xs font-medium text-white ${getEstadoColor(op.estado)} inline-block`}>
-                    {op.estado}
+                    {translateStatus(op.estado)}
                   </div>
                 </div>
                   <div className="hidden md:block px-2">{fechaSolicitud}</div>
@@ -1136,7 +1153,7 @@ const renderCalendar = (isStartDate) => {
             })
           ) : (
             <div className="text-center py-8 text-gray-400">
-              No se encontraron operaciones con los filtros aplicados
+              {t('operations_no_results')}
             </div>
           )}
         </div>
@@ -1194,7 +1211,7 @@ const renderCalendar = (isStartDate) => {
       </div>
       {showSnackbar && (
   <div className="fixed bottom-4 right-4 bg-green-500/90 text-white px-4 py-2 rounded-lg shadow-lg flex items-center animate-fade-in-out">
-    <span>Texto copiado al portapapeles</span>
+    <span>{t('operations_copied_to_clipboard')}</span>
   </div>
 )}
     </div>

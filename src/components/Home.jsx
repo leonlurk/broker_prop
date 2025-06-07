@@ -116,14 +116,21 @@ const Home = ({ onViewDetails, onSettingsClick, setSelectedOption }) => {
   }, [currentUser]);
 
   const getCurrentFormattedDate = () => {
-    const days = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-    const months = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+    const dayKeys = ["day_domingo", "day_lunes", "day_martes", "day_miercoles", "day_jueves", "day_viernes", "day_sabado"];
+    const monthKeys = ["month_enero", "month_febrero", "month_marzo", "month_abril", "month_mayo", "month_junio", "month_julio", "month_agosto", "month_septiembre", "month_octubre", "month_noviembre", "month_diciembre"];
+    
     const now = new Date();
-    const dayName = days[now.getDay()];
+    const dayName = t(dayKeys[now.getDay()]);
     const dayOfMonth = now.getDate();
-    const monthName = months[now.getMonth()];
+    const monthName = t(monthKeys[now.getMonth()]);
     const year = now.getFullYear();
-    return `${dayName}, ${dayOfMonth} de ${monthName} de ${year}`;
+    
+    // For English, we don't need the "de" prepositions
+    if (language === 'en') {
+      return `${dayName}, ${monthName} ${dayOfMonth}, ${year}`;
+    } else {
+      return `${dayName}, ${dayOfMonth} de ${monthName} de ${year}`;
+    }
   };
 
   const getUserName = () => {

@@ -43,12 +43,16 @@ const Login = ({ onRegisterClick, onForgotClick, onLoginSuccess }) => {
     }
   }, [location]);
 
-  // Clear error states when user starts typing
+  // Clear error states when user starts typing in either field after showing error
   useEffect(() => {
-    if (error && (username.length > 0 || password.length > 0)) {
-      console.log("[Login] Clearing error because user is typing");
-      setError('');
-      setShowEmailNotVerified(false);
+    if (error && username.length > 0 && password.length > 0) {
+      // Only clear errors if user has typed in both fields after an error
+      const timeoutId = setTimeout(() => {
+        setError('');
+        setShowEmailNotVerified(false);
+      }, 2000); // Wait 2 seconds before clearing
+      
+      return () => clearTimeout(timeoutId);
     }
   }, [username, password, error]);
 
@@ -129,7 +133,7 @@ const Login = ({ onRegisterClick, onForgotClick, onLoginSuccess }) => {
         </div>
       )}
       
-      <div className="w-[330px] sm:w-[370px] md:w-[430px] max-w-[450px] h-[700px] px-[30px] py-8 rounded-3xl bg-black bg-opacity-60 border border-gray-800 shadow-xl flex flex-col justify-center mx-auto">
+      <div className="w-[360px] sm:w-[400px] md:w-[430px] max-w-[450px] h-[700px] px-[30px] py-8 rounded-3xl bg-black bg-opacity-60 border border-gray-800 shadow-xl flex flex-col justify-center mx-auto">
         <div className="flex justify-center mb-12">
           <img src="/logo.png" alt="AGM Logo" className="h-12" />
         </div>
@@ -148,9 +152,7 @@ const Login = ({ onRegisterClick, onForgotClick, onLoginSuccess }) => {
             )}
           </div>
         )}
-        
-        {/* Debug: Show current state */}
-        {console.log("[Login] Rendering - error:", error, "showEmailNotVerified:", showEmailNotVerified)}
+
         
         <form onSubmit={handleSubmit} className="space-y-8">
           <div className="space-y-6">

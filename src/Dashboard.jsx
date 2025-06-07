@@ -121,8 +121,8 @@ const Dashboard = ({ onLogout }) => {
         }}
         onLogout={onLogout}
       />
-      <main className={`p-4 ${isMobile ? 'w-full ml-0' : 'ml-[300px] w-[calc(100%-300px)]'} transition-all duration-300 overflow-y-auto h-screen`}>
-        <div>
+      <main className={`${isMobile ? 'w-full ml-0 px-2 py-4' : 'ml-[300px] w-[calc(100%-300px)] px-4 py-4'} transition-all duration-300 min-h-screen overflow-y-auto`}>
+        <div className="h-full">
           {renderContent()}
         </div>
       </main>

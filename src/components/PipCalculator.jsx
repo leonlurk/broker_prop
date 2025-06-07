@@ -89,6 +89,23 @@ const cryptoInstruments = [
   { value: 'SOL/USD', label: 'Solana / USD (SOL/USD)', type: 'crypto' },
   { value: 'DOGE/USD', label: 'Dogecoin / USD (DOGE/USD)', type: 'crypto' },
   { value: 'DOT/USD', label: 'Polkadot / USD (DOT/USD)', type: 'crypto' },
+  { value: 'BNB/USD', label: 'Binance Coin / USD (BNB/USD)', type: 'crypto' },
+  { value: 'MATIC/USD', label: 'Polygon / USD (MATIC/USD)', type: 'crypto' },
+  { value: 'AVAX/USD', label: 'Avalanche / USD (AVAX/USD)', type: 'crypto' },
+  { value: 'LINK/USD', label: 'Chainlink / USD (LINK/USD)', type: 'crypto' },
+];
+
+const metalInstruments = [
+  { value: 'XAU/USD', label: 'Gold / USD (XAU/USD)', type: 'metals' },
+  { value: 'XAG/USD', label: 'Silver / USD (XAG/USD)', type: 'metals' },
+  { value: 'XPT/USD', label: 'Platinum / USD (XPT/USD)', type: 'metals' },
+  { value: 'XPD/USD', label: 'Palladium / USD (XPD/USD)', type: 'metals' },
+  { value: 'XAU/EUR', label: 'Gold / EUR (XAU/EUR)', type: 'metals' },
+  { value: 'XAG/EUR', label: 'Silver / EUR (XAG/EUR)', type: 'metals' },
+  { value: 'XAU/GBP', label: 'Gold / GBP (XAU/GBP)', type: 'metals' },
+  { value: 'XAG/GBP', label: 'Silver / GBP (XAG/GBP)', type: 'metals' },
+  { value: 'XAU/JPY', label: 'Gold / JPY (XAU/JPY)', type: 'metals' },
+  { value: 'XAG/JPY', label: 'Silver / JPY (XAG/JPY)', type: 'metals' },
 ];
 
 // Combine all instruments into a single array
@@ -96,6 +113,7 @@ const allInstruments = [
   ...forexInstruments,
   ...stockInstruments,
   ...cryptoInstruments,
+  ...metalInstruments,
 ];
 
 // Componente principal
@@ -190,6 +208,8 @@ const PipCalculator = () => {
       defaultInstrumentValue = stockInstruments[0]?.value || '';
     } else if (instrumentType === 'crypto') {
       defaultInstrumentValue = cryptoInstruments[0]?.value || '';
+    } else if (instrumentType === 'metals') {
+      defaultInstrumentValue = metalInstruments[0]?.value || '';
     }
     setInstrument(defaultInstrumentValue);
     setInstrumentSearchTerm(''); // Clear search when type changes
@@ -258,14 +278,14 @@ const PipCalculator = () => {
   // In a real application, these would come from a real-time API.
   const getExchangeRate = (base, quote) => {
     const rates = {
-      // Major USD pairs (bi-directional for easier lookup)
-      'EUR/USD': 1.0850, 'USD/EUR': 1 / 1.0850,
-      'GBP/USD': 1.2700, 'USD/GBP': 1 / 1.2700,
-      'USD/JPY': 150.00, 'JPY/USD': 1 / 150.00,
-      'USD/CHF': 0.8800, 'CHF/USD': 1 / 0.8800,
-      'USD/CAD': 1.3500, 'CAD/USD': 1 / 1.3500,
-      'AUD/USD': 0.6550, 'USD/AUD': 1 / 0.6550,
-      'NZD/USD': 0.6150, 'USD/NZD': 1 / 0.6150,
+      // Major USD pairs (bi-directional for easier lookup) - Updated with realistic 2024 values
+      'EUR/USD': 1.0875, 'USD/EUR': 1 / 1.0875,
+      'GBP/USD': 1.2685, 'USD/GBP': 1 / 1.2685,
+      'USD/JPY': 149.75, 'JPY/USD': 1 / 149.75,
+      'USD/CHF': 0.8825, 'CHF/USD': 1 / 0.8825,
+      'USD/CAD': 1.3475, 'CAD/USD': 1 / 1.3475,
+      'AUD/USD': 0.6585, 'USD/AUD': 1 / 0.6585,
+      'NZD/USD': 0.6125, 'USD/NZD': 1 / 0.6125,
 
       // Common EUR crosses
       'EUR/GBP': 0.8550, 'GBP/EUR': 1 / 0.8550,
@@ -341,7 +361,33 @@ const PipCalculator = () => {
       // Other exotic crosses
       'NOK/SEK': 0.9900, 'SEK/NOK': 1 / 0.9900,
       'TRY/JPY': 4.6875, 'JPY/TRY': 1 / 4.6875,
-      'ZAR/JPY': 7.9365, 'JPY/ZAR': 1 / 7.9365
+      'ZAR/JPY': 7.9365, 'JPY/ZAR': 1 / 7.9365,
+
+      // Metals (Precious Metals)
+      'XAU/USD': 2050.50, 'USD/XAU': 1 / 2050.50, // Gold
+      'XAG/USD': 23.85, 'USD/XAG': 1 / 23.85,     // Silver
+      'XPT/USD': 995.50, 'USD/XPT': 1 / 995.50,   // Platinum
+      'XPD/USD': 1025.00, 'USD/XPD': 1 / 1025.00, // Palladium
+      'XAU/EUR': 1890.20, 'EUR/XAU': 1 / 1890.20, // Gold/EUR
+      'XAG/EUR': 21.95, 'EUR/XAG': 1 / 21.95,     // Silver/EUR
+      'XAU/GBP': 1614.75, 'GBP/XAU': 1 / 1614.75, // Gold/GBP
+      'XAG/GBP': 18.78, 'GBP/XAG': 1 / 18.78,     // Silver/GBP
+      'XAU/JPY': 307575.00, 'JPY/XAU': 1 / 307575.00, // Gold/JPY
+      'XAG/JPY': 3577.50, 'JPY/XAG': 1 / 3577.50,     // Silver/JPY
+
+      // Cryptocurrencies (Updated with realistic 2024 values)
+      'BTC/USD': 43250.00, 'USD/BTC': 1 / 43250.00, // Bitcoin
+      'ETH/USD': 2675.50, 'USD/ETH': 1 / 2675.50,   // Ethereum
+      'XRP/USD': 0.6125, 'USD/XRP': 1 / 0.6125,     // Ripple
+      'LTC/USD': 72.45, 'USD/LTC': 1 / 72.45,       // Litecoin
+      'ADA/USD': 0.4850, 'USD/ADA': 1 / 0.4850,     // Cardano
+      'SOL/USD': 98.75, 'USD/SOL': 1 / 98.75,       // Solana
+      'DOGE/USD': 0.0825, 'USD/DOGE': 1 / 0.0825,   // Dogecoin
+      'DOT/USD': 6.95, 'USD/DOT': 1 / 6.95,         // Polkadot
+      'BNB/USD': 315.50, 'USD/BNB': 1 / 315.50,     // Binance Coin
+      'MATIC/USD': 0.785, 'USD/MATIC': 1 / 0.785,   // Polygon
+      'AVAX/USD': 22.15, 'USD/AVAX': 1 / 22.15,     // Avalanche
+      'LINK/USD': 14.85, 'USD/LINK': 1 / 14.85      // Chainlink
     };
 
     if (rates[`${base}/${quote}`]) {
@@ -384,9 +430,53 @@ const PipCalculator = () => {
         return { pipMultiplier: 1, contractSize: 1, currency: 'USD', displayUnit: 'point' }; // Assuming USD stocks
       case 'crypto':
         // For crypto, a "tick" value depends on the specific crypto and exchange.
-        // This is a simplification. Actual crypto tick values can vary (e.g., BTC $0.01, ETH $0.10).
-        const [, cryptoQuote] = instrumentValue.split('/');
-        return { pipMultiplier: 1, contractSize: 1, currency: cryptoQuote || 'USD', displayUnit: 'tick' }; // Default to USD if quote not found
+        const [cryptoBase, cryptoQuote] = instrumentValue.split('/');
+        let cryptoPipMultiplier = 0.01; // Default for most major cryptos
+        let cryptoContractSize = 1; // Standard 1 unit for crypto CFDs
+        
+        // Specific settings for different cryptocurrencies
+        if (cryptoBase === 'BTC') { // Bitcoin
+          cryptoPipMultiplier = 1; // $1 per pip for BTC
+        } else if (cryptoBase === 'ETH') { // Ethereum
+          cryptoPipMultiplier = 0.1; // $0.10 per pip for ETH
+        } else if (cryptoBase === 'XRP' || cryptoBase === 'ADA' || cryptoBase === 'DOGE' || cryptoBase === 'MATIC') {
+          cryptoPipMultiplier = 0.0001; // $0.0001 per pip for smaller value cryptos
+        } else if (cryptoBase === 'LTC' || cryptoBase === 'SOL' || cryptoBase === 'AVAX' || cryptoBase === 'LINK') {
+          cryptoPipMultiplier = 0.01; // $0.01 per pip for mid-range cryptos
+        } else if (cryptoBase === 'BNB') {
+          cryptoPipMultiplier = 0.1; // $0.1 per pip for BNB
+        } else if (cryptoBase === 'DOT') {
+          cryptoPipMultiplier = 0.001; // $0.001 per pip for DOT
+        }
+
+        return { pipMultiplier: cryptoPipMultiplier, contractSize: cryptoContractSize, currency: cryptoQuote || 'USD', displayUnit: 'tick' };
+      case 'metals':
+        // For metals, pip values vary by metal
+        const [metalBase, metalQuote] = instrumentValue.split('/');
+        let metalPipMultiplier = 0.01; // Default for most metals (e.g., Gold: $0.01)
+        let metalContractSize = 100; // Standard lot size for metals (100 oz for Gold/Silver)
+        
+        // Specific settings for different metals
+        if (metalBase === 'XAU') { // Gold
+          metalPipMultiplier = 0.01; // $0.01 per pip
+          metalContractSize = 100; // 100 oz
+        } else if (metalBase === 'XAG') { // Silver
+          metalPipMultiplier = 0.001; // $0.001 per pip
+          metalContractSize = 5000; // 5000 oz
+        } else if (metalBase === 'XPT') { // Platinum
+          metalPipMultiplier = 0.01; // $0.01 per pip
+          metalContractSize = 50; // 50 oz
+        } else if (metalBase === 'XPD') { // Palladium
+          metalPipMultiplier = 0.01; // $0.01 per pip
+          metalContractSize = 100; // 100 oz
+        }
+
+        // Adjust for different quote currencies
+        if (metalQuote === 'JPY') {
+          metalPipMultiplier = 1; // 1 JPY per pip for JPY-quoted metals
+        }
+
+        return { pipMultiplier: metalPipMultiplier, contractSize: metalContractSize, currency: metalQuote, displayUnit: 'pip' };
       default:
         return { pipMultiplier: 0.0001, contractSize: 100000, currency: 'USD', displayUnit: 'pip' }; // Default Forex values
     }
@@ -506,6 +596,8 @@ const PipCalculator = () => {
       instrumentsToFilter = stockInstruments;
     } else if (instrumentType === 'crypto') {
       instrumentsToFilter = cryptoInstruments;
+    } else if (instrumentType === 'metals') {
+      instrumentsToFilter = metalInstruments;
     }
 
     const searched = instrumentsToFilter.filter(item =>
@@ -609,10 +701,10 @@ const PipCalculator = () => {
               <div className="absolute z-10 mt-1 w-full bg-[#2d2d2d] border border-[#444] rounded-lg shadow-lg max-h-72 overflow-y-auto custom-scrollbar">
                 {activeTab === 'pips' && ( // Only show instrument type filters if activeTab is 'pips'
                   <div className="p-2 sticky top-0 bg-[#2d2d2d] z-20 border-b border-[#444]">
-                    <div className="flex justify-between space-x-2 mb-2">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-1 sm:gap-2 mb-2">
                       <button
                         onClick={() => setInstrumentType('forex')}
-                        className={`flex-1 px-3 py-1.5 rounded-full text-xs sm:text-sm border ${
+                        className={`px-2 sm:px-3 py-1.5 rounded-full text-xs sm:text-sm border ${
                           instrumentType === 'forex'
                             ? 'border-cyan-500 bg-transparent'
                             : 'border-gray-700 bg-transparent'
@@ -623,25 +715,36 @@ const PipCalculator = () => {
                       </button>
                       <button
                         onClick={() => setInstrumentType('stocks')}
-                        className={`flex-1 px-3 py-1.5 rounded-full text-xs sm:text-sm border ${
+                        className={`px-2 sm:px-3 py-1.5 rounded-full text-xs sm:text-sm border ${
                           instrumentType === 'stocks'
                             ? 'border-cyan-500 bg-transparent'
                             : 'border-gray-700 bg-transparent'
                         }`}
                         style={{ outline: 'none' }}
                       >
-                        {t('pipCalculator_tab_stocks', 'Stocks')}
+                        {t('pipCalculator_tab_stocks', 'Acciones')}
                       </button>
                       <button
                         onClick={() => setInstrumentType('crypto')}
-                        className={`flex-1 px-3 py-1.5 rounded-full text-xs sm:text-sm border ${
+                        className={`px-2 sm:px-3 py-1.5 rounded-full text-xs sm:text-sm border ${
                           instrumentType === 'crypto'
                             ? 'border-cyan-500 bg-transparent'
                             : 'border-gray-700 bg-transparent'
                         }`}
                         style={{ outline: 'none' }}
                       >
-                        {t('pipCalculator_tab_crypto', 'Crypto')}
+                        {t('pipCalculator_tab_crypto', 'Criptomonedas')}
+                      </button>
+                      <button
+                        onClick={() => setInstrumentType('metals')}
+                        className={`px-2 sm:px-3 py-1.5 rounded-full text-xs sm:text-sm border ${
+                          instrumentType === 'metals'
+                            ? 'border-cyan-500 bg-transparent'
+                            : 'border-gray-700 bg-transparent'
+                        }`}
+                        style={{ outline: 'none' }}
+                      >
+                        {t('pipCalculator_tab_metals', 'Metales')}
                       </button>
                     </div>
                     <div className="relative">

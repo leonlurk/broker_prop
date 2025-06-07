@@ -1205,6 +1205,10 @@ export const translations = {
     es: "Criptomonedas",
     en: "Crypto",
   },
+  pipCalculator_tab_metals: {
+    es: "Metales",
+    en: "Metals",
+  },
   pipCalculator_label_pointAmount: {
     es: "Cantidad de punto",
     en: "Point Amount",
@@ -1581,6 +1585,46 @@ export const translations = {
     es: "Criptomoneda (USDT)",
     en: "Cryptocurrency (USDT)",
   },
+  tradingChallenge_whatsapp_text: {
+    es: "Para pagos con <span class=\"font-semibold\">tarjeta de crédito o débito</span> comunicarse al siguiente WhatsApp:",
+    en: "For payments with <span class=\"font-semibold\">credit or debit card</span> contact the following WhatsApp:",
+  },
+  tradingChallenge_whatsapp_button: {
+    es: "Comunicarse ahora",
+    en: "Contact now",
+  },
+  tradingChallenge_price_base: {
+    es: "Precio base",
+    en: "Base price",
+  },
+  tradingChallenge_price_adjust_f1: {
+    es: "Ajuste Profit Target F1",
+    en: "Profit Target F1 Adjustment",
+  },
+  tradingChallenge_price_adjust_f2: {
+    es: "Ajuste Profit Target F2",
+    en: "Profit Target F2 Adjustment",
+  },
+  tradingChallenge_price_adjust_split: {
+    es: "Ajuste Profit Split",
+    en: "Profit Split Adjustment",
+  },
+  tradingChallenge_price_discount: {
+    es: "Descuento AGM20 (20%)",
+    en: "AGM20 Discount (20%)",
+  },
+  tradingChallenge_price_total: {
+    es: "Total",
+    en: "Total",
+  },
+  tradingChallenge_coupon_applied: {
+    es: "Cupón AGM20 aplicado: 20% OFF",
+    en: "AGM20 coupon applied: 20% OFF",
+  },
+  tradingChallenge_coupon_invalid: {
+    es: "Cupón inválido",
+    en: "Invalid coupon",
+  },
   tradingChallenge_processing_waitingPayment: {
     es: "Esperando confirmación de pago...",
     en: "Waiting for payment confirmation...",
@@ -1744,6 +1788,14 @@ export const translations = {
   paymentStatus_button_return_to_payment: {
     es: "Volver a la página de pago",
     en: "Return to payment page"
+  },
+  paymentStatus_underpaid_desc: {
+    es: "El monto recibido es menor al esperado. Por favor, contacta a soporte para resolver esta situación.",
+    en: "The received amount is less than expected. Please contact support to resolve this situation."
+  },
+  paymentStatus_overpaid_desc: {
+    es: "El monto recibido es mayor al esperado. El excedente será procesado según nuestras políticas.",
+    en: "The received amount is greater than expected. The excess will be processed according to our policies."
   },
 
   // Nuevas claves para VerificationCode.jsx
@@ -1909,5 +1961,309 @@ export const translations = {
   tradingDashboard_error_cors: {
     en: "Connection blocked by security policy. Please contact support.",
     es: "Conexión bloqueada por política de seguridad. Por favor, contacta con soporte."
+  },
+
+  // OperationsHistory / Payments component translations
+  operations_withdrawable_earnings: {
+    es: "Ganancia Retirable",
+    en: "Withdrawable Earnings",
+  },
+  operations_withdraw_earnings: {
+    es: "Retirar Ganancia",
+    en: "Withdraw Earnings",
+  },
+  operations_withdrawal_wallet: {
+    es: "Billetera de retiros",
+    en: "Withdrawal Wallet",
+  },
+  operations_operations_history: {
+    es: "Historial de Operaciones",
+    en: "Operations History",
+  },
+  operations_order_number: {
+    es: "Numero de orden",
+    en: "Order Number",
+  },
+  operations_date: {
+    es: "Fecha",
+    en: "Date",
+  },
+  operations_from: {
+    es: "De",
+    en: "From",
+  },
+  operations_to: {
+    es: "A",
+    en: "To",
+  },
+  operations_status: {
+    es: "Estado",
+    en: "Status",
+  },
+  operations_all: {
+    es: "Todo",
+    en: "All",
+  },
+  operations_payment_type: {
+    es: "Tipo de pago",
+    en: "Payment Type",
+  },
+  operations_loading: {
+    es: "Cargando...",
+    en: "Loading...",
+  },
+  operations_updated: {
+    es: "Actualizado:",
+    en: "Updated:",
+  },
+  operations_minimum_withdrawal: {
+    es: "Mínimo de retiro:",
+    en: "Minimum withdrawal:",
+  },
+  operations_available_to_withdraw: {
+    es: "Disponible para retirar",
+    en: "Available to withdraw",
+  },
+  operations_no_earnings_available: {
+    es: "No hay ganancias disponibles para retirar",
+    en: "No earnings available for withdrawal",
+  },
+  operations_processing: {
+    es: "Procesando...",
+    en: "Processing...",
+  },
+  operations_withdrawal_success: {
+    es: "Solicitud de retiro enviada con éxito. El proceso puede tardar hasta 24 horas.",
+    en: "Withdrawal request sent successfully. The process may take up to 24 hours.",
+  },
+  operations_no_earnings_error: {
+    es: "No hay ganancias disponibles para retirar",
+    en: "No earnings available for withdrawal",
+  },
+  operations_wallet_required_error: {
+    es: "Debe configurar una dirección de wallet antes de retirar",
+    en: "You must set up a wallet address before withdrawing",
+  },
+  operations_blockchain_error: {
+    es: "Error en la red de la blockchain. Intente nuevamente.",
+    en: "Blockchain network error. Please try again.",
+  },
+  operations_processing_error: {
+    es: "Error al procesar el retiro. Intente más tarde.",
+    en: "Error processing withdrawal. Please try again later.",
+  },
+  operations_tether_usdt_network: {
+    es: "Tether USDT (Tron TRC20 Network)",
+    en: "Tether USDT (Tron TRC20 Network)",
+  },
+  operations_no_wallet_set: {
+    es: "No se ha establecido una dirección de wallet",
+    en: "No wallet address has been set",
+  },
+  operations_change_wallet: {
+    es: "Cambiar Billetera",
+    en: "Change Wallet",
+  },
+  operations_save_wallet: {
+    es: "Guardar",
+    en: "Save",
+  },
+  operations_cancel: {
+    es: "Cancelar",
+    en: "Cancel",
+  },
+  operations_saving: {
+    es: "Guardando...",
+    en: "Saving...",
+  },
+  operations_wallet_placeholder: {
+    es: "Ingrese la dirección de su wallet",
+    en: "Enter your wallet address",
+  },
+  operations_wallet_success: {
+    es: "Dirección de wallet guardada correctamente",
+    en: "Wallet address saved successfully",
+  },
+  operations_wallet_error: {
+    es: "Error al guardar la dirección de wallet",
+    en: "Error saving wallet address",
+  },
+  operations_wallet_invalid: {
+    es: "La dirección de wallet no es válida",
+    en: "The wallet address is not valid",
+  },
+  operations_table_status: {
+    es: "Estado",
+    en: "Status",
+  },
+  operations_table_request_date: {
+    es: "Fecha De Solicitud",
+    en: "Request Date",
+  },
+  operations_table_payment_time: {
+    es: "Tiempo De Pago",
+    en: "Payment Time",
+  },
+  operations_table_hash: {
+    es: "Hash",
+    en: "Hash",
+  },
+  operations_table_account: {
+    es: "Cuenta",
+    en: "Account",
+  },
+  operations_table_product_type: {
+    es: "Tipo De Producto",
+    en: "Product Type",
+  },
+  operations_table_amount: {
+    es: "Cantidad",
+    en: "Amount",
+  },
+  operations_table_total_withdrawals: {
+    es: "Retiros Totales",
+    en: "Total Withdrawals",
+  },
+  operations_no_results: {
+    es: "No se encontraron operaciones con los filtros aplicados",
+    en: "No operations found with the applied filters",
+  },
+  operations_withdrawal_wallet_suffix: {
+    es: "Retiro Wallet",
+    en: "Wallet Withdrawal",
+  },
+  operations_status_terminado: {
+    es: "Terminado",
+    en: "Completed",
+  },
+  operations_status_pendiente: {
+    es: "Pendiente",
+    en: "Pending",
+  },
+  operations_status_vencido: {
+    es: "Vencido",
+    en: "Expired",
+  },
+  operations_mobile_status: {
+    es: "Estado:",
+    en: "Status:",
+  },
+  operations_mobile_request_date: {
+    es: "Fecha De Solicitud:",
+    en: "Request Date:",
+  },
+  operations_mobile_payment_time: {
+    es: "Tiempo De Pago:",
+    en: "Payment Time:",
+  },
+  operations_mobile_hash: {
+    es: "Hash:",
+    en: "Hash:",
+  },
+  operations_mobile_account: {
+    es: "Cuenta:",
+    en: "Account:",
+  },
+  operations_mobile_product_type: {
+    es: "Tipo De Producto:",
+    en: "Product Type:",
+  },
+  operations_copied_to_clipboard: {
+    es: "Texto copiado al portapapeles",
+    en: "Text copied to clipboard",
+  },
+  operations_payment_method_crypto: {
+    es: "Criptomoneda",
+    en: "Cryptocurrency",
+  },
+  operations_payment_method_card: {
+    es: "Tarjeta",
+    en: "Card",
+  },
+
+  // Days of the week translations
+  day_domingo: {
+    es: "Domingo",
+    en: "Sunday",
+  },
+  day_lunes: {
+    es: "Lunes", 
+    en: "Monday",
+  },
+  day_martes: {
+    es: "Martes",
+    en: "Tuesday", 
+  },
+  day_miercoles: {
+    es: "Miércoles",
+    en: "Wednesday",
+  },
+  day_jueves: {
+    es: "Jueves",
+    en: "Thursday",
+  },
+  day_viernes: {
+    es: "Viernes",
+    en: "Friday",
+  },
+  day_sabado: {
+    es: "Sábado",
+    en: "Saturday",
+  },
+
+  // Months translations
+  month_enero: {
+    es: "enero",
+    en: "January",
+  },
+  month_febrero: {
+    es: "febrero",
+    en: "February", 
+  },
+  month_marzo: {
+    es: "marzo",
+    en: "March",
+  },
+  month_abril: {
+    es: "abril",
+    en: "April",
+  },
+  month_mayo: {
+    es: "mayo",
+    en: "May",
+  },
+  month_junio: {
+    es: "junio",
+    en: "June",
+  },
+  month_julio: {
+    es: "julio",
+    en: "July",
+  },
+  month_agosto: {
+    es: "agosto",
+    en: "August",
+  },
+  month_septiembre: {
+    es: "septiembre",
+    en: "September",
+  },
+  month_octubre: {
+    es: "octubre",
+    en: "October",
+  },
+  month_noviembre: {
+    es: "noviembre",
+    en: "November",
+  },
+  month_diciembre: {
+    es: "diciembre",
+    en: "December",
+  },
+
+  // Date formatting words
+  date_de: {
+    es: "de",
+    en: "",
   },
 }; 

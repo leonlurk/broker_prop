@@ -315,25 +315,25 @@ const AfiliadosDashboard = () => {
                 <p className="text-gray-400 text-center p-6 text-sm sm:text-base">{t('afiliadosDashboard_referrals_noReferrals')}</p>
             }
             {!isLoadingReferencias && !error && referenciasData.length > 0 && (
-              <div className="overflow-x-auto bg-gradient-to-br from-[#232323] to-[#2b2b2b] rounded-xl border border-[#4A4A4A]">
+              <div className="overflow-x-auto bg-gradient-to-br from-[#232323] to-[#2b2b2b] rounded-xl border border-[#4A4A4A] -webkit-overflow-scrolling-touch">
                 <table className="min-w-full text-xs sm:text-sm">
                   <thead className="border-b border-[#4A4A4A]">
                     <tr>
-                      <th className="px-3 py-2 sm:px-4 sm:py-3 text-left font-medium text-gray-300 whitespace-nowrap">{t('afiliadosDashboard_referrals_table_user')}</th>
-                      <th className="px-3 py-2 sm:px-4 sm:py-3 text-left font-medium text-gray-300 whitespace-nowrap">{t('afiliadosDashboard_referrals_table_email')}</th>
-                      <th className="px-3 py-2 sm:px-4 sm:py-3 text-left font-medium text-gray-300 whitespace-nowrap">{t('afiliadosDashboard_referrals_table_name')}</th>
-                      <th className="px-3 py-2 sm:px-4 sm:py-3 text-left font-medium text-gray-300 whitespace-nowrap">{t('afiliadosDashboard_referrals_table_country')}</th>
-                      <th className="px-3 py-2 sm:px-4 sm:py-3 text-left font-medium text-gray-300 whitespace-nowrap">{t('afiliadosDashboard_referrals_table_registeredDate')}</th>
+                      <th className="px-2 py-2 sm:px-4 sm:py-3 text-left font-medium text-gray-300 whitespace-nowrap min-w-[80px]">{t('afiliadosDashboard_referrals_table_user')}</th>
+                      <th className="px-2 py-2 sm:px-4 sm:py-3 text-left font-medium text-gray-300 whitespace-nowrap min-w-[120px]">{t('afiliadosDashboard_referrals_table_email')}</th>
+                      <th className="px-2 py-2 sm:px-4 sm:py-3 text-left font-medium text-gray-300 whitespace-nowrap min-w-[100px]">{t('afiliadosDashboard_referrals_table_name')}</th>
+                      <th className="px-2 py-2 sm:px-4 sm:py-3 text-left font-medium text-gray-300 whitespace-nowrap min-w-[80px]">{t('afiliadosDashboard_referrals_table_country')}</th>
+                      <th className="px-2 py-2 sm:px-4 sm:py-3 text-left font-medium text-gray-300 whitespace-nowrap min-w-[100px]">{t('afiliadosDashboard_referrals_table_registeredDate')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#4A4A4A]">
                     {referenciasData.map(ref => (
                       <tr key={ref.id} className="hover:bg-[#333]">
-                        <td className="px-3 py-2 sm:px-4 sm:py-3 text-gray-200 whitespace-nowrap">{ref.username || t('afiliadosDashboard_table_notAvailable')}</td>
-                        <td className="px-3 py-2 sm:px-4 sm:py-3 text-gray-200 whitespace-nowrap">{ref.email}</td>
-                        <td className="px-3 py-2 sm:px-4 sm:py-3 text-gray-200 whitespace-nowrap">{`${ref.firstName || ''} ${ref.lastName || ''}`.trim() || t('afiliadosDashboard_table_notAvailable')}</td>
-                        <td className="px-3 py-2 sm:px-4 sm:py-3 text-gray-200 whitespace-nowrap">{ref.country || t('afiliadosDashboard_table_notAvailable')}</td>
-                        <td className="px-3 py-2 sm:px-4 sm:py-3 text-gray-200 whitespace-nowrap">
+                        <td className="px-2 py-2 sm:px-4 sm:py-3 text-gray-200 whitespace-nowrap">{ref.username || t('afiliadosDashboard_table_notAvailable')}</td>
+                        <td className="px-2 py-2 sm:px-4 sm:py-3 text-gray-200 whitespace-nowrap max-w-[120px] truncate">{ref.email}</td>
+                        <td className="px-2 py-2 sm:px-4 sm:py-3 text-gray-200 whitespace-nowrap">{`${ref.firstName || ''} ${ref.lastName || ''}`.trim() || t('afiliadosDashboard_table_notAvailable')}</td>
+                        <td className="px-2 py-2 sm:px-4 sm:py-3 text-gray-200 whitespace-nowrap">{ref.country || t('afiliadosDashboard_table_notAvailable')}</td>
+                        <td className="px-2 py-2 sm:px-4 sm:py-3 text-gray-200 whitespace-nowrap">
                           {ref.created_time ? new Date(ref.created_time.seconds * 1000).toLocaleDateString() : t('afiliadosDashboard_table_notAvailable')}
                         </td>
                       </tr>
@@ -365,8 +365,8 @@ const AfiliadosDashboard = () => {
   ];
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-[#232323] to-[#2b2b2b] text-white p-3 sm:p-4 md:p-6 rounded-3xl border border-[#4A4A4A]">
-      <div className="flex space-x-1 mb-4 sm:mb-6 overflow-x-auto pb-2">
+    <div className="flex flex-col bg-gradient-to-br from-[#232323] to-[#2b2b2b] text-white p-3 sm:p-4 md:p-6 rounded-3xl border border-[#4A4A4A] h-full overflow-hidden">
+      <div className="flex space-x-1 mb-4 sm:mb-6 overflow-x-auto pb-2 flex-shrink-0">
         {tabConfig.map(tab => {
             const Icon = tab.icon;
             return (
@@ -386,7 +386,7 @@ const AfiliadosDashboard = () => {
         })}
       </div>
       
-      <div className="bg-gradient-to-br from-[#232323] to-[#2b2b2b] p-3 sm:p-4 md:p-6 rounded-xl border border-[#4A4A4A]">
+      <div className="bg-gradient-to-br from-[#232323] to-[#2b2b2b] p-3 sm:p-4 md:p-6 rounded-xl border border-[#4A4A4A] flex-1 overflow-y-auto">
         {renderContent()}
       </div>
     </div>

@@ -387,14 +387,14 @@ export default function TradingChallengeUI() {
       setCouponError('');
     } else {
       setAppliedCoupon('');
-      setCouponError('Cupón inválido');
+      setCouponError(t('tradingChallenge_coupon_invalid'));
     }
   };
 
   return (
-    <div className="bg-[#232323] text-white min-h-screen">
+    <div className="bg-[#232323] text-white h-full overflow-y-auto -webkit-overflow-scrolling-touch">
       {/* Main Content Wrapper */}
-      <div className="p-4 md:p-8 rounded-2xl border border-[#333]">
+      <div className="p-2 sm:p-3 md:p-4 lg:p-8 rounded-2xl border border-[#333] max-w-full overflow-hidden">
         {/* Back Button Placeholder */}
         {/* 
         <div className="mb-4">
@@ -406,30 +406,30 @@ export default function TradingChallengeUI() {
         </div>
         */}
 
-        <div className="flex flex-col lg:flex-row gap-4 md:gap-8">
+        <div className="flex flex-col lg:flex-row gap-2 sm:gap-3 md:gap-4 lg:gap-8">
           {/* Left Column */}
-          <div className="lg:w-2/3 w-full p-4 md:p-6 bg-gradient-to-br from-[#232323] to-[#2b2b2b] rounded-2xl border border-[#333]">
+          <div className="lg:w-2/3 w-full p-3 sm:p-4 md:p-6 bg-gradient-to-br from-[#232323] to-[#2b2b2b] rounded-2xl border border-[#333] min-w-0">
             {/* Tipo Desafío Section */}
-            <div className="mb-6 md:mb-10">
-              <div className="flex items-center mb-4">
-                <h2 className="text-xl md:text-2xl font-medium flex-1">
+            <div className="mb-4 sm:mb-6 md:mb-10">
+              <div className="flex items-center mb-3 sm:mb-4">
+                <h2 className="text-lg sm:text-xl md:text-2xl font-medium flex-1">
                   {t('tradingChallenge_label_challengeType')}
-                  <span className="text-sm text-gray-400 font-normal">
+                  <span className="block sm:inline text-xs sm:text-sm text-gray-400 font-normal mt-1 sm:mt-0">
                     {challengeType === 'Estándar' 
                       ? t('tradingChallenge_leverage_info') 
                       : t('tradingChallenge_leverage_info_swing')}
                   </span>
                 </h2>
               </div>
-              <div className="flex space-x-3 md:space-x-4 mb-4 md:mb-6">
+              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 md:space-x-4 mb-3 sm:mb-4 md:mb-6">
                 <button 
-                  className={`text-white px-6 py-2 rounded-full text-sm focus:outline-none bg-[#2c2c2c] border ${challengeType === 'Estándar' ? 'border-cyan-500' : 'border-gray-700 hover:border-gray-600'}`}
+                  className={`text-white px-4 sm:px-6 py-2 rounded-full text-sm focus:outline-none bg-[#2c2c2c] border ${challengeType === 'Estándar' ? 'border-cyan-500' : 'border-gray-700 hover:border-gray-600'}`}
                   onClick={() => setChallengeType('Estándar')}
                 >
                   {t('tradingChallenge_button_standard', 'Estándar')}
                 </button>
                 <button 
-                  className={`text-white px-6 py-2 rounded-full text-sm focus:outline-none bg-[#2c2c2c] border ${challengeType === 'Swing' ? 'border-cyan-500' : 'border-gray-700 hover:border-gray-600'}`}
+                  className={`text-white px-4 sm:px-6 py-2 rounded-full text-sm focus:outline-none bg-[#2c2c2c] border ${challengeType === 'Swing' ? 'border-cyan-500' : 'border-gray-700 hover:border-gray-600'}`}
                   onClick={() => setChallengeType('Swing')}
                 >
                   {t('tradingChallenge_button_swim', 'Swing')}
@@ -437,44 +437,44 @@ export default function TradingChallengeUI() {
               </div>
               
               {/* Monto del desafío Section */}
-              <div className="flex items-center mb-3 md:mb-4">
-                <h2 className="text-lg md:text-xl font-medium flex-1">{t('tradingChallenge_label_challengeAmount', 'Tamaño De Cuenta')}</h2>
+              <div className="flex items-center mb-2 sm:mb-3 md:mb-4">
+                <h2 className="text-base sm:text-lg md:text-xl font-medium flex-1">{t('tradingChallenge_label_challengeAmount', 'Tamaño De Cuenta')}</h2>
               </div>
               <div className="grid grid-cols-3 gap-2 md:gap-3 mb-2">
                 <button 
-                  className={`w-full px-3 py-3 rounded-full text-sm border focus:outline-none bg-[#2c2c2c] ${challengeAmount === '$5.000' ? 'border-cyan-500' : 'border-gray-700 hover:border-gray-600'}`}
+                  className={`w-full px-2 sm:px-3 py-2 sm:py-3 rounded-full text-xs sm:text-sm border focus:outline-none bg-[#2c2c2c] ${challengeAmount === '$5.000' ? 'border-cyan-500' : 'border-gray-700 hover:border-gray-600'}`}
                   onClick={() => setChallengeAmount('$5.000')}
                 >
                   $5.000
                 </button>
                 <button 
-                  className={`w-full px-3 py-3 rounded-full text-sm border focus:outline-none bg-[#2c2c2c] ${challengeAmount === '$10.000' ? 'border-cyan-500' : 'border-gray-700 hover:border-gray-600'}`}
+                  className={`w-full px-2 sm:px-3 py-2 sm:py-3 rounded-full text-xs sm:text-sm border focus:outline-none bg-[#2c2c2c] ${challengeAmount === '$10.000' ? 'border-cyan-500' : 'border-gray-700 hover:border-gray-600'}`}
                   onClick={() => setChallengeAmount('$10.000')}
                 >
                   $10.000
                 </button>
                 <button 
-                  className={`w-full px-3 py-3 rounded-full text-sm border focus:outline-none bg-[#2c2c2c] ${challengeAmount === '$25.000' ? 'border-cyan-500' : 'border-gray-700 hover:border-gray-600'}`}
+                  className={`w-full px-2 sm:px-3 py-2 sm:py-3 rounded-full text-xs sm:text-sm border focus:outline-none bg-[#2c2c2c] ${challengeAmount === '$25.000' ? 'border-cyan-500' : 'border-gray-700 hover:border-gray-600'}`}
                   onClick={() => setChallengeAmount('$25.000')}
                 >
                   $25.000
                 </button>
               </div>
-              <div className="grid grid-cols-3 gap-2 md:gap-3 mb-6 md:mb-10">
+              <div className="grid grid-cols-3 gap-2 md:gap-3 mb-4 sm:mb-6 md:mb-10">
                 <button 
-                  className={`w-full px-3 py-3 rounded-full text-sm border focus:outline-none bg-[#2c2c2c] ${challengeAmount === '$50.000' ? 'border-cyan-500' : 'border-gray-700 hover:border-gray-600'}`}
+                  className={`w-full px-2 sm:px-3 py-2 sm:py-3 rounded-full text-xs sm:text-sm border focus:outline-none bg-[#2c2c2c] ${challengeAmount === '$50.000' ? 'border-cyan-500' : 'border-gray-700 hover:border-gray-600'}`}
                   onClick={() => setChallengeAmount('$50.000')}
                 >
                   $50.000
                 </button>
                 <button 
-                  className={`w-full px-3 py-3 rounded-full text-sm border focus:outline-none bg-[#2c2c2c] ${challengeAmount === '$100.000' ? 'border-cyan-500' : 'border-gray-700 hover:border-gray-600'}`}
+                  className={`w-full px-2 sm:px-3 py-2 sm:py-3 rounded-full text-xs sm:text-sm border focus:outline-none bg-[#2c2c2c] ${challengeAmount === '$100.000' ? 'border-cyan-500' : 'border-gray-700 hover:border-gray-600'}`}
                   onClick={() => setChallengeAmount('$100.000')}
                 >
                   $100.000
                 </button>
                 <button 
-                  className={`w-full px-3 py-3 rounded-full text-sm border focus:outline-none bg-[#2c2c2c] ${challengeAmount === '$200.000' ? 'border-cyan-500' : 'border-gray-700 hover:border-gray-600'}`}
+                  className={`w-full px-2 sm:px-3 py-2 sm:py-3 rounded-full text-xs sm:text-sm border focus:outline-none bg-[#2c2c2c] ${challengeAmount === '$200.000' ? 'border-cyan-500' : 'border-gray-700 hover:border-gray-600'}`}
                   onClick={() => setChallengeAmount('$200.000')}
                 >
                   $200.000
@@ -546,30 +546,30 @@ export default function TradingChallengeUI() {
               <div className="space-y-3 text-base md:text-lg">
                 <div className="flex flex-col gap-1">
                   <div className="flex justify-between items-center">
-                    <span>Precio base</span>
+                    <span>{t('tradingChallenge_price_base')}</span>
                     <span className="font-medium">${priceBreakdown.base}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span>Ajuste Profit Target F1</span>
+                    <span>{t('tradingChallenge_price_adjust_f1')}</span>
                     <span className="font-medium">{priceBreakdown.profitTargetF1 >= 0 ? '+' : ''}${priceBreakdown.profitTargetF1}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span>Ajuste Profit Target F2</span>
+                    <span>{t('tradingChallenge_price_adjust_f2')}</span>
                     <span className="font-medium">{priceBreakdown.profitTargetF2 >= 0 ? '+' : ''}${priceBreakdown.profitTargetF2}</span>
                   </div>
                 <div className="flex justify-between items-center">
-                    <span>Ajuste Profit Split</span>
+                    <span>{t('tradingChallenge_price_adjust_split')}</span>
                     <span className="font-medium">{priceBreakdown.profitSplit >= 0 ? '+' : ''}${priceBreakdown.profitSplit}</span>
                   </div>
                   {priceBreakdown.discount > 0 && (
                     <div className="flex justify-between items-center text-green-400">
-                      <span>Descuento AGM20 (20%)</span>
+                      <span>{t('tradingChallenge_price_discount')}</span>
                       <span className="font-medium">- ${priceBreakdown.discount.toFixed(2)}</span>
                     </div>
                   )}
                   <div className="border-t border-gray-700 my-2"></div>
                   <div className="flex justify-between items-center text-lg">
-                    <span>Total</span>
+                    <span>{t('tradingChallenge_price_total')}</span>
                     <span className="font-bold">${priceBreakdown.total.toFixed(2)}</span>
                   </div>
                 </div>
@@ -586,32 +586,33 @@ export default function TradingChallengeUI() {
           </div>
 
           {/* Right Column */}
-          <div className="lg:w-1/3 w-full p-4 md:p-6 bg-gradient-to-br from-[#232323] to-[#2b2b2b] rounded-2xl border border-[#333]">
-            <div className="mb-6 md:mb-10">
-              <h2 className="text-base md:text-lg font-medium mb-3">{t('tradingChallenge_label_promoCode')}</h2>
-              <div className="flex space-x-2">
+          <div className="lg:w-1/3 w-full p-3 sm:p-4 md:p-6 bg-gradient-to-br from-[#232323] to-[#2b2b2b] rounded-2xl border border-[#333] min-w-0 max-w-full">
+            <div className="mb-4 sm:mb-6 md:mb-10">
+              <h2 className="text-sm sm:text-base md:text-lg font-medium mb-2 sm:mb-3">{t('tradingChallenge_label_promoCode')}</h2>
+              <div className="space-y-2">
                 <input
-                  className="flex-1 bg-[#2c2c2c] border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-cyan-500"
+                  className="w-full bg-[#2c2c2c] border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-cyan-500"
                   placeholder={t('tradingChallenge_placeholder_enterCode')}
                   value={coupon}
                   onChange={e => setCoupon(e.target.value)}
                 />
-                <button className="border border-cyan-500 bg-[#2c2c2c] hover:bg-[#3a3a3a] text-white px-6 py-2 rounded-lg text-sm"
+                <button 
+                  className="w-full border border-cyan-500 bg-[#2c2c2c] hover:bg-[#3a3a3a] text-white px-4 py-2 rounded-lg text-sm transition-colors"
                   onClick={handleApplyCoupon}
                   type="button"
                 >
                   {t('tradingChallenge_button_apply')}
                 </button>
               </div>
-              {couponError && <div className="text-red-500 text-xs mt-1">{couponError}</div>}
-              {appliedCoupon === 'AGM20' && <div className="text-green-500 text-xs mt-1">Cupón AGM20 aplicado: 20% OFF</div>}
+              {couponError && <div className="text-red-500 text-xs mt-2">{couponError}</div>}
+              {appliedCoupon === 'AGM20' && <div className="text-green-500 text-xs mt-2">{t('tradingChallenge_coupon_applied')}</div>}
             </div>
             
-            <div className="mb-6 md:mb-10">
-              <h2 className="text-base md:text-lg font-medium mb-3">{t('tradingChallenge_label_paymentMethod')}</h2>
+            <div className="mb-4 sm:mb-6 md:mb-10">
+              <h2 className="text-sm sm:text-base md:text-lg font-medium mb-2 sm:mb-3">{t('tradingChallenge_label_paymentMethod')}</h2>
               <div className="relative">
                 <select
-                  className="w-full bg-[#2c2c2c] border border-gray-700 rounded-lg px-4 py-3 cursor-pointer hover:border-cyan-600 appearance-none text-sm focus:outline-none focus:border-cyan-500"
+                  className="w-full bg-[#2c2c2c] border border-gray-700 rounded-lg px-3 sm:px-4 py-2 sm:py-3 cursor-pointer hover:border-cyan-600 appearance-none text-sm focus:outline-none focus:border-cyan-500"
                   value={selectedPaymentMethod}
                   onChange={(e) => setSelectedPaymentMethod(e.target.value)}
                 >
@@ -624,7 +625,7 @@ export default function TradingChallengeUI() {
             </div>
             
             <button 
-              className="w-full bg-[#2c2c2c] border border-cyan-500 hover:bg-[#3a3a3a] text-white py-3 px-4 rounded-lg mb-3 text-sm font-medium disabled:opacity-50"
+              className="w-full bg-[#2c2c2c] border border-cyan-500 hover:bg-[#3a3a3a] text-white py-2.5 sm:py-3 px-4 rounded-lg mb-3 text-sm font-medium disabled:opacity-50"
               onClick={handlePurchaseChallenge}
               disabled={isPurchasing}
             >
@@ -632,17 +633,16 @@ export default function TradingChallengeUI() {
             </button>
             
             {/* WhatsApp Info Box for Card Payments */}
-            <div className="bg-gradient-to-br from-[#232323] to-[#2b2b2b] border border-[#333] rounded-2xl p-4 mb-3 flex flex-col items-center text-center">
-              <p className="text-white text-sm mb-3">
-                Para pagos con <span className="font-semibold">tarjeta de crédito o débito</span> comunicarse al siguiente WhatsApp:
+            <div className="bg-gradient-to-br from-[#232323] to-[#2b2b2b] border border-[#333] rounded-2xl p-3 sm:p-4 mb-3 flex flex-col items-center text-center w-full overflow-hidden">
+              <p className="text-white text-xs sm:text-sm mb-2 sm:mb-3 px-1" dangerouslySetInnerHTML={{__html: t('tradingChallenge_whatsapp_text')}}>
               </p>
               <a
                 href="https://wa.me/+971585437140"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-block bg-gradient-to-r from-cyan-600 to-cyan-800 hover:from-cyan-700 hover:to-cyan-900 text-white font-semibold px-6 py-2 rounded-full shadow transition-all text-sm"
+                className="inline-block bg-gradient-to-r from-cyan-600 to-cyan-800 hover:from-cyan-700 hover:to-cyan-900 text-white font-semibold px-3 sm:px-6 py-2 rounded-full shadow transition-all text-xs sm:text-sm whitespace-nowrap"
               >
-                Comunicarse ahora
+                {t('tradingChallenge_whatsapp_button')}
               </a>
             </div>
             

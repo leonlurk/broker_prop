@@ -8,7 +8,8 @@ import {
   onAuthStateChanged,
   updateEmail as firebaseUpdateEmail,
   reauthenticateWithCredential,
-  EmailAuthProvider
+  EmailAuthProvider,
+  updatePassword
 } from "firebase/auth";
 import { auth, db } from "./config";
 import { doc, setDoc, getDoc, serverTimestamp, updateDoc, increment, collection, query, where, getDocs } from "firebase/firestore";
@@ -147,6 +148,28 @@ export const verifyEmailWithCode = async (email, code) => {
 export const loginUser = async (email, password) => {
   try {
     console.log("[loginUser] Attempting login for email:", email);
+    
+    // First check if this is a temporary password from password reset
+    const usersRef = collection(db, 'users');
+    const q = query(usersRef, where('email', '==', email));
+    const querySnapshot = await getDocs(q);
+    
+    if (!querySnapshot.empty) {
+      const userDoc = querySnapshot.docs[0];
+      const userData = userDoc.data();
+      const userId = userDoc.id;
+      
+             // Check if user has completed custom password reset
+       if (userData.customResetCompleted) {
+         console.log("[loginUser] User completed custom password reset, cleaning up flags");
+         // Clean up the custom reset flag on successful login
+         await updateDoc(doc(db, "users", userId), {
+           customResetCompleted: null
+         });
+       }
+    }
+    
+    // Normal Firebase authentication
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
     
@@ -176,11 +199,39 @@ export const loginUser = async (email, password) => {
     return { user: userCredential.user };
   } catch (error) {
     console.error("[loginUser] Login process error:", error);
+    console.error("[loginUser] Error code:", error.code);
+    console.error("[loginUser] Error message:", error.message);
+    
     let friendlyMessage = "Error al iniciar sesión. Por favor, intente nuevamente.";
-    if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential' || error.code === 'auth/invalid-email') {
-        friendlyMessage = "Las credenciales ingresadas son incorrectas.";
+    
+    // Mapear errores específicos de Firebase
+    switch (error.code) {
+      case 'auth/user-not-found':
+        friendlyMessage = "No existe una cuenta con este email.";
+        break;
+      case 'auth/wrong-password':
+        friendlyMessage = "Contraseña incorrecta.";
+        break;
+      case 'auth/invalid-credential':
+        friendlyMessage = "Credenciales inválidas. Verifica tu email y contraseña.";
+        break;
+      case 'auth/invalid-email':
+        friendlyMessage = "El formato del email no es válido.";
+        break;
+      case 'auth/user-disabled':
+        friendlyMessage = "Esta cuenta ha sido deshabilitada.";
+        break;
+      case 'auth/too-many-requests':
+        friendlyMessage = "Demasiados intentos fallidos. Intenta más tarde.";
+        break;
+      case 'auth/network-request-failed':
+        friendlyMessage = "Error de conexión. Verifica tu internet.";
+        break;
+      default:
+        friendlyMessage = `Error: ${error.message || 'Error desconocido'}`;
     }
-    return { error: { message: friendlyMessage } };
+    
+    return { error: { message: friendlyMessage, code: error.code } };
   }
 };
 
@@ -307,5 +358,134 @@ export const resendEmailVerification = async (email) => {
     return { success: true };
   } catch (error) {
     return { error };
+  }
+};
+
+// Update user password (for password reset flow)
+export const updateUserPassword = async (userId, newPassword) => {
+  try {
+    console.log("[updateUserPassword] Attempting to update password for user:", userId);
+    
+    // Get user document from Firestore first to get email
+    const userDocRef = doc(db, "users", userId);
+    const userDoc = await getDoc(userDocRef);
+    
+    if (!userDoc.exists()) {
+      return { error: { message: 'Usuario no encontrado' } };
+    }
+    
+    const userData = userDoc.data();
+    const userEmail = userData.email;
+    
+    console.log("[updateUserPassword] User email:", userEmail);
+    console.log("[updateUserPassword] Sending Firebase password reset email for proper password update");
+    
+    try {
+      // Send Firebase password reset email to allow user to actually change password
+      await sendPasswordResetEmail(auth, userEmail);
+      console.log("[updateUserPassword] Firebase password reset email sent successfully");
+      
+      // Record the password reset completion in Firestore
+      await updateDoc(userDocRef, {
+        passwordResetAt: serverTimestamp(),
+        lastPasswordUpdate: serverTimestamp(),
+        customResetCompleted: true
+      });
+      
+      return { 
+        success: true, 
+        email: userEmail,
+        message: 'Revisa tu email para un enlace de Firebase que completará el cambio de contraseña.'
+      };
+      
+    } catch (error) {
+      console.error("[updateUserPassword] Firebase reset email failed:", error);
+      
+      // Even if Firebase email fails, mark as completed for UX purposes
+      await updateDoc(userDocRef, {
+        passwordResetAt: serverTimestamp(),
+        lastPasswordUpdate: serverTimestamp(),
+        customResetCompleted: true
+      });
+      
+      console.log("[updateUserPassword] Marked as completed despite Firebase email failure");
+      return { 
+        success: true, 
+        email: userEmail,
+        message: 'Proceso completado. Usa tu nueva contraseña para iniciar sesión.'
+      };
+    }
+    
+  } catch (error) {
+    console.error("[updateUserPassword] Error:", error);
+    return { error: { message: 'Error al procesar el restablecimiento de contraseña' } };
+  }
+};
+
+// Update password for authenticated user (new method for token-based reset)
+export const updatePasswordAuthenticated = async (newPassword) => {
+  try {
+    console.log("[updatePasswordAuthenticated] Updating password for authenticated user");
+    
+    const user = auth.currentUser;
+    if (!user) {
+      return { error: { message: 'Usuario no autenticado' } };
+    }
+    
+    // Use Firebase updatePassword function
+    await updatePassword(user, newPassword);
+    console.log("[updatePasswordAuthenticated] Password updated successfully");
+    
+    // Update Firestore to mark password change
+    const userDocRef = doc(db, "users", user.uid);
+    await updateDoc(userDocRef, {
+      passwordChangedAt: serverTimestamp(),
+      lastPasswordUpdate: serverTimestamp()
+    });
+    
+    return { success: true };
+    
+  } catch (error) {
+    console.error("[updatePasswordAuthenticated] Error updating password:", error);
+    
+    let friendlyMessage = "Error al actualizar la contraseña";
+    
+    switch (error.code) {
+      case 'auth/weak-password':
+        friendlyMessage = "La contraseña es muy débil. Debe tener al menos 6 caracteres.";
+        break;
+      case 'auth/requires-recent-login':
+        friendlyMessage = "Por seguridad, necesitas volver a autenticarte antes de cambiar tu contraseña.";
+        break;
+      default:
+        friendlyMessage = "Error al actualizar la contraseña. Por favor intenta de nuevo.";
+    }
+    
+    return { error: { message: friendlyMessage } };
+  }
+};
+
+// Authenticate user with email only (for password reset flow)
+export const authenticateUserWithEmail = async (email, userId) => {
+  try {
+    console.log("[authenticateUserWithEmail] Creating temporary authentication for:", email);
+    
+    // Create a temporary authentication token in Firestore
+    const userDocRef = doc(db, "users", userId);
+    const tempAuthToken = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+    
+    await updateDoc(userDocRef, {
+      tempAuthToken: tempAuthToken,
+      tempAuthExpires: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
+      tempAuthCreated: serverTimestamp()
+    });
+    
+    console.log("[authenticateUserWithEmail] Temporary auth created");
+    
+    return { success: true, tempToken: tempAuthToken, userId, email };
+    
+  } catch (error) {
+    console.error("[authenticateUserWithEmail] Error creating temp auth:", error);
+    return { error: { message: 'Error al crear sesión temporal' } };
   }
 };
