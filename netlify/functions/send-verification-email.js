@@ -1,7 +1,23 @@
 const sgMail = require('@sendgrid/mail');
 
-// Configurar SendGrid
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+// Configurar SendGrid con logging mejorado
+console.log('🔧 Inicializando función de Netlify...');
+
+// Verificar variables de entorno
+const apiKey = process.env.SENDGRID_API_KEY;
+const fromEmail = process.env.SENDGRID_FROM_EMAIL;
+const fromName = process.env.SENDGRID_FROM_NAME;
+
+console.log('📋 Variables de entorno:');
+console.log('- SENDGRID_API_KEY:', apiKey ? `${apiKey.substring(0, 8)}...` : 'NO DEFINIDA');
+console.log('- SENDGRID_FROM_EMAIL:', fromEmail || 'NO DEFINIDA');
+console.log('- SENDGRID_FROM_NAME:', fromName || 'NO DEFINIDA');
+
+if (!apiKey) {
+  console.error('❌ SENDGRID_API_KEY no está definida');
+}
+
+sgMail.setApiKey(apiKey);
 
 // Template del email con el mismo diseño que ya usamos
 const createVerificationEmailTemplate = (code, username = 'Usuario') => {
@@ -195,6 +211,13 @@ const createVerificationEmailTemplate = (code, username = 'Usuario') => {
 
 // Handler de la función Netlify
 exports.handler = async (event, context) => {
+  console.log('🚀 Función ejecutándose...');
+  console.log('📝 Event details:', {
+    httpMethod: event.httpMethod,
+    headers: event.headers,
+    bodyLength: event.body ? event.body.length : 0
+  });
+
   // Configurar CORS
   const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -205,6 +228,7 @@ exports.handler = async (event, context) => {
 
   // Manejar preflight request
   if (event.httpMethod === 'OPTIONS') {
+    console.log('✅ CORS preflight request');
     return {
       statusCode: 200,
       headers,
@@ -214,6 +238,7 @@ exports.handler = async (event, context) => {
 
   // Solo permitir POST
   if (event.httpMethod !== 'POST') {
+    console.log('❌ Método no permitido:', event.httpMethod);
     return {
       statusCode: 405,
       headers,
@@ -225,11 +250,28 @@ exports.handler = async (event, context) => {
   }
 
   try {
+    // Verificar variables de entorno críticas
+    if (!process.env.SENDGRID_API_KEY) {
+      console.error('❌ SENDGRID_API_KEY no configurada');
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ 
+          success: false, 
+          error: 'SendGrid API Key no configurada' 
+        }),
+      };
+    }
+
     // Parsear el body de la request
-    const { email, code, username, type } = JSON.parse(event.body);
+    console.log('📦 Parseando body de la request...');
+    const { email, code, username, type } = JSON.parse(event.body || '{}');
     
     // Validar datos requeridos
+    console.log('📋 Datos recibidos:', { email, code, username, type });
+    
     if (!email || !code) {
+      console.log('❌ Datos faltantes - email o código');
       return {
         statusCode: 400,
         headers,
@@ -253,7 +295,14 @@ exports.handler = async (event, context) => {
       html: createVerificationEmailTemplate(code, username || 'Usuario')
     };
     
+    console.log('📤 Configuración del mensaje:', {
+      to: msg.to,
+      from: msg.from,
+      subject: msg.subject
+    });
+    
     // Enviar email
+    console.log('🔄 Enviando email via SendGrid...');
     await sgMail.send(msg);
     
     console.log(`✅ Email enviado exitosamente a ${email}`);
@@ -268,7 +317,9 @@ exports.handler = async (event, context) => {
     };
     
   } catch (error) {
-    console.error('❌ Error enviando email:', error);
+    console.error('❌ Error completo:', error);
+    console.error('❌ Error message:', error.message);
+    console.error('❌ Error stack:', error.stack);
     
     // Manejar errores específicos de SendGrid
     let errorMessage = 'Error al enviar email de verificación';
