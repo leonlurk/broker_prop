@@ -120,7 +120,7 @@ class EmailVerificationService {
 ╠══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
 ║                                                                                                                                                                                                                                  ║
 ║  Para: ${email}                                                                                                                                                                                                           ║
-║  Asunto: Código de verificación - AGM Trading                                                                                                                                                                               ║
+║  Asunto: Código de verificación - Alpha Global Market                                                                                                                                                                       ║
 ║                                                                                                                                                                                                                                  ║
 ║  Hola ${username || 'Usuario'},                                                                                                                                                                                         ║
 ║                                                                                                                                                                                                                                  ║
@@ -133,7 +133,7 @@ class EmailVerificationService {
 ║  Si no solicitaste este código, ignora este email.                                                                                                                                                                          ║
 ║                                                                                                                                                                                                                                  ║
 ║  Saludos,                                                                                                                                                                                                                    ║
-║  Equipo AGM Trading                                                                                                                                                                                                          ║
+║  Equipo Alpha Global Market                                                                                                                                                                                                  ║
 ║                                                                                                                                                                                                                                  ║
 ╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
         `);

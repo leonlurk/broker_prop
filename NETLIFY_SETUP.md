@@ -9,7 +9,7 @@ Ve a tu dashboard de Netlify → Site settings → Environment variables y agreg
 ```bash
 SENDGRID_API_KEY=SG.tu_api_key_de_sendgrid_aqui
 SENDGRID_FROM_EMAIL=team@alphaglobalmarket.io
-SENDGRID_FROM_NAME=AGM PROP
+SENDGRID_FROM_NAME=Alpha Global Market
 ```
 
 > ⚠️ **Importante**: Reemplaza `SG.tu_api_key_de_sendgrid_aqui` con tu API key real de SendGrid

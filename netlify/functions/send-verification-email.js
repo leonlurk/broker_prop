@@ -289,9 +289,9 @@ exports.handler = async (event, context) => {
       to: email,
       from: {
         email: process.env.SENDGRID_FROM_EMAIL || 'team@alphaglobalmarket.io',
-        name: process.env.SENDGRID_FROM_NAME || 'AGM PROP'
+        name: process.env.SENDGRID_FROM_NAME || 'Alpha Global Market'
       },
-      subject: '🔐 Tu código de verificación - AGM PROP',
+      subject: '🔐 Tu código de verificación - Alpha Global Market',
       html: createVerificationEmailTemplate(code, username || 'Usuario')
     };
     

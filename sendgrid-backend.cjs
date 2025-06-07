@@ -334,9 +334,9 @@ app.post('/api/send-verification-email', async (req, res) => {
       to: email,
       from: {
         email: process.env.SENDGRID_FROM_EMAIL,
-        name: process.env.SENDGRID_FROM_NAME || 'AGM Trading'
+        name: process.env.SENDGRID_FROM_NAME || 'Alpha Global Market'
       },
-      subject: '🔐 Tu código de verificación - AGM Trading',
+      subject: '🔐 Tu código de verificación - Alpha Global Market',
       html: createVerificationEmailTemplate(code, username)
     };
     
@@ -380,7 +380,7 @@ app.post('/api/send-verification-email', async (req, res) => {
 app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'OK', 
-    service: 'AGM Trading Email Service',
+    service: 'Alpha Global Market Email Service',
     timestamp: new Date().toISOString(),
     sendgrid: !!process.env.SENDGRID_API_KEY
   });
@@ -401,7 +401,7 @@ app.get('/api/test-config', (req, res) => {
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-  console.log('🚀 AGM Trading Email Service iniciado');
+  console.log('🚀 Alpha Global Market Email Service iniciado');
   console.log(`📍 Puerto: ${PORT}`);
   console.log(`🔑 SendGrid API Key: ${process.env.SENDGRID_API_KEY ? '✅ Configurada' : '❌ No configurada'}`);
   console.log(`📧 From Email: ${process.env.SENDGRID_FROM_EMAIL || '❌ No configurado'}`);
