@@ -8,7 +8,25 @@ class EmailVerificationService {
   constructor() {
     this.CODE_LENGTH = 4;
     this.EXPIRATION_MINUTES = 10;
-    this.COLLECTION_NAME = 'email_verification_codes';
+    this.COLLECTION_NAME = 'email_verifications';
+    
+    // Configurar URL del API según el entorno
+    this.API_BASE_URL = this.getApiBaseUrl();
+  }
+
+  /**
+   * Obtiene la URL base del API según el entorno
+   * @returns {string} URL base del API
+   */
+  getApiBaseUrl() {
+    // En desarrollo local, usar proxy
+    if (import.meta.env.DEV) {
+      return '';  // Proxy de Vite manejará /api
+    }
+    
+    // En producción con Netlify, usar las Netlify Functions
+    // La URL será: https://tu-dominio.netlify.app/.netlify/functions/
+    return '/.netlify/functions';
   }
 
   /**
@@ -61,7 +79,12 @@ class EmailVerificationService {
       
       // Intentar envío a través del backend
       try {
-        const response = await fetch('/api/send-verification-email', {
+        // En desarrollo usa /api/send-verification-email, en producción usa la función de Netlify
+        const endpoint = import.meta.env.DEV ? '/api/send-verification-email' : '/send-verification-email';
+        const apiUrl = `${this.API_BASE_URL}${endpoint}`;
+        console.log(`🔗 Intentando enviar a: ${apiUrl}`);
+        
+        const response = await fetch(apiUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -82,10 +105,13 @@ class EmailVerificationService {
           }
         }
         
-        throw new Error('Backend email service not available');
+        // Si llegamos aquí, el backend respondió pero no fue exitoso
+        console.log(`⚠️ Backend respondió con status: ${response.status}`);
+        throw new Error(`Backend responded with status: ${response.status}`);
         
       } catch (backendError) {
         console.log('⚠️ Backend no disponible, usando modo desarrollo');
+        console.log('Error details:', backendError.message);
         
         // Modo desarrollo - mostrar el código en la consola
         console.log(`

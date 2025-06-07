@@ -1,0 +1,14 @@
+{
+  "name": "agm-prop-netlify-functions",
+  "version": "1.0.0",
+  "description": "Netlify Functions for AGM PROP platform",
+  "main": "send-verification-email.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@sendgrid/mail": "^8.1.5"
+  },
+  "author": "AGM PROP Team",
+  "license": "ISC"
+} 
