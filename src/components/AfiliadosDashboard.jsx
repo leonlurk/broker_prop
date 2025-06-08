@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ChevronDown, Copy, ArrowUpDown, Save, AlertTriangle, Loader, Lock, UserCheck, Link, ListChecks, CreditCard, LockOpen } from 'lucide-react';
+import { ChevronDown, Copy, ArrowUpDown, Save, AlertTriangle, Loader, Lock, UserCheck, Link, ListChecks, CreditCard, LockOpen, HelpCircle } from 'lucide-react';
 import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { auth, db } from '../firebase/config';
 import { useAuth } from '../contexts/AuthContext';
@@ -23,6 +23,85 @@ const determineTier = (referralCount) => {
   if (referralCount >= TIER_REQUIREMENTS[3]) return 3; // 200+
   if (referralCount >= TIER_REQUIREMENTS[2]) return 2; // 100-199
   return 1; // 0-99
+};
+
+// Enhanced Tooltip Component with better UX
+const Tooltip = ({ children, content, isVisible, onToggle }) => {
+  const [isHovered, setIsHovered] = useState(false);
+  
+  return (
+    <div className="relative inline-block">
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onToggle();
+        }}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        className={`
+          relative p-2 rounded-full transition-all duration-200 ease-in-out
+          ${isVisible 
+            ? 'text-cyan-400 bg-cyan-400/10 border border-cyan-400/30' 
+            : isHovered 
+              ? 'text-cyan-300 bg-cyan-400/5 border border-cyan-400/20' 
+              : 'text-gray-400 bg-transparent border border-transparent hover:text-cyan-300'
+          }
+          hover:scale-110 focus:outline-none focus:ring-2 focus:ring-cyan-400/50
+        `}
+        aria-label="Ver información detallada del tier"
+        aria-expanded={isVisible}
+      >
+        {children}
+        {(isHovered || isVisible) && (
+          <div className="absolute inset-0 rounded-full bg-cyan-400/20 animate-pulse"></div>
+        )}
+      </button>
+      
+      <div className={`
+        absolute z-[60] bottom-full left-1/2 transform -translate-x-1/2 mb-3
+        transition-all duration-300 ease-out
+        ${isVisible 
+          ? 'opacity-100 translate-y-0 scale-100 pointer-events-auto' 
+          : 'opacity-0 translate-y-2 scale-95 pointer-events-none'
+        }
+      `}>
+        <div 
+          className="relative px-4 py-3 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white text-sm rounded-xl shadow-2xl border border-gray-600/50 w-72 sm:w-80 text-left backdrop-blur-sm"
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(96, 165, 250, 0.1)',
+          }}
+        >
+          {/* Close button */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggle();
+            }}
+            className="absolute top-2 right-2 p-1 rounded-full text-gray-400 hover:text-white hover:bg-gray-700/50 transition-colors"
+            aria-label="Cerrar tooltip"
+          >
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          
+          {/* Content with better typography */}
+          <div className="pr-6">
+            <div className="whitespace-pre-wrap leading-relaxed text-gray-100">
+              {content}
+            </div>
+          </div>
+          
+          {/* Enhanced arrow with gradient */}
+          <div className="absolute top-full left-1/2 transform -translate-x-1/2">
+            <div className="w-0 h-0 border-l-[8px] border-r-[8px] border-t-[8px] border-l-transparent border-r-transparent border-t-gray-800"></div>
+            <div className="absolute top-[-9px] left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-[9px] border-r-[9px] border-t-[9px] border-l-transparent border-r-transparent border-t-gray-600/50"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 const AfiliadosDashboard = () => {
@@ -53,6 +132,66 @@ const AfiliadosDashboard = () => {
   const [pagosData, setPagosData] = useState([]);
   const [isLoadingReferencias, setIsLoadingReferencias] = useState(false);
   const [isLoadingPagos, setIsLoadingPagos] = useState(false);
+
+  // State for tooltip visibility
+  const [visibleTooltip, setVisibleTooltip] = useState(null);
+  
+  // State for copy button
+  const [isCopying, setIsCopying] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
+
+  // Function to get tier tooltip content
+  const getTierTooltipContent = (tierNum) => {
+    const tierData = TIER_COMMISSIONS[tierNum];
+    switch (tierNum) {
+      case 1:
+        return t('afiliadosDashboard_tooltip_tier1', {
+          commission: tierData.direct,
+          requirement: '0-99 referidos'
+        });
+      case 2:
+        return t('afiliadosDashboard_tooltip_tier2', {
+          directCommission: tierData.direct,
+          subCommission: tierData.sub_tier_1,
+          requirement: '100-199 referidos'
+        });
+      case 3:
+        return t('afiliadosDashboard_tooltip_tier3', {
+          directCommission: tierData.direct,
+          subCommission: tierData.sub_tier_1,
+          paymentsCommission: tierData.payments,
+          requirement: '200+ referidos'
+        });
+      default:
+        return '';
+    }
+  };
+
+  const toggleTooltip = (tierNum) => {
+    setVisibleTooltip(visibleTooltip === tierNum ? null : tierNum);
+  };
+
+  // Close tooltip when clicking outside or pressing escape
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setVisibleTooltip(null);
+    };
+
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') {
+        setVisibleTooltip(null);
+      }
+    };
+
+    if (visibleTooltip !== null) {
+      document.addEventListener('click', handleClickOutside);
+      document.addEventListener('keydown', handleEscape);
+      return () => {
+        document.removeEventListener('click', handleClickOutside);
+        document.removeEventListener('keydown', handleEscape);
+      };
+    }
+  }, [visibleTooltip]);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -170,18 +309,64 @@ const AfiliadosDashboard = () => {
     }
   };
   
-  const copyToClipboardHandler = () => {
-    if (!referralLink) return;
-    navigator.clipboard.writeText(referralLink)
-      .then(() => {
+  const copyToClipboardHandler = async () => {
+    if (!referralLink || isCopying) return;
+    
+    setIsCopying(true);
+    
+    try {
+      await navigator.clipboard.writeText(referralLink);
+      setCopySuccess(true);
+      setSuccessMessage(t('afiliadosDashboard_success_linkCopied'));
+      
+      // Vibración en móvil si está disponible
+      if (navigator.vibrate) {
+        navigator.vibrate(50);
+      }
+      
+      // Reset states after animation
+      setTimeout(() => {
+        setCopySuccess(false);
+        setIsCopying(false);
+      }, 600);
+      
+      setTimeout(() => setSuccessMessage(''), 3000);
+    } catch (err) {
+      console.error('Error al copiar enlace:', err);
+      
+      // Fallback for older browsers
+      try {
+        const textArea = document.createElement('textarea');
+        textArea.value = referralLink;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        textArea.remove();
+        
+        setCopySuccess(true);
         setSuccessMessage(t('afiliadosDashboard_success_linkCopied'));
-        setTimeout(() => setSuccessMessage(''), 2000);
-      })
-      .catch(err => {
-        console.error('Error al copiar enlace:', err);
+        
+        // Vibración en móvil si está disponible
+        if (navigator.vibrate) {
+          navigator.vibrate(50);
+        }
+        
+        setTimeout(() => {
+          setCopySuccess(false);
+          setIsCopying(false);
+        }, 600);
+        
+        setTimeout(() => setSuccessMessage(''), 3000);
+      } catch (fallbackErr) {
         setError(t('afiliadosDashboard_error_copyingLink'));
-        setTimeout(() => setError(''), 2000);
-      });
+        setIsCopying(false);
+        setTimeout(() => setError(''), 3000);
+      }
+    }
   };
 
   const renderContent = () => {
@@ -220,8 +405,40 @@ const AfiliadosDashboard = () => {
               <div className="lg:col-span-2 p-4 sm:p-5 bg-gradient-to-br from-[#232323] to-[#2b2b2b] rounded-xl border border-[#4A4A4A] space-y-2 sm:space-y-3">
                 <h3 className="text-base sm:text-lg font-semibold text-gray-100">{t('afiliadosDashboard_panel_yourAffiliateLink')}</h3>
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
-                  <input type="text" readOnly value={referralLink} className="w-full p-2.5 sm:p-3 bg-gradient-to-br from-[#232323] to-[#2b2b2b] rounded-lg sm:rounded-full border border-[#444] text-gray-300 text-xs sm:text-sm truncate" />
-                  <button onClick={copyToClipboardHandler} className="self-center sm:self-auto p-2.5 sm:p-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg sm:rounded-full transition disabled:opacity-50 flex-shrink-0"><Copy size={18} /></button>
+                  <div className="relative w-full">
+                    <input 
+                      type="text" 
+                      readOnly 
+                      value={referralLink} 
+                      className="w-full p-2.5 sm:p-3 bg-gradient-to-br from-[#232323] to-[#2b2b2b] rounded-lg sm:rounded-full border border-[#444] text-gray-300 text-xs sm:text-sm truncate pr-12 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-colors" 
+                    />
+                                         <button 
+                       onClick={copyToClipboardHandler} 
+                       disabled={isCopying}
+                       className={`absolute right-1 top-1/2 -translate-y-1/2 p-2 rounded-full transition-all duration-300 ease-out focus:outline-none focus:ring-2 focus:ring-cyan-400/50 ${
+                         copySuccess 
+                           ? 'bg-green-500 text-white scale-110' 
+                           : isCopying
+                           ? 'bg-cyan-500 text-white animate-pulse'
+                           : 'bg-cyan-600 hover:bg-cyan-700 text-white hover:scale-105'
+                       } disabled:cursor-not-allowed flex-shrink-0`}
+                       aria-label={copySuccess ? "¡Copiado!" : isCopying ? "Copiando..." : "Copiar enlace"}
+                       title={copySuccess ? "¡Enlace copiado!" : isCopying ? "Copiando..." : "Copiar enlace de afiliado"}
+                     >
+                      {copySuccess ? (
+                        <svg className="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : isCopying ? (
+                        <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                      ) : (
+                        <Copy size={16} />
+                      )}
+                    </button>
+                  </div>
                 </div>
                 <p className="text-xs text-gray-500">{t('afiliadosDashboard_panel_shareLinkInstruction')}</p>
               </div>
@@ -234,7 +451,14 @@ const AfiliadosDashboard = () => {
             {/* Wallet Address */}
             <section>
               <h2 className="text-xl sm:text-2xl font-semibold mb-2 sm:mb-3 text-gray-100">{t('afiliadosDashboard_panel_paymentAddress')}</h2>
-              {successMessage && <div className="mb-3 p-2.5 sm:p-3 bg-green-500/20 border border-green-500 text-green-300 rounded-lg sm:rounded-full text-sm">{successMessage}</div>}
+              {successMessage && (
+                <div className="mb-3 p-3 sm:p-3 bg-green-500/20 border border-green-500 text-green-300 rounded-xl sm:rounded-full text-sm flex items-center gap-2 animate-pulse">
+                  <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="font-medium">{successMessage}</span>
+                </div>
+              )}
               {error && <div className="mb-3 p-2.5 sm:p-3 bg-red-500/20 border border-red-500 text-red-300 rounded-lg sm:rounded-full flex items-center text-sm"><AlertTriangle size={18} className="mr-2 flex-shrink-0"/><span>{error}</span></div>}
               {isEditingWallet ? (
                 <div className="space-y-3">
@@ -270,11 +494,24 @@ const AfiliadosDashboard = () => {
                         return (
                             <div key={tierNum} className={`p-4 sm:p-5 rounded-xl border ${isCurrentTierOrHigher ? 'border-cyan-400 bg-[#2d2d2d]' : 'border-[#4A4A4A] bg-[#2d2d2d]' } space-y-1 sm:space-y-1.5`}>
                                 <div className="flex justify-between items-center">
-                                    <h3 className={`text-lg sm:text-xl font-bold ${isCurrentTierOrHigher ? 'text-white' : 'text-gray-300'}`}>{t('afiliadosDashboard_panel_tierLabel', { tierNum })}</h3>
-                                    {/* Show lock icon only if tier is not achieved */}
-                                    {!isCurrentTierOrHigher && <Lock size={20} className="text-gray-500" />}
-                                    {/* Show unlocked icon if the tier IS current/achieved */}
-                                    {isCurrentTierOrHigher && <LockOpen size={20} className="text-cyan-400" />}
+                                    <div className="flex items-center gap-2">
+                                        <h3 className={`text-lg sm:text-xl font-bold ${isCurrentTierOrHigher ? 'text-white' : 'text-gray-300'}`}>{t('afiliadosDashboard_panel_tierLabel', { tierNum })}</h3>
+                                        <Tooltip
+                                            content={getTierTooltipContent(tierNum)}
+                                            isVisible={visibleTooltip === tierNum}
+                                            onToggle={() => toggleTooltip(tierNum)}
+                                        >
+                                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/>
+                                            </svg>
+                                        </Tooltip>
+                                    </div>
+                                    <div className="flex items-center">
+                                        {/* Show lock icon only if tier is not achieved */}
+                                        {!isCurrentTierOrHigher && <Lock size={20} className="text-gray-500" />}
+                                        {/* Show unlocked icon if the tier IS current/achieved */}
+                                        {isCurrentTierOrHigher && <LockOpen size={20} className="text-cyan-400" />}
+                                    </div>
                                 </div>
                                 <p className={`text-xs sm:text-sm ${isCurrentTierOrHigher ? 'text-gray-200' : 'text-gray-400'}`}>{t(TIER_COMMISSIONS[tierNum].labelKey)}</p>
                                 <p className="text-xs text-gray-500">

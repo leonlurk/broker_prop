@@ -934,15 +934,21 @@ const UserInformationContent = ({ onBack }) => {
         </div>
         {/* Mensajes de error y éxito */}
         {saveError && (
-          <div className="mt-6 bg-red-500 bg-opacity-10 text-red-500 rounded-lg px-6 py-4 flex items-center gap-2">
-            <AlertTriangle size={20} />
-            <span>{saveError}</span>
+          <div className="mt-6 bg-red-500 bg-opacity-20 border border-red-500 text-red-400 rounded-lg px-6 py-4 flex items-center gap-2 shadow-lg">
+            <div className="rounded-full bg-red-500 bg-opacity-20 p-1">
+              <AlertTriangle size={16} />
+            </div>
+            <span className="font-medium">{saveError}</span>
           </div>
         )}
         {saveSuccess && (
-          <div className="mt-6 bg-green-500 bg-opacity-10 text-green-500 rounded-lg px-6 py-4 flex items-center gap-2">
-            <Save size={20} />
-            <span>{t('userInfo_success_saved')}</span>
+          <div className="mt-6 bg-green-500 bg-opacity-20 border border-green-500 text-green-400 rounded-lg px-6 py-4 flex items-center gap-2 shadow-lg">
+            <div className="rounded-full bg-green-500 bg-opacity-20 p-1">
+              <svg className="h-4 w-4 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <span className="font-medium">{t('userInfo_success_saved')}</span>
           </div>
         )}
         {/* Crop modal igual que antes si es necesario */}

@@ -50,6 +50,7 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
   const [copiedLogin, setCopiedLogin] = useState(false);
   const [copiedMasterPass, setCopiedMasterPass] = useState(false);
   const [copiedInvestorPass, setCopiedInvestorPass] = useState(false);
+  const [copiedServer, setCopiedServer] = useState(false);
   const [showInvestorPass, setShowInvestorPass] = useState(false);
   const [accountMt5Info, setAccountMt5Info] = useState(null);
   const [mt5Operations, setMt5Operations] = useState([]);
@@ -554,6 +555,9 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
       } else if (type === 'investor') {
         setCopiedInvestorPass(true);
         setTimeout(() => setCopiedInvestorPass(false), 1500);
+      } else if (type === 'server') {
+        setCopiedServer(true);
+        setTimeout(() => setCopiedServer(false), 1500);
       }
     });
   };
@@ -905,8 +909,21 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
               
               <div className="border border-gray-700 rounded-md p-2 sm:p-2.5">
                 <div className="flex items-center justify-between">
-                    <span className="text-gray-400">Server</span>
-                    <span className="">{safeAccount.server}</span>
+                  <span className="text-gray-400">{t('tradingDashboard_mt5ServerLabel')}</span>
+                  <div className="flex items-center min-w-0 flex-1 justify-end">
+                    <span className="mr-1.5 sm:mr-2 truncate text-sm sm:text-base max-w-[120px] sm:max-w-[200px]" title={safeAccount.server}>{safeAccount.server}</span>
+                      <img
+                        src="/Copy.png"
+                        alt={t('tradingDashboard_iconAlt_copy')}
+                        className="w-3 h-3 sm:w-4 sm:h-4 cursor-pointer flex-shrink-0"
+                        title={copiedServer ? t('common_copied') : t('common_copy')}
+                        onClick={() => handleCopy(safeAccount.server, 'server')}
+                        onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath d='M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z' fill='%23555'/%3E%3C/svg%3E";
+                        }}
+                      />
+                  </div>
                 </div>
               </div>
             </div>

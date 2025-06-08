@@ -301,6 +301,70 @@ export const translations = {
     es: "Enviar Email",
     en: "Send Email",
   },
+  changePasswordModal_description: {
+    es: "Se enviará un enlace de restablecimiento de contraseña al correo electrónico registrado en tu cuenta.",
+    en: "A password reset link will be sent to the email address registered to your account.",
+  },
+  changePasswordModal_currentEmail: {
+    es: "Correo actual",
+    en: "Current email",
+  },
+  changePasswordModal_button_sendReset: {
+    es: "Enviar enlace de restablecimiento",
+    en: "Send reset link",
+  },
+  changePasswordModal_error_noEmail: {
+    es: "No se pudo obtener el correo electrónico de la cuenta.",
+    en: "Could not retrieve account email address.",
+  },
+  changePasswordModal_error_userNotFound: {
+    es: "No existe una cuenta con este email.",
+    en: "No account found with this email.",
+  },
+  changePasswordModal_error_invalidEmail: {
+    es: "El email ingresado no es válido.",
+    en: "The entered email is not valid.",
+  },
+  changePasswordModal_error_tooManyRequests: {
+    es: "Demasiados intentos. Intenta nuevamente más tarde.",
+    en: "Too many attempts. Please try again later.",
+  },
+  changePasswordModal_error_sendingEmail: {
+    es: "Error al enviar el email. Intenta nuevamente.",
+    en: "Error sending email. Please try again.",
+  },
+  changePasswordModal_success_title: {
+    es: "¡Email enviado!",
+    en: "Email sent!",
+  },
+  changePasswordModal_success_message: {
+    es: "Hemos enviado un enlace de restablecimiento a {{email}}",
+    en: "We have sent a reset link to {{email}}",
+  },
+  changePasswordModal_success_stepsTitle: {
+    es: "Pasos a seguir:",
+    en: "Next steps:",
+  },
+  changePasswordModal_success_step1: {
+    es: "Revisa tu email (incluyendo spam)",
+    en: "Check your email (including spam)",
+  },
+  changePasswordModal_success_step2: {
+    es: "Haz clic en el enlace recibido",
+    en: "Click on the received link",
+  },
+  changePasswordModal_success_step3: {
+    es: "Establece tu nueva contraseña",
+    en: "Set your new password",
+  },
+  changePasswordModal_success_step4: {
+    es: "¡Listo! Ya podrás iniciar sesión",
+    en: "Done! You can now log in",
+  },
+  changePasswordModal_success_expiration: {
+    es: "El enlace expirará en 1 hora",
+    en: "The link will expire in 1 hour",
+  },
   // UpdateEmailModal.jsx translations
   updateEmailModal_success_verificationSent: {
     es: "Se ha enviado un email de verificación a tu nueva dirección de correo. Por favor verifica tu nueva dirección de email.",
@@ -603,6 +667,18 @@ export const translations = {
   afiliadosDashboard_tab_payments: {
     es: "Pagos",
     en: "Payments",
+  },
+  afiliadosDashboard_tooltip_tier1: {
+    es: "💰 TIER 1 - Comisión Básica\n\n📊 COMISIONES:\n• Directa: {{commission}} por cada compra\n\n📋 REQUISITOS:\n• {{requirement}}\n\n✨ BENEFICIOS:\n• Gana por cada referido que compre\n• Acceso al programa de afiliados\n• Pagos mensuales garantizados\n• Dashboard con estadísticas",
+    en: "💰 TIER 1 - Basic Commission\n\n📊 COMMISSIONS:\n• Direct: {{commission}} per purchase\n\n📋 REQUIREMENTS:\n• {{requirement}}\n\n✨ BENEFITS:\n• Earn from each referred purchase\n• Access to affiliate program\n• Guaranteed monthly payments\n• Statistics dashboard",
+  },
+  afiliadosDashboard_tooltip_tier2: {
+    es: "🚀 TIER 2 - Comisión Mejorada\n\n📊 COMISIONES:\n• Directa: {{directCommission}} por compra\n• Sub-nivel: {{subCommission}} de referidos Tier 1\n\n📋 REQUISITOS:\n• {{requirement}}\n\n✨ BENEFICIOS:\n• Mayor comisión en ventas directas\n• Ganas por ventas de tus referidos\n• Estadísticas avanzadas\n• Soporte prioritario\n• Herramientas de marketing",
+    en: "🚀 TIER 2 - Enhanced Commission\n\n📊 COMMISSIONS:\n• Direct: {{directCommission}} per purchase\n• Sub-tier: {{subCommission}} from Tier 1 referrals\n\n📋 REQUIREMENTS:\n• {{requirement}}\n\n✨ BENEFITS:\n• Higher commission on direct sales\n• Earn from your referrals' sales\n• Advanced statistics\n• Priority support\n• Marketing tools",
+  },
+  afiliadosDashboard_tooltip_tier3: {
+    es: "👑 TIER 3 - Comisión Premium\n\n📊 COMISIONES:\n• Directa: {{directCommission}} por compra\n• Sub-nivel: {{subCommission}} de referidos Tier 1\n• Pagos: {{paymentsCommission}} de traders fondeados\n\n📋 REQUISITOS:\n• {{requirement}}\n\n✨ BENEFICIOS:\n• Máxima comisión disponible\n• Ingresos de múltiples fuentes\n• Comisión por traders exitosos\n• Funciones VIP exclusivas\n• Soporte personalizado 24/7\n• Acceso a webinars premium",
+    en: "👑 TIER 3 - Premium Commission\n\n📊 COMMISSIONS:\n• Direct: {{directCommission}} per purchase\n• Sub-tier: {{subCommission}} from Tier 1 referrals\n• Payouts: {{paymentsCommission}} from funded traders\n\n📋 REQUIREMENTS:\n• {{requirement}}\n\n✨ BENEFITS:\n• Maximum available commission\n• Multiple income sources\n• Commission from successful traders\n• Exclusive VIP features\n• 24/7 personalized support\n• Premium webinar access",
   },
   afiliadosDashboard_selectTabPrompt: {
     es: "Seleccione una pestaña.",
@@ -1241,7 +1317,7 @@ export const translations = {
   tradingDashboard_investorPassLabel: { es: "Investor Pass", en: "Investor Pass" },
   tradingDashboard_setPasswordButton: { es: "Set Password", en: "Set Password" }, 
   tradingDashboard_masterPassLabel: { es: "Master pass.", en: "Master pass." },
-  tradingDashboard_mt5ServerLabel: { es: "MT5 Server", en: "MT5 Server" },
+  tradingDashboard_mt5ServerLabel: { es: "Servidor", en: "Server" },
   tradingDashboard_balanceChartTitle: { es: "Balance", en: "Balance" },
   tradingDashboard_profitLossWidgetTitle: { es: "Profit/Loss", en: "Profit/Loss" },
   tradingDashboard_drawdownWidgetTitle: { es: "Drawdown", en: "Drawdown" },
