@@ -60,7 +60,7 @@ const ForgotPassword = ({ onLoginClick }) => {
           </div>
           
           <h2 className="text-2xl font-bold text-white mb-4">
-            📧 ¡Email Enviado!
+            ¡Email Enviado!
           </h2>
           
           <p className="text-gray-300 mb-6 text-sm">
@@ -69,7 +69,7 @@ const ForgotPassword = ({ onLoginClick }) => {
           
           <div className="bg-blue-500 bg-opacity-20 border border-blue-400 rounded-lg p-4 mb-6">
             <div className="flex items-start">
-              <span className="text-blue-400 mr-2 text-lg">💡</span>
+              <span className="text-blue-400 mr-2 text-lg"></span>
               <div className="text-sm">
                 <p className="text-blue-200 font-medium mb-1">Pasos a seguir:</p>
                 <p className="text-blue-100 text-xs">1. Revisa tu email (incluyendo spam)</p>
@@ -113,7 +113,7 @@ const ForgotPassword = ({ onLoginClick }) => {
       
       <div className="text-center mb-8">
         <h2 className="text-2xl font-bold text-white mb-2">
-          🔐 Restablecer Contraseña
+          Restablecer Contraseña
         </h2>
         
         <p className="text-gray-300 text-sm">
@@ -162,7 +162,7 @@ const ForgotPassword = ({ onLoginClick }) => {
                 Enviando enlace...
               </>
             ) : (
-              '📧 Enviar enlace de restablecimiento'
+              'Enviar enlace de restablecimiento'
             )}
           </span>
         </button>

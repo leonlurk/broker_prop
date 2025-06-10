@@ -25,8 +25,8 @@ export const translations = {
   },
   // Login.jsx translations
   login_placeholder_usernameOrEmail: {
-    es: "Usuario o Email",
-    en: "Username or Email",
+    es: "Email",
+    en: "Email",
   },
   login_placeholder_password: {
     es: "Contraseña",
@@ -669,16 +669,16 @@ export const translations = {
     en: "Payments",
   },
   afiliadosDashboard_tooltip_tier1: {
-    es: "💰 TIER 1 - Comisión Básica\n\n📊 COMISIONES:\n• Directa: {{commission}} por cada compra\n\n📋 REQUISITOS:\n• {{requirement}}\n\n✨ BENEFICIOS:\n• Gana por cada referido que compre\n• Acceso al programa de afiliados\n• Pagos mensuales garantizados\n• Dashboard con estadísticas",
-    en: "💰 TIER 1 - Basic Commission\n\n📊 COMMISSIONS:\n• Direct: {{commission}} per purchase\n\n📋 REQUIREMENTS:\n• {{requirement}}\n\n✨ BENEFITS:\n• Earn from each referred purchase\n• Access to affiliate program\n• Guaranteed monthly payments\n• Statistics dashboard",
+    es: "TIER 1 - Comisión Básica\n\nCOMISIONES:\n• Directa: {{commission}} por cada compra\n\nREQUISITOS:\n• {{requirement}}\n\nBENEFICIOS:\n• Gana por cada referido que compre\n• Acceso al programa de afiliados\n• Pagos mensuales garantizados\n• Dashboard con estadísticas",
+    en: "TIER 1 - Basic Commission\n\nCOMMISSIONS:\n• Direct: {{commission}} per purchase\n\nREQUIREMENTS:\n• {{requirement}}\n\nBENEFITS:\n• Earn from each referred purchase\n• Access to affiliate program\n• Guaranteed monthly payments\n• Statistics dashboard",
   },
   afiliadosDashboard_tooltip_tier2: {
-    es: "🚀 TIER 2 - Comisión Mejorada\n\n📊 COMISIONES:\n• Directa: {{directCommission}} por compra\n• Sub-nivel: {{subCommission}} de referidos Tier 1\n\n📋 REQUISITOS:\n• {{requirement}}\n\n✨ BENEFICIOS:\n• Mayor comisión en ventas directas\n• Ganas por ventas de tus referidos\n• Estadísticas avanzadas\n• Soporte prioritario\n• Herramientas de marketing",
-    en: "🚀 TIER 2 - Enhanced Commission\n\n📊 COMMISSIONS:\n• Direct: {{directCommission}} per purchase\n• Sub-tier: {{subCommission}} from Tier 1 referrals\n\n📋 REQUIREMENTS:\n• {{requirement}}\n\n✨ BENEFITS:\n• Higher commission on direct sales\n• Earn from your referrals' sales\n• Advanced statistics\n• Priority support\n• Marketing tools",
+    es: "TIER 2 - Comisión Mejorada\n\nCOMISIONES:\n• Directa: {{directCommission}} por compra\n• Sub-nivel: {{subCommission}} de referidos Tier 1\n\nREQUISITOS:\n• {{requirement}}\n\nBENEFICIOS:\n• Mayor comisión en ventas directas\n• Ganas por ventas de tus referidos\n• Estadísticas avanzadas\n• Soporte prioritario\n• Herramientas de marketing",
+    en: "TIER 2 - Enhanced Commission\n\nCOMMISSIONS:\n• Direct: {{directCommission}} per purchase\n• Sub-tier: {{subCommission}} from Tier 1 referrals\n\nREQUIREMENTS:\n• {{requirement}}\n\nBENEFITS:\n• Higher commission on direct sales\n• Earn from your referrals' sales\n• Advanced statistics\n• Priority support\n• Marketing tools",
   },
   afiliadosDashboard_tooltip_tier3: {
-    es: "👑 TIER 3 - Comisión Premium\n\n📊 COMISIONES:\n• Directa: {{directCommission}} por compra\n• Sub-nivel: {{subCommission}} de referidos Tier 1\n• Pagos: {{paymentsCommission}} de traders fondeados\n\n📋 REQUISITOS:\n• {{requirement}}\n\n✨ BENEFICIOS:\n• Máxima comisión disponible\n• Ingresos de múltiples fuentes\n• Comisión por traders exitosos\n• Funciones VIP exclusivas\n• Soporte personalizado 24/7\n• Acceso a webinars premium",
-    en: "👑 TIER 3 - Premium Commission\n\n📊 COMMISSIONS:\n• Direct: {{directCommission}} per purchase\n• Sub-tier: {{subCommission}} from Tier 1 referrals\n• Payouts: {{paymentsCommission}} from funded traders\n\n📋 REQUIREMENTS:\n• {{requirement}}\n\n✨ BENEFITS:\n• Maximum available commission\n• Multiple income sources\n• Commission from successful traders\n• Exclusive VIP features\n• 24/7 personalized support\n• Premium webinar access",
+    es: "TIER 3 - Comisión Premium\n\nCOMISIONES:\n• Directa: {{directCommission}} por compra\n• Sub-nivel: {{subCommission}} de referidos Tier 1\n• Pagos: {{paymentsCommission}} de traders fondeados\n\nREQUISITOS:\n• {{requirement}}\n\nBENEFICIOS:\n• Máxima comisión disponible\n• Ingresos de múltiples fuentes\n• Comisión por traders exitosos\n• Funciones VIP exclusivas\n• Soporte personalizado 24/7\n• Acceso a webinars premium",
+    en: "TIER 3 - Premium Commission\n\nCOMMISSIONS:\n• Direct: {{directCommission}} per purchase\n• Sub-tier: {{subCommission}} from Tier 1 referrals\n• Payouts: {{paymentsCommission}} from funded traders\n\nREQUIREMENTS:\n• {{requirement}}\n\nBENEFITS:\n• Maximum available commission\n• Multiple income sources\n• Commission from successful traders\n• Exclusive VIP features\n• 24/7 personalized support\n• Premium webinar access",
   },
   afiliadosDashboard_selectTabPrompt: {
     es: "Seleccione una pestaña.",
@@ -2341,5 +2341,9 @@ export const translations = {
   date_de: {
     es: "de",
     en: "",
+    },
+  tooltip_affiliate_tier3: {
+    es: "TIER 3 - Comisión Premium\n\nCOMISIONES:\n• Directa: {{directCommission}} por compra\n• Sub-nivel: {{subCommission}} de referidos Tier 1\n• Pagos: {{paymentsCommission}} de traders fondeados\n\nREQUISITOS:\n• {{requirement}}\n\nBENEFICIOS:\n• Máxima comisión disponible\n• Ingresos de múltiples fuentes\n• Comisión por traders exitosos\n• Funciones VIP exclusivas\n• Soporte personalizado 24/7\n• Acceso a webinars premium",
+    en: "TIER 3 - Premium Commission\n\nCOMMISSIONS:\n• Direct: {{directCommission}} per purchase\n• Sub-tier: {{subCommission}} from Tier 1 referrals\n• Payouts: {{paymentsCommission}} from funded traders\n\nREQUIREMENTS:\n• {{requirement}}\n\nBENEFITS:\n• Maximum available commission\n• Multiple income sources\n• Commission from successful traders\n• Exclusive VIP features\n• 24/7 personalized support\n• Premium webinar access",
   },
 }; 

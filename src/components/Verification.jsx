@@ -56,7 +56,7 @@ export default function Verification() {
           </div>
           
           <h2 className="text-2xl font-bold text-white mb-4">
-            ✅ ¡Contraseña Restablecida!
+            ¡Contraseña Restablecida!
           </h2>
           
           <p className="text-gray-300 mb-6 text-sm">
@@ -83,7 +83,7 @@ export default function Verification() {
       
       <div className="text-center mb-8">
         <h2 className="text-2xl font-bold text-white mb-2">
-          🔐 Restablecer Contraseña
+          Restablecer Contraseña
         </h2>
         
         <p className="text-gray-300 text-sm">
@@ -149,7 +149,7 @@ export default function Verification() {
                 Restableciendo...
               </>
             ) : (
-              '🔐 Restablecer contraseña'
+              'Restablecer contraseña'
             )}
           </span>
         </button>

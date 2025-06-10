@@ -118,7 +118,7 @@ const FirebasePasswordReset = () => {
               </div>
               
               <h2 className="text-2xl font-bold text-white mb-4">
-                ⚠️ Error
+                Error
               </h2>
               
               <p className="text-gray-300 mb-6 text-sm">
@@ -159,7 +159,7 @@ const FirebasePasswordReset = () => {
               </div>
               
               <h2 className="text-2xl font-bold text-white mb-4">
-                ✅ ¡Contraseña Restablecida!
+                ¡Contraseña Restablecida!
               </h2>
               
               <p className="text-gray-300 mb-6 text-sm">
@@ -191,7 +191,7 @@ const FirebasePasswordReset = () => {
           
           <div className="text-center mb-8">
             <h2 className="text-2xl font-bold text-white mb-2">
-              🔐 Restablecer Contraseña
+              Restablecer Contraseña
             </h2>
             
             <p className="text-gray-300 text-sm mb-2">
@@ -202,7 +202,7 @@ const FirebasePasswordReset = () => {
           {error && (
             <div className="bg-red-500 bg-opacity-20 border border-red-600 text-white px-4 py-3 rounded-lg mb-6 text-sm">
               <div className="flex items-center">
-                <span className="mr-2">⚠️</span>
+                <span className="mr-2"></span>
                 {error}
               </div>
             </div>
@@ -259,7 +259,7 @@ const FirebasePasswordReset = () => {
                     Actualizando...
                   </>
                 ) : (
-                  '🔐 Actualizar contraseña'
+                  'Actualizar contraseña'
                 )}
               </span>
             </button>

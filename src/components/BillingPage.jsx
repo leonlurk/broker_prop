@@ -1,5 +1,5 @@
-import React, { useMemo, useState, useEffect } from 'react';
-import { ChevronRight, MessageCircle, X, Minimize2 } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { ChevronRight } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { getTranslator } from '../utils/i18n';
 import BillingDetailModal from './BillingDetailModal';
@@ -10,43 +10,6 @@ const BillingPage = ({ onBack }) => {
 
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedBillingItem, setSelectedBillingItem] = useState(null);
-  
-  // Estados del chatbot
-  const [isChatbotExpanded, setIsChatbotExpanded] = useState(false);
-  const [isChatbotLoaded, setIsChatbotLoaded] = useState(false);
-
-  // Efecto para cargar el chatbot después del componente
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsChatbotLoaded(true);
-    }, 500);
-    
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Función para toggle del chatbot
-  const toggleChatbot = () => {
-    setIsChatbotExpanded(!isChatbotExpanded);
-  };
-
-  // Función para cerrar el chatbot
-  const closeChatbot = () => {
-    setIsChatbotExpanded(false);
-  };
-
-  // Manejar tecla ESC para cerrar chatbot
-  useEffect(() => {
-    const handleEscKey = (event) => {
-      if (event.key === 'Escape' && isChatbotExpanded) {
-        closeChatbot();
-      }
-    };
-
-    document.addEventListener('keydown', handleEscKey);
-    return () => {
-      document.removeEventListener('keydown', handleEscKey);
-    };
-  }, [isChatbotExpanded]);
 
   const handleOpenDetailModal = (item) => {
     setSelectedBillingItem(item);
@@ -264,48 +227,7 @@ const BillingPage = ({ onBack }) => {
         </div>
       </div>
       
-      {/* Chatbot Widget Optimizado */}
-      {isChatbotLoaded && (
-        <div className={`fixed transition-all duration-300 ease-in-out z-50 ${
-          isChatbotExpanded 
-            ? 'bottom-6 right-6 w-[28rem] h-[50rem]' 
-            : 'bottom-6 right-6 w-12 h-12'
-        }`}>
-          {!isChatbotExpanded ? (
-            // Botón minimizado
-            <button
-              onClick={toggleChatbot}
-              className="w-full h-full bg-gradient-to-br from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center group"
-              title="Abrir chat de soporte"
-            >
-              <MessageCircle 
-                size={20} 
-                className="text-white group-hover:scale-110 transition-transform duration-200" 
-              />
-              <div className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center animate-pulse">
-                <span className="text-white text-2xs font-bold">!</span>
-              </div>
-            </button>
-          ) : (
-            // Widget expandido - solo iframe
-            <div className="w-full h-full bg-transparent overflow-hidden rounded-2xl">
-              <iframe
-                src="https://effervescent-platypus-ef7554.netlify.app"
-                title="Soporte de Pagos - Flofy"
-                allow="microphone"
-                className="w-full border-none rounded-2xl"
-                style={{
-                  height: '100%',
-                  backgroundColor: 'transparent',
-                  overflow: 'hidden',
-                  border: 'none',
-                  outline: 'none'
-                }}
-              />
-            </div>
-          )}
-        </div>
-      )}
+
       
       <BillingDetailModal 
         isOpen={isDetailModalOpen} 

@@ -87,7 +87,7 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
             
             <div className="bg-blue-500 bg-opacity-20 border border-blue-400 rounded-lg p-3 mb-4">
               <div className="flex items-start">
-                <span className="text-blue-400 mr-2">💡</span>
+                <span className="text-blue-400 mr-2"></span>
                 <div className="text-sm text-left">
                   <p className="text-blue-200 font-medium mb-1">{t('changePasswordModal_success_stepsTitle')}</p>
                   <p className="text-blue-100 text-xs mb-1">1. {t('changePasswordModal_success_step1')}</p>
