@@ -1181,14 +1181,8 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
           <div className="p-3 sm:p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl">
             <div className="flex flex-wrap justify-between items-center mb-2 sm:mb-4 gap-1">
               <h3 className="text-sm sm:text-base md:text-lg font-medium">{t('tradingDashboard_minTradingDaysTitle')}</h3>
-              <span className={`px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-2xs xs:text-xs whitespace-nowrap ${
-                safeAccount.tradingDays.current >= safeAccount.tradingDays.min
-                  ? 'bg-green-800 bg-opacity-30 text-green-400'
-                  : 'bg-yellow-800 bg-opacity-30 text-yellow-400'
-              }`}>
-                {safeAccount.tradingDays.current >= safeAccount.tradingDays.min
-                  ? t('tradingDashboard_status_surpassed')
-                  : t('tradingDashboard_status_inProgress')}
+              <span className="px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-2xs xs:text-xs whitespace-nowrap bg-yellow-800 bg-opacity-30 text-yellow-400">
+                {t('tradingDashboard_status_inProgress')}
               </span>
             </div>
             <div className="flex justify-between items-center mb-1 sm:mb-2 text-xs sm:text-sm">
@@ -1208,14 +1202,8 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
           <div className="p-3 sm:p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl">
             <div className="flex flex-wrap justify-between items-center mb-2 sm:mb-4 gap-1">
               <h3 className="text-sm sm:text-base md:text-lg font-medium">{t('tradingDashboard_profitTargetTitle')}</h3>
-              <span className={`px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-2xs xs:text-xs whitespace-nowrap ${
-                safeAccount.currentProfit >= safeAccount.minProfitTarget
-                  ? 'bg-green-800 bg-opacity-30 text-green-400'
-                  : 'bg-yellow-800 bg-opacity-30 text-yellow-400'
-              }`}>
-                {safeAccount.currentProfit >= safeAccount.minProfitTarget
-                  ? t('tradingDashboard_status_surpassed')
-                  : t('tradingDashboard_status_inProgress')}
+              <span className="px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-2xs xs:text-xs whitespace-nowrap bg-yellow-800 bg-opacity-30 text-yellow-400">
+                {t('tradingDashboard_status_inProgress')}
               </span>
             </div>
             <div className="flex justify-between items-center mb-1 sm:mb-2 text-xs sm:text-sm">
