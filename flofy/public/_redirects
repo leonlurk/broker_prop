@@ -1,0 +1,14 @@
+# CRM redirects
+/crm              /crm.html           200
+/crm/*            /crm.html           200
+/admin            /crm.html           200
+/admin/*          /crm.html           200
+/dashboard        /crm.html           200
+/dashboard/*      /crm.html           200
+
+# Knowledge base redirects
+/knowledge        /knowledge.html     200
+/knowledge/*      /knowledge.html     200
+
+# Main chatbot redirects (should be last)
+/*                /index.html         200 

@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Flofy CRM - Mensajes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+        background: #232323;
+      }
+      .poppins {
+        font-family: "Poppins", sans-serif;
+      }
+    </style>
+  </head>
+  <body class="bg-[#232323] h-screen overflow-hidden">
+    <!-- Main Container -->
+    <div class="flex h-screen">
+      <!-- Sidebar Navigation -->
+      <div
+        class="w-60 lg:w-64 xl:w-60 h-full flex flex-col items-center p-3 lg:p-5 gap-3 lg:gap-5 bg-[#1a1a1a] border-r border-neutral-700"
+      >
+        <!-- Logo -->
+        <div class="w-12 h-11 lg:w-[69px] lg:h-[61px] flex-shrink-0">
+          <svg
+            class="w-full h-full"
+            viewBox="0 0 18 16"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              fill-rule="evenodd"
+              clip-rule="evenodd"
+              d="M0.000166207 15.9932L8.66401 15.9988L8.6818 13.4706L4.33383 13.4442C4.42708 12.9574 6.31552 8.38081 6.50732 8.1375L7.6229 10.0498C8.0198 10.7545 8.33625 11.3841 8.72086 12.0426C9.11144 12.7113 9.45399 13.3826 9.81649 14.0294C10.186 14.6885 10.5388 15.4328 10.9233 15.9959L13.9949 16C13.9015 15.7263 6.76843 3.36348 6.3441 2.81165C6.12986 3.00478 5.64454 4.14245 5.51772 4.41267L1.56533 12.6566C1.29874 13.2204 0.0759564 15.6253 0 15.9934L0.000166207 15.9932Z"
+              fill="white"
+            />
+            <path
+              fill-rule="evenodd"
+              clip-rule="evenodd"
+              d="M12.2236 12.2915L13.2021 13.9992L15.8383 10.7757C16.0354 10.5485 15.7411 10.7468 16.0587 10.5797C16.2521 11.0495 16.0996 15.0607 16.12 15.9652L17.9967 15.9574L17.9996 5.07278C17.739 5.23373 14.142 9.80834 13.6291 10.4463C13.2862 10.8726 12.4068 11.8816 12.2236 12.2917V12.2915Z"
+              fill="white"
+            />
+            <path
+              fill-rule="evenodd"
+              clip-rule="evenodd"
+              d="M10.786 5.11125L10.8158 6.80818L13.7646 6.78722C13.5956 7.27418 12.8787 7.83311 12.306 8.08204C11.3924 8.4792 10.8196 8.34202 9.84863 8.13156C10.0384 8.69561 10.6955 9.63651 10.9865 10.1953C13.862 10.2281 16.1796 7.93463 16.1394 5.05414L10.7859 5.11142L10.786 5.11125Z"
+              fill="white"
+            />
+            <path
+              fill-rule="evenodd"
+              clip-rule="evenodd"
+              d="M7.72632 4.62512C7.81125 4.5274 7.77369 4.58715 7.84499 4.44503C8.12521 3.88676 8.33912 2.49735 10.1134 1.99455C11.8118 1.51336 12.9768 2.34186 13.6918 3.20617L15.7471 3.2202C15.6002 2.3067 14.3945 1.14542 13.7259 0.744298C11.5506 -0.560754 8.70428 -0.104993 7.17169 1.76196C6.69733 2.33987 6.47478 2.41663 6.90326 3.14344C7.15972 3.57824 7.57374 4.17117 7.72632 4.62512Z"
+              fill="white"
+            />
+          </svg>
+        </div>
+
+        <!-- Divider Line -->
+        <div class="w-full h-0 border-t border-neutral-600"></div>
+
+        <!-- Sections -->
+        <div
+          class="flex flex-col justify-between items-start w-full h-full flex-1"
+        >
+          <!-- Navigation Items -->
+          <div class="flex flex-col items-start gap-2.5 w-full">
+            <!-- Mensajes (Active) -->
+            <div
+              class="relative flex flex-row items-center px-3 lg:px-4 py-3 lg:py-5 gap-2.5 w-full h-10 rounded-[15px] cursor-pointer"
+            >
+              <div
+                class="absolute inset-0 bg-gradient-to-r from-[rgba(34,34,34,0.5)] to-[rgba(0,255,255,0.5)] border border-[#3C3C3C] rounded-[10px]"
+              ></div>
+              <div class="w-5 h-5 lg:w-6 lg:h-6 z-10">
+                <svg
+                  class="w-full h-full text-white"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                  />
+                </svg>
+              </div>
+              <span
+                class="poppins text-white text-sm lg:text-base font-normal tracking-[0.1px] z-10"
+                >Mensajes</span
+              >
+            </div>
+
+            <!-- Conocimientos -->
+            <div
+              class="flex flex-row items-center px-3 lg:px-4 py-3 lg:py-5 gap-2.5 w-full h-10 rounded-[15px] cursor-pointer hover:bg-neutral-700"
+              onclick="window.location.href='knowledge.html'"
+            >
+              <div class="w-5 h-5 lg:w-6 lg:h-6">
+                <svg
+                  class="w-full h-full text-white"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <rect x="3" y="3" width="8" height="8" rx="1" />
+                  <rect x="13" y="3" width="8" height="8" rx="1" />
+                  <rect x="3" y="13" width="8" height="8" rx="1" />
+                  <rect x="13" y="13" width="8" height="8" rx="1" />
+                </svg>
+              </div>
+              <span
+                class="poppins text-white text-sm lg:text-base font-normal tracking-[0.1px]"
+                >Conocimientos</span
+              >
+            </div>
+          </div>
+
+          <!-- Bottom Section -->
+          <div class="flex flex-col items-start gap-2.5 w-full">
+            <!-- Divider -->
+            <div class="w-full h-0 border-t border-neutral-600"></div>
+
+            <!-- Cerrar Sesión -->
+            <div
+              class="flex flex-row items-center px-3 lg:px-5 py-3 lg:py-5 gap-2.5 w-full h-10 rounded-[15px] cursor-pointer hover:bg-neutral-700"
+            >
+              <div class="w-5 h-5 lg:w-6 lg:h-6">
+                <svg
+                  class="w-full h-full text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                  />
+                </svg>
+              </div>
+              <span
+                class="poppins text-white text-sm lg:text-base font-normal tracking-[0.1px]"
+                >Cerrar sesión</span
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Content Area -->
+      <div
+        class="flex-1 flex flex-col p-3 lg:p-6 gap-4 bg-gradient-to-br from-[rgba(34,34,34,0.5)] to-[rgba(53,53,53,0.5)] border border-[#3C3C3C] rounded-[20px] lg:rounded-[40px] m-2 lg:m-6"
+      >
+        <!-- Header -->
+        <h1
+          class="text-white text-xl lg:text-2xl font-semibold tracking-[0.1px]"
+        >
+          Mensajes
+        </h1>
+
+        <!-- Content Container -->
+        <div
+          class="flex flex-col lg:flex-row gap-4 lg:gap-2.5 h-full overflow-hidden"
+        >
+          <!-- Messages List Panel -->
+          <div
+            class="w-full lg:w-80 xl:w-[314px] h-64 lg:h-full bg-gradient-to-br from-[rgba(10,10,10,0.5)] to-[rgba(53,53,53,0.5)] border border-[#3C3C3C] rounded-2xl overflow-hidden flex flex-col"
+          >
+            <!-- Messages Header -->
+            <div
+              class="flex flex-row items-center px-4 lg:px-6 py-3 lg:py-4 gap-2.5 w-full border-b border-[#3D3D3D] flex-shrink-0"
+            >
+              <span
+                class="text-white text-sm lg:text-base font-semibold tracking-[0.1px]"
+                >Bandeja de mensajes</span
+              >
+            </div>
+
+            <!-- Messages List -->
+            <div
+              id="conversations-list"
+              class="flex flex-col items-start gap-2 lg:gap-4 p-2 w-full flex-1 overflow-y-auto"
+            >
+              <!-- Conversation items will be populated here -->
+            </div>
+          </div>
+
+          <!-- Chat Panel -->
+          <div
+            class="flex-1 bg-gradient-to-br from-[rgba(34,34,34,0.5)] to-[rgba(53,53,53,0.5)] border border-[#3C3C3C] rounded-2xl overflow-hidden flex flex-col relative"
+          >
+            <!-- Chat Header -->
+            <div
+              class="flex flex-row justify-between items-center px-4 lg:px-6 py-3 lg:py-4 gap-2.5 w-full border-b border-[#3D3D3D] flex-shrink-0"
+            >
+              <span
+                id="chat-title"
+                class="text-white text-sm lg:text-base font-semibold tracking-[0.1px]"
+                >Selecciona una conversación</span
+              >
+              <div class="flex flex-row items-center gap-2 lg:gap-4">
+                <!-- Control Button -->
+                <button
+                  id="control-btn"
+                  class="hidden px-3 lg:px-4 py-1.5 lg:py-2 bg-cyan-500 hover:bg-cyan-600 text-white text-xs lg:text-sm font-medium rounded-lg transition-colors"
+                >
+                  <span id="control-text">Tomar Control</span>
+                </button>
+                <!-- Action Icons -->
+                <div class="flex flex-row items-center gap-2 lg:gap-4">
+                  <svg
+                    class="w-5 h-5 lg:w-6 lg:h-6 text-white cursor-pointer"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                    />
+                  </svg>
+                  <svg
+                    class="w-5 h-5 lg:w-6 lg:h-6 text-white cursor-pointer"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                    />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <!-- Messages Container -->
+            <div
+              id="messages-container"
+              class="flex flex-col p-3 lg:p-6 flex-1 overflow-y-auto pb-16 lg:pb-20"
+            >
+              <!-- Welcome message when no conversation selected -->
+              <div
+                id="no-conversation"
+                class="flex items-center justify-center h-full"
+              >
+                <p class="text-neutral-400 text-base lg:text-lg">
+                  Selecciona una conversación para comenzar
+                </p>
+              </div>
+            </div>
+
+            <!-- Input Area (hidden by default) -->
+            <div
+              id="input-area"
+              class="hidden absolute bottom-3 lg:bottom-6 left-3 lg:left-6 right-3 lg:right-6 h-10 lg:h-12 px-3 lg:px-5 py-2 border border-white rounded-xl lg:rounded-2xl flex justify-between items-center bg-[rgba(35,35,35,0.8)] backdrop-blur-sm"
+            >
+              <input
+                id="crm-message-input"
+                type="text"
+                placeholder="Responder"
+                class="flex-1 bg-transparent text-white placeholder-neutral-500 text-sm lg:text-base outline-none"
+              />
+              <button
+                id="crm-send-button"
+                class="w-5 h-5 lg:w-6 lg:h-6 cursor-pointer text-white hover:text-gray-300 flex-shrink-0"
+              >
+                <svg
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  class="w-full h-full"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="config.js"></script>
+    <script type="module" src="firebase-config.js"></script>
+    <script type="module" src="storage-adapter.js"></script>
+    <script type="module" src="migration-helper.js"></script>
+    <script type="module" src="crm.js"></script>
+  </body>
+</html>

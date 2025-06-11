@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Flofy CRM - Conocimientos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+        background: #232323;
+      }
+      .poppins {
+        font-family: "Poppins", sans-serif;
+      }
+      .toggle-switch.active {
+        background-color: #479CDD;
+      }
+      .toggle-switch.inactive {
+        background-color: #666666;
+      }
+      .toggle-circle.active {
+        transform: translateX(25px);
+      }
+      .toggle-circle.inactive {
+        transform: translateX(1px);
+      }
+    </style>
+  </head>
+  <body class="bg-[#232323] h-screen overflow-hidden">
+    <!-- Main Container -->
+    <div class="flex h-screen">
+      <!-- Sidebar Navigation -->
+      <div
+        class="w-60 lg:w-64 xl:w-60 h-full flex flex-col items-center p-3 lg:p-5 gap-3 lg:gap-5 bg-[#1a1a1a] border-r border-neutral-700"
+      >
+        <!-- Logo Section -->
+        <div class="flex flex-col items-center gap-2 lg:gap-4 w-full">
+          <!-- Logo -->
+          <div class="w-12 h-12 lg:w-16 lg:h-16 p-2 lg:p-3 bg-white rounded-xl lg:rounded-2xl flex items-center justify-center">
+            <svg class="w-full h-full" viewBox="0 0 18 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M0.000166207 15.9932L8.66401 15.9988L8.6818 13.4706L4.33383 13.4442C4.42708 12.9574 6.31552 8.38081 6.50732 8.1375L7.6229 10.0498C8.0198 10.7545 8.33625 11.3841 8.72086 12.0426C9.11144 12.7113 9.45399 13.3826 9.81649 14.0294C10.186 14.6885 10.5388 15.4328 10.9233 15.9959L13.9949 16C13.9015 15.7263 6.76843 3.36348 6.3441 2.81165C6.12986 3.00478 5.64454 4.14245 5.51772 4.41267L1.56533 12.6566C1.29874 13.2204 0.0759564 15.6253 0 15.9934L0.000166207 15.9932Z" fill="black"/>
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M12.2236 12.2915L13.2021 13.9992L15.8383 10.7757C16.0354 10.5485 15.7411 10.7468 16.0587 10.5797C16.2521 11.0495 16.0996 15.0607 16.12 15.9652L17.9967 15.9574L17.9996 5.07278C17.739 5.23373 14.142 9.80834 13.6291 10.4463C13.2862 10.8726 12.4068 11.8816 12.2236 12.2917V12.2915Z" fill="black"/>
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M10.786 5.11125L10.8158 6.80818L13.7646 6.78722C13.5956 7.27418 12.8787 7.83311 12.306 8.08204C11.3924 8.4792 10.8196 8.34202 9.84863 8.13156C10.0384 8.69561 10.6955 9.63651 10.9865 10.1953C13.862 10.2281 16.1796 7.93463 16.1394 5.05414L10.7859 5.11142L10.786 5.11125Z" fill="black"/>
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M7.72632 4.62512C7.81125 4.5274 7.77369 4.58715 7.84499 4.44503C8.12521 3.88676 8.33912 2.49735 10.1134 1.99455C11.8118 1.51336 12.9768 2.34186 13.6918 3.20617L15.7471 3.2202C15.6002 2.3067 14.3945 1.14542 13.7259 0.744298C11.5506 -0.560754 8.70428 -0.104993 7.17169 1.76196C6.69733 2.33987 6.47478 2.41663 6.90326 3.14344C7.15972 3.57824 7.57374 4.17117 7.72632 4.62512Z" fill="black"/>
+            </svg>
+          </div>
+
+          <!-- Title -->
+          <h1 class="poppins text-white text-lg lg:text-xl font-semibold text-center tracking-[0.1px]">
+            Flofy CRM
+          </h1>
+        </div>
+
+        <!-- Navigation Menu -->
+        <div class="w-full flex flex-col gap-4 lg:gap-6">
+          <div class="flex flex-col items-start gap-2.5 w-full">
+            <!-- Mensajes -->
+            <div
+              class="flex flex-row items-center px-3 lg:px-4 py-3 lg:py-5 gap-2.5 w-full h-10 rounded-[15px] cursor-pointer hover:bg-neutral-700"
+              onclick="window.location.href='crm.html'"
+            >
+              <div class="w-5 h-5 lg:w-6 lg:h-6">
+                <svg
+                  class="w-full h-full text-white"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                  />
+                </svg>
+              </div>
+              <span
+                class="poppins text-white text-sm lg:text-base font-normal tracking-[0.1px]"
+                >Mensajes</span
+              >
+            </div>
+
+            <!-- Conocimientos (Active) -->
+            <div
+              class="relative flex flex-row items-center px-3 lg:px-4 py-3 lg:py-5 gap-2.5 w-full h-10 rounded-[15px] cursor-pointer"
+            >
+              <div
+                class="absolute inset-0 bg-gradient-to-r from-[rgba(34,34,34,0.5)] to-[rgba(0,255,255,0.5)] border border-[#3C3C3C] rounded-[10px]"
+              ></div>
+              <div class="w-5 h-5 lg:w-6 lg:h-6 z-10">
+                <svg
+                  class="w-full h-full text-white"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <rect x="3" y="3" width="8" height="8" rx="1" />
+                  <rect x="13" y="3" width="8" height="8" rx="1" />
+                  <rect x="3" y="13" width="8" height="8" rx="1" />
+                  <rect x="13" y="13" width="8" height="8" rx="1" />
+                </svg>
+              </div>
+              <span
+                class="poppins text-white text-sm lg:text-base font-normal tracking-[0.1px] z-10"
+                >Conocimientos</span
+              >
+            </div>
+          </div>
+
+          <!-- Bottom Section -->
+          <div class="flex flex-col items-start gap-2.5 w-full">
+            <!-- Divider -->
+            <div class="w-full h-0 border-t border-neutral-600"></div>
+
+            <!-- Cerrar Sesión -->
+            <div
+              class="flex flex-row items-center px-3 lg:px-5 py-3 lg:py-5 gap-2.5 w-full h-10 rounded-[15px] cursor-pointer hover:bg-neutral-700"
+            >
+              <div class="w-5 h-5 lg:w-6 lg:h-6">
+                <svg
+                  class="w-full h-full text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                  />
+                </svg>
+              </div>
+              <span
+                class="poppins text-white text-sm lg:text-base font-normal tracking-[0.1px]"
+                >Cerrar sesión</span
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Content Area -->
+      <div
+        class="flex-1 flex flex-col p-3 lg:p-6 gap-4 bg-gradient-to-br from-[rgba(34,34,34,0.5)] to-[rgba(53,53,53,0.5)] border border-[#3C3C3C] rounded-[20px] lg:rounded-[40px] m-2 lg:m-6 overflow-hidden"
+      >
+        <!-- Header -->
+        <h1
+          class="text-white text-xl lg:text-2xl font-semibold tracking-[0.1px]"
+        >
+          Conocimientos
+        </h1>
+
+        <!-- Main content with scrollable area -->
+        <div class="flex-1 overflow-y-auto space-y-6">
+          <!-- Prompt Base Section -->
+          <div
+            class="flex flex-col p-4 lg:p-6 gap-6 w-full bg-gradient-to-br from-[rgba(34,34,34,0.5)] to-[rgba(53,53,53,0.5)] border border-[#3C3C3C] rounded-2xl"
+          >
+            <!-- Header -->
+            <div class="flex flex-row items-center justify-between">
+              <div class="flex flex-row items-center gap-4">
+                <!-- Icon -->
+                <div
+                  class="w-8 h-8 bg-[#4F4F4F] rounded-full flex items-center justify-center flex-shrink-0"
+                >
+                  <svg
+                    class="w-6 h-6 text-white"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 7.5V9M15 9.5V12.5L21 13V11L21 9H15ZM7 18C7 16.9 7.9 16 9 16S11 16.9 11 18 10.1 20 9 20 7 19.1 7 18ZM6 6.5C6.6 6.5 7 6.9 7 7.5S6.6 8.5 6 8.5 5 8.1 5 7.5 5.4 6.5 6 6.5Z"/>
+                  </svg>
+                </div>
+
+                <!-- Text Content -->
+                <div class="flex flex-col gap-2">
+                  <h3 class="text-white text-lg font-semibold tracking-[0.1px]">
+                    Prompt Base del Chatbot
+                  </h3>
+                  <p class="text-white text-base tracking-[0.1px]">
+                    Personaliza el comportamiento y personalidad del chatbot
+                  </p>
+                </div>
+              </div>
+
+              <!-- Actions -->
+              <div class="flex flex-row items-center gap-2">
+                <button
+                  id="reset-prompt-btn"
+                  class="px-3 py-1.5 bg-gray-600 hover:bg-gray-700 text-white text-sm rounded-lg transition-colors"
+                >
+                  Restablecer
+                </button>
+                <button
+                  id="save-prompt-btn"
+                  class="px-4 py-2 bg-gradient-to-r from-[#222222] to-[#1CC4F9] border border-[#3C3C3C] rounded-lg text-white text-base tracking-[0.1px] hover:opacity-80 transition-opacity"
+                >
+                  Guardar Prompt
+                </button>
+              </div>
+            </div>
+
+            <!-- Prompt Editor -->
+            <div class="space-y-4">
+              <div>
+                <label class="block text-white text-sm font-medium mb-2">
+                  Prompt Base (Personalidad del Bot)
+                </label>
+                <textarea
+                  id="base-prompt"
+                  rows="4"
+                  class="w-full p-3 bg-[#1a1a1a] border border-[#3C3C3C] rounded-lg text-white placeholder-gray-400 resize-none focus:outline-none focus:border-cyan-500"
+                  placeholder="Eres un asistente virtual útil y amigable llamado Flofy..."
+                ></textarea>
+              </div>
+              
+              <div>
+                <label class="block text-white text-sm font-medium mb-2">
+                  Información de la Empresa
+                </label>
+                <textarea
+                  id="company-info"
+                  rows="6"
+                  class="w-full p-3 bg-[#1a1a1a] border border-[#3C3C3C] rounded-lg text-white placeholder-gray-400 resize-none focus:outline-none focus:border-cyan-500"
+                  placeholder="Información sobre Alpha Global Market, servicios, procesos, etc..."
+                ></textarea>
+              </div>
+            </div>
+
+            <!-- Status -->
+            <div class="flex items-center gap-2 text-sm">
+              <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+              <span class="text-gray-300">Prompt sincronizado con el chatbot</span>
+            </div>
+          </div>
+
+          <!-- Knowledge Sources Section -->
+          <div
+            class="flex flex-col p-4 lg:p-6 gap-6 w-full bg-gradient-to-br from-[rgba(34,34,34,0.5)] to-[rgba(53,53,53,0.5)] border border-[#3C3C3C] rounded-2xl"
+          >
+            <!-- Header -->
+            <div class="flex flex-row items-center gap-4">
+              <!-- Icon -->
+              <div
+                class="w-8 h-8 bg-[#4F4F4F] rounded-full flex items-center justify-center flex-shrink-0"
+              >
+                <svg
+                  class="w-6 h-6 text-white"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <circle cx="12" cy="6" r="2"></circle>
+                  <circle cx="12" cy="12" r="2"></circle>
+                  <circle cx="12" cy="18" r="2"></circle>
+                </svg>
+              </div>
+
+              <!-- Text Content -->
+              <div class="flex flex-col gap-2">
+                <h3 class="text-white text-lg font-semibold tracking-[0.1px]">
+                  Fuentes de Conocimiento
+                </h3>
+                <p class="text-white text-base tracking-[0.1px]">
+                  Agrega información específica para mejorar las respuestas del chatbot
+                </p>
+              </div>
+            </div>
+
+            <!-- Knowledge Sources List -->
+            <div class="flex flex-col gap-4 w-full">
+              <!-- Fragmentos de Texto -->
+              <div
+                class="flex flex-col sm:flex-row justify-between items-start sm:items-center py-4 gap-4 border-b border-[#3C3C3C]"
+              >
+                <div class="flex flex-row items-center gap-2.5 flex-1">
+                  <!-- Icon -->
+                  <div
+                    class="w-8 h-8 bg-[#4F4F4F] rounded-full flex items-center justify-center flex-shrink-0"
+                  >
+                    <svg
+                      class="w-6 h-6 text-white"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+                      ></path>
+                      <polyline points="14,2 14,8 20,8"></polyline>
+                    </svg>
+                  </div>
+                  <div class="flex flex-col">
+                    <span class="text-white text-base tracking-[0.1px]">Fragmentos de Texto</span>
+                    <span class="text-gray-400 text-sm">Información específica en formato texto</span>
+                  </div>
+                </div>
+
+                <div class="flex flex-row items-center gap-4">
+                  <span id="fragments-count" class="text-[#979797] text-base tracking-[0.1px]">
+                    0 fragmentos
+                  </span>
+                  <button
+                    id="add-fragment-btn"
+                    class="flex items-center justify-center px-4 py-2 bg-gradient-to-r from-[#222222] to-[#1CC4F9] border border-[#3C3C3C] rounded-lg text-white text-base tracking-[0.1px] hover:opacity-80 transition-opacity"
+                  >
+                    Agregar Fragmento
+                  </button>
+                </div>
+              </div>
+
+              <!-- Documentos PDF -->
+              <div
+                class="flex flex-col sm:flex-row justify-between items-start sm:items-center py-4 gap-4 border-b border-[#3C3C3C]"
+              >
+                <div class="flex flex-row items-center gap-2.5 flex-1">
+                  <!-- Icon -->
+                  <div
+                    class="w-8 h-8 bg-[#4F4F4F] rounded-full flex items-center justify-center flex-shrink-0"
+                  >
+                    <svg
+                      class="w-6 h-6 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="1.5"
+                        d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
+                      ></path>
+                    </svg>
+                  </div>
+                  <div class="flex flex-col">
+                    <span class="text-white text-base tracking-[0.1px]">Documentos PDF</span>
+                    <span class="text-gray-400 text-sm">Sube PDFs para extraer información</span>
+                  </div>
+                </div>
+
+                <div class="flex flex-row items-center gap-4">
+                  <span id="documents-count" class="text-[#979797] text-base tracking-[0.1px]">
+                    0 documentos
+                  </span>
+                  <button
+                    id="upload-document-btn"
+                    class="flex items-center justify-center px-4 py-2 bg-gradient-to-r from-[#222222] to-[#1CC4F9] border border-[#3C3C3C] rounded-lg text-white text-base tracking-[0.1px] hover:opacity-80 transition-opacity"
+                  >
+                    Subir PDF
+                  </button>
+                  <input type="file" id="pdf-upload" accept=".pdf" style="display: none;" />
+                </div>
+              </div>
+
+              <!-- Respuestas Personalizadas -->
+              <div
+                class="flex flex-col sm:flex-row justify-between items-start sm:items-center py-4 gap-4"
+              >
+                <div class="flex flex-row items-center gap-2.5 flex-1">
+                  <!-- Icon -->
+                  <div
+                    class="w-8 h-8 bg-[#4F4F4F] rounded-full flex items-center justify-center flex-shrink-0"
+                  >
+                    <svg
+                      class="w-6 h-6 text-white"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                      />
+                    </svg>
+                  </div>
+                  <div class="flex flex-col">
+                    <span class="text-white text-base tracking-[0.1px]">Respuestas Q&A</span>
+                    <span class="text-gray-400 text-sm">Preguntas frecuentes con respuestas específicas</span>
+                  </div>
+                </div>
+
+                <div class="flex flex-row items-center gap-4">
+                  <span id="qna-count" class="text-[#979797] text-base tracking-[0.1px]">
+                    0 respuestas
+                  </span>
+                  <button
+                    id="add-qna-btn"
+                    class="flex items-center justify-center px-4 py-2 bg-gradient-to-r from-[#222222] to-[#1CC4F9] border border-[#3C3C3C] rounded-lg text-white text-base tracking-[0.1px] hover:opacity-80 transition-opacity"
+                  >
+                    Añadir Q&A
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Knowledge Items Display -->
+          <div
+            id="knowledge-items"
+            class="flex flex-col gap-4 w-full"
+          >
+            <!-- Dynamic content will be loaded here -->
+          </div>
+
+          <!-- AI Settings -->
+          <div
+            class="flex flex-col p-4 lg:p-6 gap-6 w-full bg-gradient-to-br from-[rgba(34,34,34,0.5)] to-[rgba(53,53,53,0.5)] border border-[#3C3C3C] rounded-2xl"
+          >
+            <h4
+              class="text-white text-lg font-semibold tracking-[0.1px]"
+            >
+              Configuración IA
+            </h4>
+            <p class="text-white text-base tracking-[0.1px]">
+              Cuando esté habilitado, Flofy utilizará este contenido para generar respuestas de IA.
+            </p>
+
+            <!-- IA Toggle -->
+            <div class="flex justify-between items-center">
+              <div class="flex flex-col">
+                <span class="text-white text-base tracking-[0.1px]">Usar Conocimientos</span>
+                <span class="text-gray-400 text-sm">Activar para que el bot use la información personalizada</span>
+              </div>
+              <div
+                id="ai-toggle"
+                class="toggle-switch active w-13 h-7 bg-[#479CDD] rounded-full relative cursor-pointer transition-colors"
+              >
+                <div
+                  class="toggle-circle active w-6 h-6 bg-white rounded-full absolute top-0.5 transition-transform"
+                ></div>
+              </div>
+            </div>
+
+            <!-- Response Length -->
+            <div class="flex justify-between items-center">
+              <div class="flex flex-col">
+                <span class="text-white text-base tracking-[0.1px]">Límite de Respuesta</span>
+                <span class="text-gray-400 text-sm">Caracteres máximos por respuesta</span>
+              </div>
+              <select 
+                id="response-limit"
+                class="bg-[#1a1a1a] border border-[#3C3C3C] rounded-lg text-white px-3 py-2 focus:outline-none focus:border-cyan-500"
+              >
+                <option value="200">200 caracteres</option>
+                <option value="400">400 caracteres</option>
+                <option value="600">600 caracteres</option>
+                <option value="800">800 caracteres</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fragment Modal -->
+    <div
+      id="fragment-modal"
+      class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+    >
+      <div class="bg-[#232323] border border-[#3C3C3C] rounded-2xl p-6 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-white text-xl font-semibold">Agregar Fragmento</h3>
+          <button id="close-fragment-modal" class="text-white hover:text-gray-300">
+            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+          </button>
+        </div>
+        
+        <div class="space-y-4">
+          <div>
+            <label class="block text-white text-sm font-medium mb-2">Título del Fragmento</label>
+            <input
+              type="text"
+              id="fragment-title"
+              class="w-full p-3 bg-[#1a1a1a] border border-[#3C3C3C] rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-cyan-500"
+              placeholder="Ej: Información sobre proceso de evaluación"
+            />
+          </div>
+          
+          <div>
+            <label class="block text-white text-sm font-medium mb-2">Contenido</label>
+            <textarea
+              id="fragment-content"
+              rows="8"
+              class="w-full p-3 bg-[#1a1a1a] border border-[#3C3C3C] rounded-lg text-white placeholder-gray-400 resize-none focus:outline-none focus:border-cyan-500"
+              placeholder="Ingresa la información detallada que quieres que el bot conozca..."
+            ></textarea>
+          </div>
+        </div>
+        
+        <div class="flex justify-end gap-3 mt-6">
+          <button
+            id="cancel-fragment"
+            class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
+          >
+            Cancelar
+          </button>
+          <button
+            id="save-fragment"
+            class="px-4 py-2 bg-gradient-to-r from-[#222222] to-[#1CC4F9] text-white rounded-lg hover:opacity-80 transition-opacity"
+          >
+            Guardar Fragmento
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q&A Modal -->
+    <div
+      id="qna-modal"
+      class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+    >
+      <div class="bg-[#232323] border border-[#3C3C3C] rounded-2xl p-6 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-white text-xl font-semibold">Agregar Pregunta y Respuesta</h3>
+          <button id="close-qna-modal" class="text-white hover:text-gray-300">
+            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+          </button>
+        </div>
+        
+        <div class="space-y-4">
+          <div>
+            <label class="block text-white text-sm font-medium mb-2">Pregunta</label>
+            <input
+              type="text"
+              id="qna-question"
+              class="w-full p-3 bg-[#1a1a1a] border border-[#3C3C3C] rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-cyan-500"
+              placeholder="¿Cuáles son los requisitos para...?"
+            />
+          </div>
+          
+          <div>
+            <label class="block text-white text-sm font-medium mb-2">Respuesta</label>
+            <textarea
+              id="qna-answer"
+              rows="6"
+              class="w-full p-3 bg-[#1a1a1a] border border-[#3C3C3C] rounded-lg text-white placeholder-gray-400 resize-none focus:outline-none focus:border-cyan-500"
+              placeholder="La respuesta específica que debe dar el bot..."
+            ></textarea>
+          </div>
+        </div>
+        
+        <div class="flex justify-end gap-3 mt-6">
+          <button
+            id="cancel-qna"
+            class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
+          >
+            Cancelar
+          </button>
+          <button
+            id="save-qna"
+            class="px-4 py-2 bg-gradient-to-r from-[#222222] to-[#1CC4F9] text-white rounded-lg hover:opacity-80 transition-opacity"
+          >
+            Guardar Q&A
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="config.js"></script>
+    <script type="module" src="knowledge-manager.js"></script>
+  </body>
+</html>

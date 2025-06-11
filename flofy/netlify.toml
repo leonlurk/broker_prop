@@ -1,0 +1,63 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "18"
+
+# CRM redirects
+[[redirects]]
+  from = "/crm"
+  to = "/crm.html"
+  status = 200
+
+[[redirects]]
+  from = "/crm/*"
+  to = "/crm.html"
+  status = 200
+
+[[redirects]]
+  from = "/admin"
+  to = "/crm.html"
+  status = 200
+
+[[redirects]]
+  from = "/admin/*"
+  to = "/crm.html"
+  status = 200
+
+[[redirects]]
+  from = "/dashboard"
+  to = "/crm.html"
+  status = 200
+
+[[redirects]]
+  from = "/dashboard/*"
+  to = "/crm.html"
+  status = 200
+
+# Knowledge base redirects
+[[redirects]]
+  from = "/knowledge"
+  to = "/knowledge.html"
+  status = 200
+
+[[redirects]]
+  from = "/knowledge/*"
+  to = "/knowledge.html"  
+  status = 200
+
+# Main chatbot redirects (should be last)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[headers]
+  for = "/*"
+    [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Content-Security-Policy = "default-src 'self' https: 'unsafe-inline' 'unsafe-eval'; img-src 'self' https: data:;" 

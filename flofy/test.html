@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Flofy Test - Chatbot & CRM</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto">
+      <h1 class="text-3xl font-bold text-center mb-8 text-gray-800">
+        Flofy System Test
+      </h1>
+
+      <div class="grid md:grid-cols-2 gap-8">
+        <!-- Chatbot Test Card -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+          <h2 class="text-xl font-semibold mb-4 text-gray-700">
+            📱 Chatbot Widget
+          </h2>
+          <p class="text-gray-600 mb-4">
+            Prueba el widget del chatbot. Los mensajes se sincronizan
+            automáticamente con el CRM.
+          </p>
+          <div class="space-y-3">
+            <div class="text-sm text-gray-500">
+              <strong>Funcionalidades:</strong>
+            </div>
+            <ul class="text-sm text-gray-600 space-y-1">
+              <li>✅ Respuestas automáticas con Gemini AI</li>
+              <li>✅ Límite de 200 caracteres por respuesta</li>
+              <li>✅ Historial y resumen de conversación</li>
+              <li>✅ Sincronización con CRM</li>
+            </ul>
+            <a
+              href="index.html"
+              class="inline-block bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors"
+            >
+              Abrir Chatbot
+            </a>
+          </div>
+        </div>
+
+        <!-- CRM Test Card -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+          <h2 class="text-xl font-semibold mb-4 text-gray-700">
+            💼 CRM Dashboard
+          </h2>
+          <p class="text-gray-600 mb-4">
+            Gestiona las conversaciones del chatbot, toma control manual o deja
+            que la IA responda.
+          </p>
+          <div class="space-y-3">
+            <div class="text-sm text-gray-500">
+              <strong>Funcionalidades:</strong>
+            </div>
+            <ul class="text-sm text-gray-600 space-y-1">
+              <li>✅ Vista de todas las conversaciones</li>
+              <li>✅ Control manual vs automático</li>
+              <li>✅ Respuestas como "asesor" o "flofy"</li>
+              <li>✅ Sincronización en tiempo real</li>
+            </ul>
+            <a
+              href="crm.html"
+              class="inline-block bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors"
+            >
+              Abrir CRM
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Instructions -->
+      <div class="mt-8 bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+        <h3 class="text-lg font-semibold text-yellow-800 mb-3">
+          🧪 Instrucciones de Prueba
+        </h3>
+        <div class="space-y-4 text-sm text-yellow-700">
+          <div>
+            <strong>1. Probar Chatbot básico:</strong>
+            <ul class="mt-1 ml-4 space-y-1">
+              <li>• Abre el chatbot y envía algunos mensajes</li>
+              <li>• Verifica que la IA responde automáticamente</li>
+              <li>• Las respuestas deben ser de máximo 200 caracteres</li>
+            </ul>
+          </div>
+
+          <div>
+            <strong>2. Probar CRM:</strong>
+            <ul class="mt-1 ml-4 space-y-1">
+              <li>• Abre el CRM en otra pestaña</li>
+              <li>• Deberías ver las conversaciones del chatbot</li>
+              <li>• Selecciona una conversación</li>
+            </ul>
+          </div>
+
+          <div>
+            <strong>3. Probar Control Manual:</strong>
+            <ul class="mt-1 ml-4 space-y-1">
+              <li>• En el CRM, haz clic en "Tomar Control"</li>
+              <li>• Envía un mensaje (aparecerá como "asesor")</li>
+              <li>
+                • Haz clic en "Entregar a IA" para volver al modo automático
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <strong>4. Verificar Sincronización:</strong>
+            <ul class="mt-1 ml-4 space-y-1">
+              <li>• Los mensajes del CRM deben aparecer en el chatbot</li>
+              <li>• Los mensajes del chatbot deben aparecer en el CRM</li>
+              <li>• Refresca las páginas para verificar persistencia</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- System Status -->
+      <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <h4 class="font-semibold text-blue-800 mb-2">📊 Estado del Sistema</h4>
+        <div class="grid grid-cols-2 gap-4 text-sm">
+          <div>
+            <span class="text-blue-600">Configuración:</span>
+            <div id="config-status" class="text-gray-600">Verificando...</div>
+          </div>
+          <div>
+            <span class="text-blue-600">LocalStorage:</span>
+            <div id="storage-status" class="text-gray-600">Verificando...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Check system status
+      document.addEventListener("DOMContentLoaded", function () {
+        // Check config
+        const configStatus = document.getElementById("config-status");
+        const storageStatus = document.getElementById("storage-status");
+
+        try {
+          if (typeof CONFIG !== "undefined" && CONFIG.GEMINI_API_KEY) {
+            configStatus.innerHTML = "✅ CONFIG cargado correctamente";
+            configStatus.className = "text-green-600";
+          } else {
+            configStatus.innerHTML = "❌ CONFIG no encontrado";
+            configStatus.className = "text-red-600";
+          }
+        } catch (e) {
+          configStatus.innerHTML = "❌ Error cargando CONFIG";
+          configStatus.className = "text-red-600";
+        }
+
+        // Check localStorage
+        try {
+          localStorage.setItem("test", "test");
+          localStorage.removeItem("test");
+          storageStatus.innerHTML = "✅ LocalStorage funcionando";
+          storageStatus.className = "text-green-600";
+
+          // Check existing data
+          const conversations = localStorage.getItem("flofy_conversations");
+          const crmConversations = localStorage.getItem("crm_conversations");
+
+          if (conversations || crmConversations) {
+            storageStatus.innerHTML += "<br>📁 Datos existentes encontrados";
+          }
+        } catch (e) {
+          storageStatus.innerHTML = "❌ LocalStorage no disponible";
+          storageStatus.className = "text-red-600";
+        }
+      });
+    </script>
+
+    <script src="config.js"></script>
+  </body>
+</html>
