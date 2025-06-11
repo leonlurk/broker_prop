@@ -12,6 +12,7 @@ import Dashboard from './Dashboard';
 import PaymentPage from './components/PaymentPage';
 import PaymentStatusPage from './components/PaymentStatusPage';
 import PaymentMonitor from './components/PaymentMonitor';
+import FlofyChatbot from './components/FlofyChatbot';
 import { useAuth } from './contexts/AuthContext';
 import { logoutUser } from './firebase/auth';
 import Verification from './components/Verification';
@@ -61,6 +62,7 @@ function App() {
     <div className="dark">
       {/* <ActionRedirector /> */}
       {isAuthenticated && <PaymentMonitor />}
+      <FlofyChatbot />
       
       <Routes>
         <Route 
