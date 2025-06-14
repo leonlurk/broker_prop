@@ -248,6 +248,54 @@ const createTradingAlertTemplate = (alertType, message, username = 'Usuario') =>
   return getEmailBase().replace('{{CONTENT}}', content);
 };
 
+// 6. CREDENCIALES MT5
+const createMT5CredentialsTemplate = (username = 'Usuario') => {
+  const content = `
+    <h1 style="color: #333; font-size: 28px; margin-bottom: 10px;">🔐 Credenciales de acceso a MetaTrader 5</h1>
+    <p style="color: #666; font-size: 16px; margin-bottom: 30px;">Información importante sobre tu cuenta</p>
+    
+    <div style="color: #333; font-size: 18px; margin-bottom: 25px;">
+        Estimado <strong>${username}</strong>:
+    </div>
+    
+    <div style="background-color: #e8f4fd; border-left: 4px solid #007bff; padding: 20px; margin: 25px 0; border-radius: 4px;">
+        <p style="color: #333; font-size: 16px; margin: 0 0 15px 0; line-height: 1.6;">
+            Una vez completada la compra de su cuenta, recibirá las credenciales de acceso en un <strong>plazo máximo de 12 horas</strong>.
+        </p>
+        <p style="color: #333; font-size: 16px; margin: 0; line-height: 1.6;">
+            Dichas credenciales estarán disponibles tanto en la sección de <strong>"Cuentas"</strong> dentro del área de cliente, como también se le enviarán directamente por correo electrónico.
+        </p>
+    </div>
+    
+    <p style="color: #555; font-size: 16px; margin: 25px 0; line-height: 1.6;">
+        Agradecemos su paciencia y le deseamos un excelente trading junto a Alpha Global Market.
+    </p>
+    
+    <div style="background-color: #f8f9fa; border-radius: 8px; padding: 20px; margin: 25px 0; text-align: center;">
+        <h3 style="margin-top: 0; color: #333; font-size: 18px;">¿Necesitas ayuda?</h3>
+        <p style="color: #666; font-size: 14px; margin: 10px 0;">Para cualquier duda o consulta, puedes contactarnos:</p>
+        
+        <div style="margin: 15px 0;">
+            <a href="https://wa.me/971585260429" style="display: inline-block; background-color: #25D366; color: white; padding: 12px 24px; text-decoration: none; border-radius: 25px; font-weight: bold; margin: 5px;">
+                📱 WhatsApp
+            </a>
+        </div>
+        
+        <p style="color: #666; font-size: 14px; margin: 10px 0;">
+            O escribiendo a: <a href="mailto:support@alphaglobalmarket.io" style="color: #007bff;">support@alphaglobalmarket.io</a>
+        </p>
+    </div>
+    
+    <div style="text-align: center; margin-top: 30px;">
+        <p style="color: #666; font-size: 14px; margin: 0;">
+            Atentamente,<br>
+            <strong>Equipo de Alpha Global Market</strong>
+        </p>
+    </div>
+  `;
+  return getEmailBase().replace('{{CONTENT}}', content);
+};
+
 // ============================
 // CONFIGURACIÓN DE PLANTILLAS
 // ============================
@@ -272,6 +320,10 @@ const EMAIL_TEMPLATES = {
   'trading_alert': {
     subject: '🚨 Alerta de Trading - Alpha Global Market',
     template: createTradingAlertTemplate
+  },
+  'mt5_credentials': {
+    subject: 'Credenciales de acceso a MetaTrader 5',
+    template: createMT5CredentialsTemplate
   }
 };
 
@@ -339,6 +391,9 @@ exports.handler = async (event, context) => {
         break;
       case 'trading_alert':
         htmlContent = emailConfig.template(templateData.alertType, templateData.message, username);
+        break;
+      case 'mt5_credentials':
+        htmlContent = emailConfig.template(username);
         break;
       default:
         return { statusCode: 400, headers, body: JSON.stringify({ success: false, error: 'Tipo de plantilla no implementado' }) };

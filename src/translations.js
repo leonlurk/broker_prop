@@ -1714,6 +1714,16 @@ export const translations = {
     en: "Payment error: {{error}}",
   },
 
+  // Traducciones para métodos de pago
+  paymentMethod_crypto: {
+    es: "Criptomoneda (USDT)",
+    en: "Cryptocurrency (USDT)",
+  },
+  paymentMethod_creditCard: {
+    es: "Tarjeta de Crédito",
+    en: "Credit Card",
+  },
+
   // Traducciones para la página de estado de pago
   paymentStatus_completed: {
     es: "¡Pago completado con éxito!",

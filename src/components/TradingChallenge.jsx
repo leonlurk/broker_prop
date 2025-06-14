@@ -92,12 +92,12 @@ export default function TradingChallengeUI() {
   ];
   
   const baseChallengePrices = {
-    '$5.000': 65,
-    '$10.000': 115,
-    '$25.000': 245,
-    '$50.000': 345,
-    '$100.000': 545,
-    '$200.000': 1045,
+    '$5.000': 75,
+    '$10.000': 130,
+    '$25.000': 250,
+    '$50.000': 350,
+    '$100.000': 580,
+    '$200.000': 1050,
   };
 
   // useEffect para calcular el precio y desglose
@@ -112,28 +112,46 @@ export default function TradingChallengeUI() {
 
   useEffect(() => {
     const basePrice = baseChallengePrices[challengeAmount] || 0;
-    const matrix = addOnPriceMatrix[challengeAmount] || {};
-
-    const p1PriceAdjustment = matrix.profitTargetF1?.[selectedProfitTargetP1] || 0;
-    const p2PriceAdjustment = matrix.profitTargetF2?.[selectedProfitTargetP2] || 0;
-    const splitAdjustment = matrix.profitSplit?.[selectedProfitSplit] || 0;
-    
-    let subtotal = basePrice + p1PriceAdjustment + p2PriceAdjustment + splitAdjustment;
+    // Sin complementos, el precio es simplemente el precio base
+    let subtotal = basePrice;
     let discountValue = 0;
-    if (appliedCoupon === 'AGM20') {
-      discountValue = subtotal * 0.2;
-    }
+    
+    // Aquí se pueden agregar otros cupones en el futuro, pero no AGM20
+    // if (appliedCoupon === 'OTRO_CUPON') {
+    //   discountValue = subtotal * 0.1; // ejemplo
+    // }
+    
     const totalPrice = subtotal - discountValue;
     setPrice(`$${totalPrice.toFixed(2).replace('.', ',')}`);
     setPriceBreakdown({
       base: basePrice,
-      profitTargetF1: p1PriceAdjustment,
-      profitTargetF2: p2PriceAdjustment,
-      profitSplit: splitAdjustment,
+      profitTargetF1: 0,
+      profitTargetF2: 0,
+      profitSplit: 0,
       discount: discountValue,
       total: totalPrice
     });
-  }, [challengeAmount, selectedProfitTargetP1, selectedProfitTargetP2, selectedProfitSplit, appliedCoupon]);
+  }, [challengeAmount, appliedCoupon]);
+
+  // Enlaces de Stripe organizados por tamaño de cuenta y descuento
+  const stripeLinks = {
+    normal: {
+      '$5.000': 'https://buy.stripe.com/dRmcN56YE0lR1Nz08f9sk0E',
+      '$10.000': 'https://buy.stripe.com/8x24gzbeU8Sncsdg7d9sk0F',
+      '$25.000': 'https://buy.stripe.com/fZuaEXer67Ojbo9g7d9sk0G',
+      '$50.000': 'https://buy.stripe.com/bJefZh4Qw7OjgIt3kr9sk0H',
+      '$100.000': 'https://buy.stripe.com/4gMdR93Ms6Kf1Nz1cj9sk0I',
+      '$200.000': 'https://buy.stripe.com/14A8wP0Agd8D9g12gn9sk0J'
+    },
+    discount: {
+      '$5.000': 'https://buy.stripe.com/bJefZh3Ms4C7gIt1cj9sk0y',
+      '$10.000': 'https://buy.stripe.com/eVq4gz1Ek0lR8bX5sz9sk0z',
+      '$25.000': 'https://buy.stripe.com/9B65kD6YE6Kf3VHg7d9sk0A',
+      '$50.000': 'https://buy.stripe.com/fZudR93Msc4zcsd7AH9sk0B',
+      '$100.000': 'https://buy.stripe.com/3cI5kD82I5Gb4ZL3kr9sk0C',
+      '$200.000': 'https://buy.stripe.com/8x28wP1Ek5Gbak5aMT9sk0D'
+    }
+  };
 
   const parseCurrencyToNumber = (currencyString) => {
     // Primero quitamos el símbolo de moneda y cualquier espacio
@@ -155,6 +173,95 @@ export default function TradingChallengeUI() {
     
     console.log(`Parsed currency: ${currencyString} -> ${numericValue}`);
     return numericValue;
+  };
+
+  // Función para obtener el enlace de Stripe correcto
+  const getStripeLink = (challengeAmount, hasDiscount) => {
+    const linkCategory = hasDiscount ? 'discount' : 'normal';
+    return stripeLinks[linkCategory][challengeAmount];
+  };
+
+  // Función para enviar email de confirmación
+  const sendConfirmationEmail = async (userEmail, userName) => {
+    try {
+      console.log('📧 Enviando email de confirmación a:', userEmail);
+      
+      const emailData = {
+        email: userEmail,
+        type: 'mt5_credentials',
+        username: userName || 'Usuario'
+      };
+
+      // Verificar si estamos en desarrollo
+      const isDevelopment = import.meta.env.DEV || window.location.hostname === 'localhost';
+      
+      if (isDevelopment) {
+        // En desarrollo, simular el envío exitoso y mostrar el contenido del email
+        console.log('🔧 MODO DESARROLLO - Simulando envío de email');
+        console.log('📧 Destinatario:', userEmail);
+        console.log('👤 Usuario:', userName);
+        console.log('📝 Contenido del email:');
+        console.log(`
+=== EMAIL DE CONFIRMACIÓN ===
+Para: ${userEmail}
+Asunto: Credenciales de acceso a MetaTrader 5
+
+Estimado ${userName}:
+
+Una vez completada la compra de su cuenta, recibirá las credenciales de acceso en un plazo máximo de 12 horas.
+
+Dichas credenciales estarán disponibles tanto en la sección de "Cuentas" dentro del área de cliente, como también se le enviarán directamente por correo electrónico.
+
+Agradecemos su paciencia y le deseamos un excelente trading junto a Alpha Global Market.
+
+Para cualquier duda o consulta, puede ponerse en contacto con nosotros a través de WhatsApp en el siguiente enlace:
+👉 https://wa.me/971585260429
+o escribiendo a: support@alphaglobalmarket.io
+
+Atentamente,
+Equipo de Alpha Global Market
+=============================
+        `);
+        
+        // Simular delay de red
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        console.log('✅ Email simulado enviado exitosamente en desarrollo');
+        return true;
+      }
+
+      // En producción, usar el endpoint real
+      try {
+        const apiUrl = `${window.location.origin}/.netlify/functions/send-email`;
+        
+        console.log('🔗 URL del API:', apiUrl);
+        
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(emailData)
+        });
+
+        console.log('📡 Respuesta del servidor:', response.status, response.statusText);
+
+        if (response.ok) {
+          const result = await response.json();
+          console.log('✅ Email de confirmación enviado exitosamente:', result);
+          return true;
+        } else {
+          const errorText = await response.text();
+          console.error('❌ Error enviando email de confirmación:', response.status, errorText);
+          return false;
+        }
+      } catch (fetchError) {
+        console.error('❌ Error de red al enviar email:', fetchError);
+        return false;
+      }
+    } catch (error) {
+      console.error('❌ Error enviando email de confirmación:', error);
+      return false;
+    }
   };
 
   const handlePurchaseChallenge = async () => {
@@ -250,8 +357,96 @@ export default function TradingChallengeUI() {
           setProcessingStep('');
           return; // Detener el proceso si hay error en el pago
         }
+      } else if (selectedPaymentMethod === 'creditCard') {
+        try {
+          // NUEVO FLUJO PARA TARJETA DE CRÉDITO CON STRIPE
+          console.log('💳 Procesando pago con tarjeta de crédito via Stripe');
+          console.log('👤 Usuario actual:', currentUser);
+          console.log('📧 Email del usuario:', currentUser?.email);
+          console.log('🏷️ Nombre del usuario:', currentUser?.displayName);
+          
+          // Verificar si hay descuento aplicado (sin AGM20)
+          const hasDiscount = priceBreakdown.discount > 0;
+          
+          // Obtener el enlace de Stripe correcto
+          const stripeLink = getStripeLink(challengeAmount, hasDiscount);
+          console.log('💵 Tamaño de cuenta:', challengeAmount);
+          console.log('🔗 Enlace de Stripe seleccionado:', stripeLink);
+          
+          if (!stripeLink) {
+            throw new Error('No se encontró enlace de pago para esta configuración');
+          }
+          
+          console.log('📧 Iniciando envío de email de confirmación...');
+          
+          // Enviar email de confirmación ANTES de redirigir
+          const emailSent = await sendConfirmationEmail(
+            currentUser.email,
+            currentUser.displayName || 'Usuario'
+          );
+          
+          console.log('📬 Resultado del envío de email:', emailSent);
+          
+          // CREAR DOCUMENTO EN FIREBASE PARA TARJETA DE CRÉDITO
+          console.log('💾 Creando documento de compra con tarjeta de crédito...');
+          const creditCardPurchaseData = {
+            userId: currentUser.uid,
+            email: currentUser.email,
+            userName: currentUser.displayName || 'Usuario',
+            challengeAmount: challengeAmount,
+            challengeAmountNumber: parseCurrencyToNumber(challengeAmount),
+            challengeType: challengeType,
+            challengeTypeValue: challengeTypeValue,
+            priceTotal: priceBreakdown.total,
+            priceString: `$${priceBreakdown.total.toFixed(2)}`,
+            hasDiscount: hasDiscount,
+            appliedCoupon: appliedCoupon || null,
+            discountAmount: priceBreakdown.discount,
+            stripeLink: stripeLink,
+            paymentMethod: 'creditCard',
+            status: 'pending_payment',
+            createdAt: serverTimestamp(),
+            purchaseId: Date.now().toString(),
+            // Datos adicionales para seguimiento
+            language: language,
+            userAgent: navigator.userAgent,
+            timestamp: new Date().toISOString()
+          };
+          
+          try {
+            const docRef = await addDoc(collection(db, 'creditCardPurchases'), creditCardPurchaseData);
+            console.log('✅ Documento de compra creado con ID:', docRef.id);
+            console.log('📄 Datos guardados:', creditCardPurchaseData);
+          } catch (error) {
+            console.error('❌ Error creando documento de compra:', error);
+            // Continuar con el flujo aunque falle el guardado
+          }
+          
+          if (emailSent) {
+            console.log('✅ Email de confirmación enviado exitosamente');
+          } else {
+            console.warn('⚠️ No se pudo enviar el email de confirmación, pero continuamos con el pago');
+          }
+          
+          // Pequeña pausa para que se vea el log del email
+          console.log('⏳ Esperando 2 segundos antes de redirigir...');
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          
+          // Redirigir a Stripe
+          console.log('🚀 Redirigiendo a Stripe...');
+          window.location.href = stripeLink;
+          
+          return; // Detener la ejecución aquí
+          
+        } catch (error) {
+          console.error("Error en el procesamiento del pago con tarjeta:", error);
+          alert(`Error al procesar el pago: ${error.message}`);
+          setIsPurchasing(false);
+          setProcessingStep('');
+          return;
+        }
       } else {
-        // Simulación de procesamiento de pago para tarjeta (mantener código existente)
+        // Simulación de procesamiento de pago para otros métodos (mantener código existente)
         await new Promise(resolve => setTimeout(resolve, 1500));
       }
 
@@ -380,15 +575,26 @@ export default function TradingChallengeUI() {
     }
   };
 
-  // Handler para aplicar cupón
+  // Handler para aplicar cupón (sin AGM20)
   const handleApplyCoupon = () => {
-    if (coupon.trim().toUpperCase() === 'AGM20') {
-      setAppliedCoupon('AGM20');
-      setCouponError('');
-    } else {
-      setAppliedCoupon('');
-      setCouponError(t('tradingChallenge_coupon_invalid'));
+    const couponCode = coupon.trim().toUpperCase();
+    
+    // Aquí se pueden agregar otros cupones válidos en el futuro
+    // Por ahora, no hay cupones válidos (AGM20 removido)
+    if (couponCode === '') {
+      setCouponError('Por favor ingresa un código');
+      return;
     }
+    
+    // Ejemplo para futuros cupones:
+    // if (couponCode === 'NUEVO_CUPON') {
+    //   setAppliedCoupon('NUEVO_CUPON');
+    //   setCouponError('');
+    // } else {
+    
+    // Por ahora, todos los cupones son inválidos
+    setAppliedCoupon('');
+    setCouponError('Código de cupón inválido');
   };
 
   return (
@@ -481,7 +687,8 @@ export default function TradingChallengeUI() {
                 </button>
               </div>
               
-              {/* Complementos Section */}
+              {/* Complementos Section - TEMPORALMENTE COMENTADO */}
+              {/* 
               <div className="mb-3">
                 <div className="flex items-center mb-2">
                   <h2 className="text-xl md:text-2xl font-medium flex-1">{t('tradingChallenge_label_complements')}</h2>
@@ -490,7 +697,6 @@ export default function TradingChallengeUI() {
                   {t('tradingChallenge_subtitle_complements', 'Selecciona complementos por tipo de trader')}
                 </p>
 
-                {/* Profit Target Fase 1 options - SIEMPRE HABILITADO */}
                 <div className="mb-6 md:mb-8">
                   <h3 className="text-lg font-medium mb-3">
                     {t('tradingChallenge_label_profitTargetP1', 'Profit Target Fase 1')}
@@ -507,7 +713,6 @@ export default function TradingChallengeUI() {
                     ))}
                   </div>
                 </div>
-                {/* Profit Target Fase 2 options - SIEMPRE HABILITADO */}
                 <div className="mb-6 md:mb-8">
                   <h3 className="text-lg font-medium mb-3">
                     {t('tradingChallenge_label_profitTargetP2', 'Profit Target Fase 2')}
@@ -525,7 +730,6 @@ export default function TradingChallengeUI() {
                   </div>
                 </div>
                 
-                {/* Profit Split options */}
                 <div className="mb-6 md:mb-10">
                   <h3 className="text-lg font-medium mb-3">{t('tradingChallenge_label_profitSplit', 'Profit Split')}</h3>
                   <div className="flex flex-wrap gap-2 md:gap-3">
@@ -541,10 +745,13 @@ export default function TradingChallengeUI() {
                   </div>
                 </div>
               </div>
+              */}
               
               {/* Price, Platform, Currency Section */}
               <div className="space-y-3 text-base md:text-lg">
                 <div className="flex flex-col gap-1">
+                  {/* Desglose detallado - TEMPORALMENTE COMENTADO */}
+                  {/* 
                   <div className="flex justify-between items-center">
                     <span>{t('tradingChallenge_price_base')}</span>
                     <span className="font-medium">${priceBreakdown.base}</span>
@@ -557,20 +764,24 @@ export default function TradingChallengeUI() {
                     <span>{t('tradingChallenge_price_adjust_f2')}</span>
                     <span className="font-medium">{priceBreakdown.profitTargetF2 >= 0 ? '+' : ''}${priceBreakdown.profitTargetF2}</span>
                   </div>
-                <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center">
                     <span>{t('tradingChallenge_price_adjust_split')}</span>
                     <span className="font-medium">{priceBreakdown.profitSplit >= 0 ? '+' : ''}${priceBreakdown.profitSplit}</span>
                   </div>
+                  */}
+                  
+                  {/* Mostrar descuento si aplica (sin AGM20) */}
                   {priceBreakdown.discount > 0 && (
                     <div className="flex justify-between items-center text-green-400">
-                      <span>{t('tradingChallenge_price_discount')}</span>
+                      <span>Descuento aplicado</span>
                       <span className="font-medium">- ${priceBreakdown.discount.toFixed(2)}</span>
                     </div>
                   )}
-                  <div className="border-t border-gray-700 my-2"></div>
-                  <div className="flex justify-between items-center text-lg">
-                    <span>{t('tradingChallenge_price_total')}</span>
-                    <span className="font-bold">${priceBreakdown.total.toFixed(2)}</span>
+                  
+                  {/* Solo mostrar el total */}
+                  <div className="flex justify-between items-center text-xl font-bold">
+                    <span>{t('tradingChallenge_label_price')}</span>
+                    <span>${priceBreakdown.total.toFixed(2)}</span>
                   </div>
                 </div>
                 <div className="flex justify-between items-center border-t border-gray-700 pt-3 mt-3">
@@ -605,7 +816,7 @@ export default function TradingChallengeUI() {
                 </button>
               </div>
               {couponError && <div className="text-red-500 text-xs mt-2">{couponError}</div>}
-              {appliedCoupon === 'AGM20' && <div className="text-green-500 text-xs mt-2">{t('tradingChallenge_coupon_applied')}</div>}
+              {appliedCoupon && <div className="text-green-500 text-xs mt-2">Cupón aplicado: {appliedCoupon}</div>}
             </div>
             
             <div className="mb-4 sm:mb-6 md:mb-10">
@@ -617,6 +828,7 @@ export default function TradingChallengeUI() {
                   onChange={(e) => setSelectedPaymentMethod(e.target.value)}
                 >
                   <option value="crypto">{t('paymentMethod_crypto')}</option>
+                  <option value="creditCard">{t('paymentMethod_creditCard')}</option>
                 </select>
                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
                   <ChevronDown size={16} />
@@ -632,19 +844,33 @@ export default function TradingChallengeUI() {
               {isPurchasing ? t('tradingChallenge_button_processing') : t('tradingChallenge_button_proceedToPayment')}
             </button>
             
-            {/* WhatsApp Info Box for Card Payments */}
-            <div className="bg-gradient-to-br from-[#232323] to-[#2b2b2b] border border-[#333] rounded-2xl p-3 sm:p-4 mb-3 flex flex-col items-center text-center w-full overflow-hidden">
-              <p className="text-white text-xs sm:text-sm mb-2 sm:mb-3 px-1" dangerouslySetInnerHTML={{__html: t('tradingChallenge_whatsapp_text')}}>
-              </p>
-              <a
-                href="https://wa.me/+971585437140"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block bg-gradient-to-r from-cyan-600 to-cyan-800 hover:from-cyan-700 hover:to-cyan-900 text-white font-semibold px-3 sm:px-6 py-2 rounded-full shadow transition-all text-xs sm:text-sm whitespace-nowrap"
-              >
-                {t('tradingChallenge_whatsapp_button')}
-              </a>
-            </div>
+            {/* WhatsApp Info Box - Solo mostrar para criptomonedas */}
+            {selectedPaymentMethod === 'crypto' && (
+              <div className="bg-gradient-to-br from-[#232323] to-[#2b2b2b] border border-[#333] rounded-2xl p-3 sm:p-4 mb-3 flex flex-col items-center text-center w-full overflow-hidden">
+                <p className="text-white text-xs sm:text-sm mb-2 sm:mb-3 px-1" dangerouslySetInnerHTML={{__html: t('tradingChallenge_whatsapp_text')}}>
+                </p>
+                <a
+                  href="https://wa.me/+971585437140"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block bg-gradient-to-r from-cyan-600 to-cyan-800 hover:from-cyan-700 hover:to-cyan-900 text-white font-semibold px-3 sm:px-6 py-2 rounded-full shadow transition-all text-xs sm:text-sm whitespace-nowrap"
+                >
+                  {t('tradingChallenge_whatsapp_button')}
+                </a>
+              </div>
+            )}
+
+            {/* Info Box para Tarjeta de Crédito */}
+            {selectedPaymentMethod === 'creditCard' && (
+              <div className="bg-gradient-to-br from-[#232323] to-[#2b2b2b] border border-[#333] rounded-2xl p-3 sm:p-4 mb-3 flex flex-col items-center text-center w-full overflow-hidden">
+                <p className="text-white text-xs sm:text-sm mb-2 sm:mb-3 px-1">
+                  Al proceder al pago, serás redirigido a <span className="font-semibold text-cyan-400">Stripe</span> para completar tu compra de forma segura.
+                </p>
+                <p className="text-gray-400 text-xs">
+                  Recibirás un email con las instrucciones para acceder a tu cuenta MT5.
+                </p>
+              </div>
+            )}
             
             <p className="text-xs text-gray-500 text-center">
               {t('tradingChallenge_disclaimer_acceptance')}
