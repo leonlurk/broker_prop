@@ -26,7 +26,7 @@ export default function TradingChallengeUI() {
   const [selectedProfitTargetP2, setSelectedProfitTargetP2] = useState('5%');  // Default
   const [selectedProfitSplit, setSelectedProfitSplit] = useState('80%');    // Default
   const [activePhaseForProfitTargetBonus, setActivePhaseForProfitTargetBonus] = useState('P1'); // New state, P1 is active by default
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('crypto'); // New state for payment method, default to crypto
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('creditCard'); // New state for payment method, default to credit/debit card
 
   const [price, setPrice] = useState(''); // Will be calculated by useEffect
   const [isPurchasing, setIsPurchasing] = useState(false);
