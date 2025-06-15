@@ -34,7 +34,13 @@ exports.handler = async (event, context) => {
     
     const targetUrl = `${mt5BaseUrl}${apiPath}${queryString}`;
     
-    console.log('Proxying request to:', targetUrl);
+    console.log('=== MT5 PROXY DEBUG ===');
+    console.log('Original path:', path);
+    console.log('API path:', apiPath);
+    console.log('Target URL:', targetUrl);
+    console.log('Method:', event.httpMethod);
+    console.log('Query params:', queryParams);
+    console.log('Body:', event.body);
     
     // Configurar opciones de fetch
     const fetchOptions = {
@@ -45,13 +51,23 @@ exports.handler = async (event, context) => {
       }
     };
     
+    // Copiar headers de autorización si existen
+    if (event.headers.authorization) {
+      fetchOptions.headers.Authorization = event.headers.authorization;
+    }
+    
     // Agregar body si es POST/PUT
     if (event.body && ['POST', 'PUT', 'PATCH'].includes(event.httpMethod)) {
       fetchOptions.body = event.body;
     }
     
+    console.log('Fetch options:', JSON.stringify(fetchOptions, null, 2));
+    
     // Hacer la petición al servidor MT5
     const response = await fetch(targetUrl, fetchOptions);
+    
+    console.log('Response status:', response.status);
+    console.log('Response headers:', Object.fromEntries(response.headers.entries()));
     
     // Obtener el contenido de la respuesta
     let responseBody;
@@ -63,6 +79,8 @@ exports.handler = async (event, context) => {
       responseBody = await response.text();
     }
     
+    console.log('Response body:', responseBody);
+    
     // Retornar la respuesta con headers CORS
     return {
       statusCode: response.status,
@@ -71,7 +89,12 @@ exports.handler = async (event, context) => {
     };
     
   } catch (error) {
-    console.error('Error in MT5 proxy:', error);
+    console.error('=== MT5 PROXY ERROR ===');
+    console.error('Error type:', error.constructor.name);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+    console.error('Event path:', event.path);
+    console.error('Event method:', event.httpMethod);
     
     return {
       statusCode: 500,
@@ -79,7 +102,10 @@ exports.handler = async (event, context) => {
       body: JSON.stringify({
         error: 'Proxy error',
         message: error.message,
-        details: 'Error connecting to MT5 server'
+        details: 'Error connecting to MT5 server',
+        path: event.path,
+        method: event.httpMethod,
+        timestamp: new Date().toISOString()
       })
     };
   }
