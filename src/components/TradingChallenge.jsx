@@ -773,7 +773,7 @@ Equipo de Alpha Global Market
                   {/* Mostrar descuento si aplica (sin AGM20) */}
                   {priceBreakdown.discount > 0 && (
                     <div className="flex justify-between items-center text-green-400">
-                      <span>Descuento aplicado</span>
+                      <span>{t('tradingChallenge_discount_applied')}</span>
                       <span className="font-medium">- ${priceBreakdown.discount.toFixed(2)}</span>
                     </div>
                   )}
@@ -844,30 +844,15 @@ Equipo de Alpha Global Market
               {isPurchasing ? t('tradingChallenge_button_processing') : t('tradingChallenge_button_proceedToPayment')}
             </button>
             
-            {/* WhatsApp Info Box - Solo mostrar para criptomonedas */}
-            {selectedPaymentMethod === 'crypto' && (
-              <div className="bg-gradient-to-br from-[#232323] to-[#2b2b2b] border border-[#333] rounded-2xl p-3 sm:p-4 mb-3 flex flex-col items-center text-center w-full overflow-hidden">
-                <p className="text-white text-xs sm:text-sm mb-2 sm:mb-3 px-1" dangerouslySetInnerHTML={{__html: t('tradingChallenge_whatsapp_text')}}>
-                </p>
-                <a
-                  href="https://wa.me/+971585437140"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-block bg-gradient-to-r from-cyan-600 to-cyan-800 hover:from-cyan-700 hover:to-cyan-900 text-white font-semibold px-3 sm:px-6 py-2 rounded-full shadow transition-all text-xs sm:text-sm whitespace-nowrap"
-                >
-                  {t('tradingChallenge_whatsapp_button')}
-                </a>
-              </div>
-            )}
+
 
             {/* Info Box para Tarjeta de Crédito */}
             {selectedPaymentMethod === 'creditCard' && (
               <div className="bg-gradient-to-br from-[#232323] to-[#2b2b2b] border border-[#333] rounded-2xl p-3 sm:p-4 mb-3 flex flex-col items-center text-center w-full overflow-hidden">
-                <p className="text-white text-xs sm:text-sm mb-2 sm:mb-3 px-1">
-                  Al proceder al pago, serás redirigido a <span className="font-semibold text-cyan-400">Stripe</span> para completar tu compra de forma segura.
+                <p className="text-white text-xs sm:text-sm mb-2 sm:mb-3 px-1" dangerouslySetInnerHTML={{__html: t('tradingChallenge_creditCard_redirect_text')}}>
                 </p>
                 <p className="text-gray-400 text-xs">
-                  Recibirás un email con las instrucciones para acceder a tu cuenta MT5.
+                  {t('tradingChallenge_creditCard_email_text')}
                 </p>
               </div>
             )}

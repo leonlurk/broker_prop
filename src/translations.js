@@ -1661,14 +1661,7 @@ export const translations = {
     es: "Criptomoneda (USDT)",
     en: "Cryptocurrency (USDT)",
   },
-  tradingChallenge_whatsapp_text: {
-    es: "Para pagos con <span class=\"font-semibold\">tarjeta de crédito o débito</span> comunicarse al siguiente WhatsApp:",
-    en: "For payments with <span class=\"font-semibold\">credit or debit card</span> contact the following WhatsApp:",
-  },
-  tradingChallenge_whatsapp_button: {
-    es: "Comunicarse ahora",
-    en: "Contact now",
-  },
+
   tradingChallenge_price_base: {
     es: "Precio base",
     en: "Base price",
@@ -1720,8 +1713,22 @@ export const translations = {
     en: "Cryptocurrency (USDT)",
   },
   paymentMethod_creditCard: {
-    es: "Tarjeta de Crédito",
-    en: "Credit Card",
+    es: "Tarjeta de Crédito/Débito",
+    en: "Credit/Debit Card",
+  },
+
+  // Traducciones para Info Box de tarjeta de crédito
+  tradingChallenge_creditCard_redirect_text: {
+    es: "Al proceder al pago, serás redirigido a <span class=\"font-semibold text-cyan-400\">Stripe</span> para completar tu compra de forma segura.",
+    en: "When proceeding to payment, you will be redirected to <span class=\"font-semibold text-cyan-400\">Stripe</span> to complete your purchase securely.",
+  },
+  tradingChallenge_creditCard_email_text: {
+    es: "Recibirás un email con las instrucciones para acceder a tu cuenta MT5.",
+    en: "You will receive an email with instructions to access your MT5 account.",
+  },
+  tradingChallenge_discount_applied: {
+    es: "Descuento aplicado",
+    en: "Discount applied",
   },
 
   // Traducciones para la página de estado de pago
