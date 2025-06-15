@@ -61,7 +61,7 @@ VITE_TRON_WALLET_ADDRESS=your-tron-wallet-address
 VITE_BSC_WALLET_ADDRESS=your-bsc-wallet-address
 
 # MT5 API Configuration
-VITE_MT5_API_URL=your-mt5-api-url
+VITE_MT5_API_URL=/.netlify/functions/mt5-proxy/api
 VITE_MT5_API_KEY=your-mt5-api-key
 ```
 

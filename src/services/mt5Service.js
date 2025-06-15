@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { getAuth } from 'firebase/auth';
 
-// URL base de la API de MT5_Manager
-const API_BASE_URL = import.meta.env.VITE_MT5_API_URL || 'http://localhost:5000/api';
+// URL base de la API de MT5_Manager - usando proxy de Netlify para evitar CORS
+const API_BASE_URL = import.meta.env.VITE_MT5_API_URL || '/.netlify/functions/mt5-proxy/api';
 
 // Función auxiliar para obtener el token de autenticación
 const getAuthToken = async () => {
@@ -125,10 +125,54 @@ export const changeAccountGroup = async (login, newGroup) => {
   }
 };
 
+/**
+ * Obtiene el historial de operaciones de una cuenta
+ * @param {number} login - Login de la cuenta
+ * @param {string} fromDate - Fecha de inicio (YYYY-MM-DD)
+ * @param {string} toDate - Fecha de fin (YYYY-MM-DD)
+ * @returns {Promise<Object>} - Historial de operaciones
+ */
+export const getAccountHistory = async (login, fromDate, toDate) => {
+  try {
+    const headers = await getAuthHeaders();
+    const response = await axios.post(
+      `${API_BASE_URL.replace('/api', '')}/accounts/history`, 
+      {
+        login: Number(login),
+        from_date: fromDate,
+        to_date: toDate
+      }, 
+      { headers }
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error al obtener historial de operaciones:', error);
+    throw new Error(error.response?.data?.error || 'Error al obtener historial de operaciones');
+  }
+};
+
+/**
+ * Obtiene las estrategias de una cuenta
+ * @param {string} accountId - ID de la cuenta
+ * @returns {Promise<Object>} - Estrategias de la cuenta
+ */
+export const getAccountStrategies = async (accountId) => {
+  try {
+    const headers = await getAuthHeaders();
+    const response = await axios.get(`${API_BASE_URL}/accounts/${accountId}/strategies`, { headers });
+    return response.data;
+  } catch (error) {
+    console.error('Error al obtener estrategias de cuenta:', error);
+    throw new Error(error.response?.data?.error || 'Error al obtener estrategias de cuenta');
+  }
+};
+
 export default {
   checkApiStatus,
   createTradingAccount,
   depositFunds,
   getAccountInfo,
-  changeAccountGroup
+  changeAccountGroup,
+  getAccountHistory,
+  getAccountStrategies
 }; 
