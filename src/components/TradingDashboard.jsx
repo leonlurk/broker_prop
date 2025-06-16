@@ -53,6 +53,8 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
   const [showInvestorPass, setShowInvestorPass] = useState(false);
   const [accountMt5Info, setAccountMt5Info] = useState(null);
   const [mt5Operations, setMt5Operations] = useState([]);
+  const [calculatedKPIs, setCalculatedKPIs] = useState(null);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
     const today = new Date();
@@ -110,111 +112,46 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
     fetchAccountData();
   }, [accountId, drawdownType]);
 
-  // Generate balance data from real MT5 data
-  const generateBalanceData = (account, type) => {
-    if (!account || !accountMt5Info) {
-      // Create placeholder data if no MT5 data exists
-      const initialBalance = getChallengeAmount(account) || 100000;
-      let data = [];
-
-      if (type === 'total') {
-        // Generate monthly placeholder data
-        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep"];
-        data = monthNames.map((month, index) => ({
-          name: month,
-          value: initialBalance // Flat line at initial balance
-        }));
-      } else {
-        // Generate daily placeholder data for current month
-        const daysInMonth = 30;
-        for (let i = 1; i <= daysInMonth; i++) {
-          data.push({ 
-            name: `Day ${i}`, 
-            value: initialBalance // Flat line at initial balance
-          });
-        }
-      }
-      
-      setBalanceData(data);
+  // Generate balance data from historical Firebase data
+  const generateBalanceData = async (account, type) => {
+    if (!account) {
+      setBalanceData([]);
       return;
     }
 
-    const initialBalance = getChallengeAmount(account);
-    const currentBalance = accountMt5Info.balance;
-    const profit = accountMt5Info.profit;
-    const equity = accountMt5Info.equity;
-    const margin = accountMt5Info.margin;
-    
-    // Initialize with starting point
-    let chartData = [];
-    
-    if (type === 'total') {
-      // Group data by month
-      const monthlyData = {};
+    try {
+      const { getHistoricalData } = await import('../services/mt5Service');
+      const period = type === 'total' ? 'monthly' : 'daily';
+      const days = type === 'total' ? 365 : 30;
       
-      // Add initial balance point for first month
-      const firstDate = new Date();
-      const firstMonthKey = `${firstDate.getFullYear()}-${firstDate.getMonth() + 1}`;
+      const historicalData = await getHistoricalData(account.id, period, days);
       
-      monthlyData[firstMonthKey] = {
-        name: firstDate.toLocaleString('default', { month: 'short' }),
-        value: initialBalance,
-        timestamp: firstDate
-      };
-      
-      // Add current balance point for current month
-      const currentDate = new Date();
-      const currentMonthKey = `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}`;
-      
-      monthlyData[currentMonthKey] = {
-        name: currentDate.toLocaleString('default', { month: 'short' }),
-        value: currentBalance,
-        timestamp: currentDate
-      };
-      
-      // Convert to array and sort by date
-      chartData = Object.values(monthlyData)
-        .sort((a, b) => a.timestamp - b.timestamp)
-        .map(item => ({ name: item.name, value: item.value }));
-    } else { // daily chart
-      // Group data by day
-      const dailyData = {};
-      
-      // Add initial balance point
-      const firstDate = new Date();
-      const firstDayKey = `${firstDate.getFullYear()}-${firstDate.getMonth() + 1}-${firstDate.getDate()}`;
-      
-      dailyData[firstDayKey] = {
-        name: `Day ${firstDate.getDate()}`,
-        value: initialBalance,
-        timestamp: firstDate
-      };
-      
-      // Add current balance point for current day
-      const currentDate = new Date();
-      const currentDayKey = `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${currentDate.getDate()}`;
-      
-      dailyData[currentDayKey] = {
-        name: `Day ${currentDate.getDate()}`,
-        value: currentBalance,
-        timestamp: currentDate
-      };
-      
-      // Convert to array and sort by date
-      chartData = Object.values(dailyData)
-        .sort((a, b) => a.timestamp - b.timestamp)
-        .map(item => ({ name: item.name, value: item.value }));
-    }
-    
-    // Ensure we have at least one data point
-    if (chartData.length === 0) {
-      chartData = [{
-        name: type === 'total' ? 'Start' : 'Day 1',
+      if (historicalData.length > 0) {
+        setBalanceData(historicalData);
+      } else {
+        // Si no hay datos históricos, crear punto inicial
+        const initialBalance = getChallengeAmount(account);
+        const currentBalance = accountMt5Info?.balance || initialBalance;
+        
+        const fallbackData = [{
+          name: type === 'total' ? 'Inicio' : 'Día 1',
         value: initialBalance
       }];
+        
+        // Si tenemos datos actuales, agregar punto actual
+        if (accountMt5Info) {
+          fallbackData.push({
+            name: type === 'total' ? 'Actual' : 'Hoy',
+            value: currentBalance
+          });
+        }
+        
+        setBalanceData(fallbackData);
+      }
+    } catch (error) {
+      console.error('Error generando datos del gráfico:', error);
+      setBalanceData([]);
     }
-    
-    setBalanceData(chartData);
   };
 
   // Helper functions for formatting values
@@ -564,81 +501,70 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
   };
 
   // Calcular métricas reales a partir de datos de MT5
+  // Get the real metrics using calculated KPIs or fallback to basic calculation
   const getRealMetrics = () => {
+    if (calculatedKPIs) {
+      return calculatedKPIs;
+    }
+
+    // Fallback calculation if KPIs haven't been calculated yet
     const initialBalance = getChallengeAmount(account);
     const currentBalance = accountMt5Info?.balance ?? initialBalance;
     const profit = accountMt5Info?.profit ?? 0;
     const profitGrowth = initialBalance ? (currentBalance - initialBalance) / initialBalance * 100 : 0;
     const equity = accountMt5Info?.equity ?? currentBalance;
     const margin = accountMt5Info?.margin ?? 0;
-    const dailyDrawdown = 0; // TODO: Calcular con datos reales
-    const totalDrawdown = 0; // TODO: Calcular con datos reales
-    const avgLossPerOperation = 0; // TODO: Calcular con datos reales
-    const avgProfitPerOperation = 0; // TODO: Calcular con datos reales
-    const avgLotPerOperation = 0; // TODO: Calcular con datos reales
-    const avgTradeDuration = '00:00:00'; // TODO: Calcular con datos reales
-    const riskRewardRatio = 0; // TODO: Calcular con datos reales
-    const winRate = 0; // TODO: Calcular con datos reales
 
     return {
       initialBalance,
       currentBalance,
       profit,
       profitGrowth,
-      dailyDrawdown,
-      totalDrawdown,
-      avgLossPerOperation,
-      avgProfitPerOperation,
-      avgLotPerOperation,
-      avgTradeDuration,
-      riskRewardRatio,
-      winRate
+      dailyDrawdown: 0,
+      totalDrawdown: 0,
+      avgLossPerOperation: 0,
+      avgProfitPerOperation: 0,
+      avgLotPerOperation: 0,
+      avgTradeDuration: '0m',
+      riskRewardRatio: 0,
+      winRate: 0
     };
   };
 
   const realMetrics = getRealMetrics();
 
-  // Función para obtener datos reales de MT5
+  // 📊 Función para obtener datos reales de MT5 usando nueva API
   const fetchMt5AccountInfo = async (login) => {
     try {
-      const token = await currentUser.getIdToken();
-      const response = await fetch(`https://62.171.177.212:5000/api/accounts/${login}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      if (!response.ok) throw new Error('No se pudo obtener info MT5');
-      const data = await response.json();
+      const { getAccountInfo } = await import('../services/mt5Service');
+      const data = await getAccountInfo(login);
       setAccountMt5Info(data);
+      setError(null); // Limpiar error si la operación es exitosa
     } catch (err) {
       console.error('Error obteniendo info MT5:', err);
       setAccountMt5Info(null);
+      
+      // Manejar errores de autenticación específicamente
+      if (err.message.includes('🔐') || err.message.includes('🕐')) {
+        setError(err.message);
+      } else {
+        setError('Error conectando con el servidor MT5. Mostrando datos guardados localmente.');
+      }
     }
   };
 
-  // Función para obtener historial de operaciones reales de MT5
+  // 🗂️ Función para obtener historial de operaciones reales de MT5 usando nueva API
   const fetchMt5Operations = async (login, fromDate, toDate) => {
     try {
-      const token = await currentUser.getIdToken();
-      const response = await fetch('https://62.171.177.212:5000/accounts/history', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          login: Number(login),
-          from_date: fromDate,
-          to_date: toDate
-        })
-      });
-      if (!response.ok) throw new Error('No se pudo obtener historial MT5');
-      const data = await response.json();
-      setMt5Operations(data.operations || []);
+      const { getAccountHistory } = await import('../services/mt5Service');
+      const operations = await getAccountHistory(login, fromDate, toDate);
+      setMt5Operations(operations || []);
+      setOperationsData(operations || []); // ✅ Actualizar también operationsData para la tabla
+      console.log('✅ Operaciones MT5 obtenidas:', operations);
     } catch (err) {
       console.error('Error obteniendo historial MT5:', err);
       setMt5Operations([]);
+      setOperationsData([]);
     }
   };
 
@@ -654,11 +580,55 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
     }
   }, [account]);
   
-  // Actualizar gráfica y otros datos cuando se reciban datos reales de MT5
+  // Función completa de actualización de datos
+  const updateAllData = async () => {
+    if (!account || !account.accountNumber) return;
+
+    setIsUpdating(true);
+    try {
+      // 1. Obtener datos actuales de MT5
+      await fetchMt5AccountInfo(account.accountNumber);
+      
+      // 2. Obtener operaciones recientes
+      const today = new Date();
+      const toDate = today.toISOString().slice(0, 10);
+      const fromDate = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate()).toISOString().slice(0, 10);
+      await fetchMt5Operations(account.accountNumber, fromDate, toDate);
+
+      console.log('✅ Datos actualizados correctamente');
+    } catch (error) {
+      console.error('❌ Error actualizando datos:', error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  // Actualizar gráfica y KPIs cuando se reciban datos reales de MT5
   useEffect(() => {
     if (account && accountMt5Info) {
-      // Actualizar la gráfica con datos reales
+      // Actualizar la gráfica con datos históricos
       generateBalanceData(account, drawdownType);
+      
+      // Calcular KPIs con datos históricos
+      const calculateAndSetKPIs = async () => {
+        try {
+          const { calculateKPIs, saveHistoricalData } = await import('../services/mt5Service');
+          
+          // Guardar datos históricos actuales
+          await saveHistoricalData(account.id, account.accountNumber, accountMt5Info);
+          
+          // Calcular KPIs
+          const initialBalance = getChallengeAmount(account);
+          const kpis = await calculateKPIs(account.id, accountMt5Info, initialBalance);
+          setCalculatedKPIs(kpis);
+          
+          console.log("✅ KPIs calculados:", kpis);
+        } catch (error) {
+          console.error('❌ Error calculando KPIs:', error);
+        }
+      };
+
+      calculateAndSetKPIs();
       console.log("MT5 datos actualizados:", accountMt5Info);
     }
   }, [accountMt5Info, account, drawdownType]);
@@ -738,6 +708,81 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
 
   return (
     <div className="p-2 mobile-p-3 sm:p-4 md:p-6 bg-gradient-to-br from-[#232323] to-[#2d2d2d] text-white min-h-screen flex flex-col">
+      
+      {/* Botón de diagnóstico temporal - solo en desarrollo */}
+      {import.meta.env.DEV && (
+        <div className="mb-4 p-2 bg-blue-900/20 border border-blue-500/30 rounded-lg">
+          <div className="flex gap-2">
+            <button 
+              onClick={async () => {
+                console.log('🔧 Ejecutando diagnóstico completo...');
+                try {
+                  const { runAllTests } = await import('../services/debugAuth');
+                  const results = await runAllTests();
+                  
+                  // Mostrar resultados en un alert también
+                  const resultText = Object.entries(results)
+                    .map(([test, success]) => `${test}: ${success ? '✅' : '❌'}`)
+                    .join('\n');
+                  
+                  alert(`🔧 Resultados del Diagnóstico:\n\n${resultText}\n\nVer consola para detalles completos.`);
+                } catch (error) {
+                  console.error('Error ejecutando diagnóstico:', error);
+                  alert('❌ Error ejecutando diagnóstico. Ver consola para detalles.');
+                }
+              }}
+              className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors"
+            >
+              🔧 Diagnóstico API
+            </button>
+            <button 
+              onClick={() => {
+                console.log('🧹 Limpiando consola...');
+                console.clear();
+                console.log('🚀 Consola limpia. Lista para nuevo diagnóstico.');
+              }}
+              className="px-3 py-1 bg-gray-600 text-white text-sm rounded hover:bg-gray-700 transition-colors"
+            >
+              🧹 Limpiar Consola
+            </button>
+          </div>
+          <p className="text-blue-300 text-xs mt-1">Solo visible en desarrollo - Herramientas de diagnóstico</p>
+        </div>
+      )}
+      
+      {/* Alert para errores de autenticación */}
+      {error && (error.includes('🔐') || error.includes('🕐')) && (
+        <div className="mb-4 p-4 bg-red-900/20 border border-red-500/30 rounded-lg">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-red-200">
+                {error}
+              </p>
+              {error.includes('🕐') && (
+                <p className="text-xs text-red-300 mt-1">
+                  Para resolver este problema, verifica que la hora de tu sistema esté sincronizada correctamente.
+                </p>
+              )}
+            </div>
+            <div className="ml-auto pl-3">
+              <button
+                onClick={() => setError(null)}
+                className="inline-flex text-red-400 hover:text-red-200"
+              >
+                <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* Botón de regreso */}
       <div className="mb-4 md:mb-6">
         <div className="flex items-center mb-2 sm:mb-4">
@@ -1222,53 +1267,28 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
           <h2 className="text-base sm:text-lg md:text-xl font-bold">{t('tradingDashboard_operationsTableTitle')}</h2>
           <div className="flex gap-2">
             <button 
-              onClick={async () => {
-                try {
-                  setIsLoading(true);
-                  setError(null);
-                  // Get the current user's token
-                  const token = await currentUser.getIdToken();
-                  console.log('Token obtenido, intentando actualizar datos...');
-                  
-                  // Call the API endpoint to refresh data with auth token
-                  const response = await fetch(`https://62.171.177.212/api/accounts/${accountId}/strategies`, {
-                    method: 'GET',
-                    headers: {
-                      'Authorization': `Bearer ${token}`,
-                      'Content-Type': 'application/json'
-                    },
-                    credentials: 'include'
-                  });
-                  
-                  if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({}));
-                    throw new Error(errorData.message || `Error ${response.status}: ${response.statusText}`);
-                  }
-                  
-                  const data = await response.json();
-                  console.log('Datos actualizados:', data);
-                  
-                  // Re-fetch account data after refresh
-                  await fetchAccountData();
-                } catch (error) {
-                  console.error("Error refreshing data:", error);
-                  if (error.message.includes('Failed to fetch')) {
-                    setError(t('tradingDashboard_error_connection'));
-                  } else if (error.message.includes('CORS')) {
-                    setError(t('tradingDashboard_error_cors'));
-                  } else {
-                    setError(error.message || t('common_errorLoadingData'));
-                  }
-                } finally {
-                  setIsLoading(false);
-                }
-              }}
-              className="bg-cyan-600 hover:bg-cyan-700 text-white text-xs sm:text-sm py-1.5 px-3 sm:py-2 sm:px-4 rounded-md transition-colors flex items-center"
+              onClick={updateAllData}
+              disabled={isUpdating}
+              className={`${
+                isUpdating 
+                  ? 'bg-gray-500 cursor-not-allowed' 
+                  : 'bg-cyan-600 hover:bg-cyan-700'
+              } text-white text-xs sm:text-sm py-1.5 px-3 sm:py-2 sm:px-4 rounded-md transition-colors flex items-center`}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2">
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                fill="none" 
+                viewBox="0 0 24 24" 
+                strokeWidth={1.5} 
+                stroke="currentColor" 
+                className={`w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 ${isUpdating ? 'animate-spin' : ''}`}
+              >
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
               </svg>
-              {t('tradingDashboard_refreshButton')}
+              {isUpdating 
+                ? t('tradingDashboard_updating', 'Actualizando...') 
+                : t('tradingDashboard_refreshButton', 'Actualizar')
+              }
             </button>
           <button className="bg-cyan-600 hover:bg-cyan-700 text-white text-xs sm:text-sm py-1.5 px-3 sm:py-2 sm:px-4 rounded-md transition-colors flex items-center">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2">

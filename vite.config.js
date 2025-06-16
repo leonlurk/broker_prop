@@ -5,13 +5,22 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
-    proxy: {
-      '/api': {
-        target: 'http://localhost:3001',
-        changeOrigin: true,
-        secure: false
-      }
+    host: true,
+    port: 3000,
+    open: true,
+    cors: {
+      origin: [
+        'http://localhost:3000', 
+        'http://localhost:5173', 
+        'http://whapy.com',
+        'https://whapy.com'
+      ],
+      credentials: true
     }
+    // 🔧 PROXY DESHABILITADO - Usando directamente whapy.com
+    // proxy: {
+    //   // Configuración de proxy comentada temporalmente
+    // }
   },
   optimizeDeps: {
     include: ['tronweb/dist/TronWeb.js'],
@@ -26,6 +35,14 @@ export default defineConfig({
     target: 'es2020',
     commonjsOptions: {
       include: [/tronweb/, /node_modules/]
-    }
+    },
+    outDir: 'dist',
+    sourcemap: true
+  },
+  // 🔧 Definiciones globales para variables de entorno
+  define: {
+    __MT5_API_URL__: JSON.stringify(process.env.VITE_MT5_API_URL),
+    __ENVIRONMENT__: JSON.stringify(process.env.VITE_ENVIRONMENT || 'development'),
+    __API_VERSION__: JSON.stringify(process.env.VITE_API_VERSION || 'v1')
   }
 })

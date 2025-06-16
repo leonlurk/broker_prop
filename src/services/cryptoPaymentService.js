@@ -2,7 +2,7 @@ import axios from 'axios';
 import { getAuth } from 'firebase/auth';
 
 // URL base de la API de pagos con criptomonedas
-const CRYPTO_API_URL = import.meta.env.VITE_CRYPTO_API_URL || 'http://62.171.177.212:3002/api';
+const CRYPTO_API_URL = import.meta.env.VITE_CRYPTO_API_URL || 'https://whapy.com/crypto/api';
 
 // Función auxiliar para obtener el token de autenticación
 const getAuthToken = async () => {
