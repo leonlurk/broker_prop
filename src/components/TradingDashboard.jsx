@@ -176,6 +176,12 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
 
   // Get the challenge amount in the correct format
   const getChallengeAmount = (account) => {
+    console.log('🔍 DEBUG getChallengeAmount - Input account:', {
+      challengeAmountNumber: account?.challengeAmountNumber,
+      balanceActual: account?.balanceActual,
+      challengeType: account?.challengeType,
+      accountType: account?.accountType
+    });
     if (!account) return 0;
     
     let amount = account.challengeAmountNumber;
@@ -511,7 +517,8 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
     const initialBalance = getChallengeAmount(account);
     const currentBalance = accountMt5Info?.balance ?? initialBalance;
     const profit = accountMt5Info?.profit ?? 0;
-    const profitGrowth = initialBalance ? (currentBalance - initialBalance) / initialBalance * 100 : 0;
+    // CORRECCIÓN: Usar el profitPercentage del backend si está disponible
+    const profitGrowth = accountMt5Info?.profitPercentage ?? (currentBalance > 0 ? (profit / currentBalance) * 100 : 0);
     const equity = accountMt5Info?.equity ?? currentBalance;
     const margin = accountMt5Info?.margin ?? 0;
 
@@ -520,8 +527,8 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
       currentBalance,
       profit,
       profitGrowth,
-      dailyDrawdown: 0,
-      totalDrawdown: 0,
+      dailyDrawdown: accountMt5Info?.drawdown ?? 0,
+      totalDrawdown: accountMt5Info?.drawdown ?? 0,
       avgLossPerOperation: 0,
       avgProfitPerOperation: 0,
       avgLotPerOperation: 0,
@@ -619,6 +626,12 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
           
           // Calcular KPIs
           const initialBalance = getChallengeAmount(account);
+          console.log('🔍 DEBUG - Pasando a calculateKPIs:', {
+            accountId: account.id,
+            initialBalance,
+            challengeAmountNumber: account.challengeAmountNumber,
+            accountData: account
+          });
           const kpis = await calculateKPIs(account.id, accountMt5Info, initialBalance);
           setCalculatedKPIs(kpis);
           
@@ -668,7 +681,9 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
     );
   }
 
-  // Create a safe account object with default values, priorizando datos reales de MT5 si existen
+  // Create a safe account object with default values, usando enfoque híbrido:
+  // - Configuración y tipo de cuenta: Firebase
+  // - Datos financieros (balance, profit): MT5
   const safeAccount = {
     id: account.id || '',
     status: account.status || 'Active',
@@ -677,25 +692,37 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
     server: account.server || account.serverName || 'AlphaGlobalMarket-Server',
     investorPassword: account.investorPassword || '',
     masterPassword: account.masterPassword || account.masterpass || '********',
-    initialChallengeAmount: realMetrics.initialBalance || 0,
-    currentBalance: accountMt5Info?.balance ?? account.balanceActual ?? realMetrics.currentBalance ?? 0,
-    balanceGrowth: realMetrics.profitGrowth || 0,
-    profit: accountMt5Info?.profit ?? account.profit ?? realMetrics.profit ?? 0,
-    profitGrowth: realMetrics.profitGrowth || 0,
-    equity: accountMt5Info?.equity ?? account.equity ?? 0,
-    margin: accountMt5Info?.margin ?? account.margin ?? 0,
-    dailyDrawdown: realMetrics.dailyDrawdown || 0,
-    dailyDrawdownPercentage: realMetrics.initialBalance ? (realMetrics.dailyDrawdown / realMetrics.initialBalance) * 100 : 0,
-    totalDrawdown: realMetrics.totalDrawdown || 0,
-    totalDrawdownPercentage: realMetrics.initialBalance ? (realMetrics.totalDrawdown / realMetrics.initialBalance) * 100 : 0,
-    avgLossPerOperation: realMetrics.avgLossPerOperation || 0,
-    avgLossPercentage: realMetrics.initialBalance ? (realMetrics.avgLossPerOperation / realMetrics.initialBalance) * 100 : 0,
-    avgProfitPerOperation: realMetrics.avgProfitPerOperation || 0,
-    avgProfitPercentage: realMetrics.initialBalance ? (realMetrics.avgProfitPerOperation / realMetrics.initialBalance) * 100 : 0,
-    avgLotPerOperation: realMetrics.avgLotPerOperation || 0,
-    avgTradeDuration: realMetrics.avgTradeDuration || '0m',
-    riskRewardRatio: realMetrics.riskRewardRatio || 0,
-    winRate: realMetrics.winRate || 0,
+    
+    // CONFIGURACIÓN DE FIREBASE - Balance inicial del challenge
+    initialChallengeAmount: getChallengeAmount(account),
+    
+    // DATOS FINANCIEROS DE MT5 - Balance y profit actuales
+    currentBalance: accountMt5Info?.balance,
+    
+    // MÉTRICAS CALCULADAS - Usar datos calculados del backend cuando estén disponibles
+    balanceGrowth: accountMt5Info?.profitPercentage ?? calculatedKPIs?.profitGrowth ?? 0,
+    profit: accountMt5Info?.profit ?? calculatedKPIs?.profit ?? null,
+    profitGrowth: accountMt5Info?.profitPercentage ?? calculatedKPIs?.profitGrowth ?? 0,
+    
+    // DATOS REALES DE MT5
+    equity: accountMt5Info?.equity || 0,
+    margin: accountMt5Info?.margin || 0,
+    
+    // KPIs CALCULADOS - Basados en datos históricos de Firebase
+    dailyDrawdown: calculatedKPIs?.dailyDrawdown || 0,
+    dailyDrawdownPercentage: calculatedKPIs?.initialBalance ? (calculatedKPIs.dailyDrawdown / calculatedKPIs.initialBalance) * 100 : 0,
+    totalDrawdown: calculatedKPIs?.totalDrawdown || 0,
+    totalDrawdownPercentage: calculatedKPIs?.initialBalance ? (calculatedKPIs.totalDrawdown / calculatedKPIs.initialBalance) * 100 : 0,
+    avgLossPerOperation: calculatedKPIs?.avgLossPerOperation || 0,
+    avgLossPercentage: calculatedKPIs?.initialBalance ? (calculatedKPIs.avgLossPerOperation / calculatedKPIs.initialBalance) * 100 : 0,
+    avgProfitPerOperation: calculatedKPIs?.avgProfitPerOperation || 0,
+    avgProfitPercentage: calculatedKPIs?.initialBalance ? (calculatedKPIs.avgProfitPerOperation / calculatedKPIs.initialBalance) * 100 : 0,
+    avgLotPerOperation: calculatedKPIs?.avgLotPerOperation || 0,
+    avgTradeDuration: calculatedKPIs?.avgTradeDuration || '0m',
+    riskRewardRatio: calculatedKPIs?.riskRewardRatio || 0,
+    winRate: calculatedKPIs?.winRate || 0,
+    
+    // CONFIGURACIÓN DE FIREBASE - Datos que no están en MT5
     tradingDays: {
       current: account.tradingDays?.current || 0,
       min: account.tradingDays?.min || 0
@@ -703,8 +730,18 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
     maxLossLimit: realMetrics.maxLossLimit || 0,
     allowedLossToday: realMetrics.allowedLossToday || 0,
     minProfitTarget: realMetrics.minProfitTarget || 0,
-    currentProfit: realMetrics.currentProfit || 0
+    currentProfit: accountMt5Info?.profit || calculatedKPIs?.profit || 0
   };
+
+  // Log para debugging - mostrar qué datos se están usando
+  console.log('🔍 Datos finales del dashboard (híbrido):', {
+    'Balance Inicial (Firebase)': safeAccount.initialChallengeAmount,
+    'Balance Actual (MT5)': safeAccount.currentBalance,
+    'Profit (MT5)': safeAccount.profit,
+    'Tipo de cuenta (Firebase)': account.challengeType,
+    'Fuente MT5': accountMt5Info ? 'Disponible' : 'No disponible',
+    'Fuente KPIs': calculatedKPIs ? 'Disponible' : 'No disponible'
+  });
 
   return (
     <div className="p-2 mobile-p-3 sm:p-4 md:p-6 bg-gradient-to-br from-[#232323] to-[#2d2d2d] text-white min-h-screen flex flex-col">
@@ -814,7 +851,11 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
             <div className="w-full">
               <h1 className="text-lg sm:text-xl md:text-2xl font-semibold">{t('tradingDashboard_greetingPrefix')}{getUserName()}</h1>
               <p className="text-xs sm:text-sm md:text-base text-gray-400">
-                {t('tradingDashboard_currentAccountInfo', { accountSize: formatCurrency(safeAccount.currentBalance) })}
+                {t('tradingDashboard_currentAccountInfo', { 
+                  accountSize: typeof safeAccount.currentBalance === 'number' 
+                    ? formatCurrency(safeAccount.currentBalance) 
+                    : t('common_loading_simple', 'Cargando...') 
+                })}
               </p>
               <div className="space-y-1.5 sm:space-y-2 mt-3 sm:mt-4 text-xs sm:text-sm">
                 <div className="flex items-center">
@@ -966,8 +1007,15 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
             <h2 className="text-lg sm:text-xl md:text-3xl font-bold">{t('tradingDashboard_balanceChartTitle')}</h2>
           </div>
           <div className="flex flex-wrap items-center mb-4 sm:mb-6 gap-x-3 gap-y-1">
-            <span className="text-xl sm:text-2xl md:text-4xl font-bold mr-1 sm:mr-3">{formatCurrency(safeAccount.currentBalance)}</span>
-            <span className={`bg-green-800 bg-opacity-30 text-green-400 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-xs sm:text-sm whitespace-nowrap`}>{formatPercentage(safeAccount.balanceGrowth)}</span>
+            <span className="text-xl sm:text-2xl md:text-4xl font-bold mr-1 sm:mr-3">
+              {typeof safeAccount.currentBalance === 'number' 
+                ? formatCurrency(safeAccount.currentBalance) 
+                : <span className="text-gray-500">{t('common_loading_simple', 'Cargando...')}</span>
+              }
+            </span>
+            <span className={`bg-green-800 bg-opacity-30 text-green-400 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-xs sm:text-sm whitespace-nowrap`}>
+              {typeof safeAccount.currentBalance === 'number' ? formatPercentage(safeAccount.balanceGrowth) : '...'}
+            </span>
           </div>
           
           <div className="w-full aspect-video sm:aspect-square max-h-[300px] sm:max-h-[400px] md:max-h-[500px]">
@@ -1020,8 +1068,15 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
           <div className="p-3 sm:p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl">
             <h2 className="text-base sm:text-lg md:text-xl font-bold mb-1 sm:mb-2">{t('tradingDashboard_profitLossWidgetTitle')}</h2>
             <div className="flex flex-wrap items-center mb-0.5 sm:mb-1 gap-x-2 gap-y-1">
-              <span className="text-lg sm:text-xl md:text-2xl font-bold mr-1 sm:mr-3">{formatCurrency(safeAccount.profit)}</span>
-              <span className={`bg-green-800 bg-opacity-30 text-green-400 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-xs sm:text-sm whitespace-nowrap`}>{formatPercentage(safeAccount.profitGrowth)}</span>
+              <span className="text-lg sm:text-xl md:text-2xl font-bold mr-1 sm:mr-3">
+                {safeAccount.profit !== null 
+                  ? formatCurrency(safeAccount.profit)
+                  : <span className="text-gray-500">{t('common_loading_simple', 'Cargando...')}</span>
+                }
+              </span>
+              <span className={`bg-green-800 bg-opacity-30 text-green-400 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-xs sm:text-sm whitespace-nowrap`}>
+                {safeAccount.profit !== null ? formatPercentage(safeAccount.profitGrowth) : '...'}
+              </span>
             </div>
             <p className="text-xs sm:text-sm text-gray-400">{currentDate}</p>
           </div> 

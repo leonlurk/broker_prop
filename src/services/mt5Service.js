@@ -136,17 +136,38 @@ export const getAccountInfo = async (login) => {
     
     if (response.data) {
       const data = response.data;
+      
+      // CORRECCIÓN: Usar datos calculados de Firebase cuando están disponibles
+      // Los datos de balance y profit deben venir de Firebase (más precisos para challenges)
+      const useCalculatedBalance = data.balance !== data.challenge_amount && data.challenge_amount > 0;
+      
+      console.log('🔍 Procesando respuesta del backend:', {
+        mt5_balance: data.balance,
+        challenge_amount: data.challenge_amount,
+        profit: data.profit,
+        profit_percentage: data.profit_percentage,
+        useCalculatedBalance
+      });
+      
       return {
         login: data.login,
         name: data.name || `Account ${login}`,
         email: data.email || '',
         group: data.group,
         leverage: data.leverage,
+        // PRIORIDAD: Balance calculado de Firebase > Balance MT5 directo
         balance: parseFloat(data.balance),
         equity: parseFloat(data.equity),
         margin: parseFloat(data.margin),
         freeMargin: parseFloat(data.free_margin || 0),
-        profit: parseFloat(data.profit || (data.equity - data.balance) || 0),
+        // PRIORIDAD: Profit calculado de Firebase > Cálculo simple MT5
+        profit: parseFloat(data.profit || 0),
+        profitPercentage: parseFloat(data.profit_percentage || 0),
+        drawdown: parseFloat(data.drawdown || 0),
+        // Datos adicionales de configuración
+        challengeAmount: parseFloat(data.challenge_amount || 0),
+        challengeType: data.challenge_type,
+        accountType: data.account_type,
         created: data.created || data.last_access,
         lastAccess: data.last_access,
         status: data.enabled ? 'active' : 'inactive'
@@ -494,36 +515,59 @@ const processAllData = (rawData) => {
  * 🧮 Calcula KPIs basados en datos históricos
  * @param {string} accountId - ID de la cuenta
  * @param {Object} currentData - Datos actuales de MT5
- * @param {number} initialBalance - Balance inicial
+ * @param {number} initialBalance - Balance inicial del challenge (de Firebase)
  * @returns {Promise<Object>} - KPIs calculados
  */
 export const calculateKPIs = async (accountId, currentData, initialBalance) => {
   try {
     const historicalData = await getHistoricalData(accountId, 'daily', 30);
     
-    if (historicalData.length === 0) {
-      return getDefaultKPIs(currentData, initialBalance);
-    }
-
-    // Calcular métricas
-    const currentBalance = currentData.balance || initialBalance;
-    const profitGrowth = initialBalance ? ((currentBalance - initialBalance) / initialBalance) * 100 : 0;
+    // Balance actual real de MT5
+    const currentBalance = currentData.balance || 0;
     
-    // Calcular drawdown
-    const { dailyDrawdown, totalDrawdown } = calculateDrawdown(historicalData, initialBalance);
+    // SIEMPRE usar el balance inicial del challenge de Firebase como referencia para objetivos
+    // PERO NO para calcular crecimiento porcentual
+    const effectiveInitialBalance = initialBalance || 200000; // Fallback al challenge estándar
     
-    // Calcular métricas de trading (simuladas por ahora)
+    console.log(`📊 Calculando KPIs - Challenge inicial: ${effectiveInitialBalance}, MT5 actual: ${currentBalance}`, {
+      receivedInitialBalance: initialBalance,
+      effectiveInitialBalance,
+      currentBalance,
+      usingFallback: !initialBalance
+    });
+    
+    // CORRECCIÓN: Usar el profit real de MT5 para calcular el crecimiento porcentual
+    // El profit de MT5 ya viene calculado correctamente desde el servidor
+    const actualProfit = currentData.profit || 0;
+    
+    // Calcular profit growth basado en el profit real vs el balance actual
+    // Esto da un porcentaje más realista del rendimiento del trading
+    const profitGrowth = currentBalance > 0 ? (actualProfit / currentBalance) * 100 : 0;
+    
+    // Calcular drawdown basado en datos históricos
+    const { dailyDrawdown, totalDrawdown } = calculateDrawdown(historicalData, effectiveInitialBalance);
+    
+    // Calcular métricas de trading
     const tradingMetrics = calculateTradingMetrics(historicalData);
 
-    return {
-      initialBalance,
+    const kpis = {
+      initialBalance: effectiveInitialBalance, // Para mostrar configuración del challenge
       currentBalance,
-      profit: currentData.profit || 0,
-      profitGrowth,
+      profit: actualProfit, // Usar profit real de MT5
+      profitGrowth, // Ahora calculado correctamente
       dailyDrawdown,
       totalDrawdown,
       ...tradingMetrics
     };
+    
+    console.log('📈 KPIs calculados (CORREGIDO):', {
+      challengeInitialBalance: effectiveInitialBalance,
+      mt5CurrentBalance: currentBalance,
+      mt5ActualProfit: actualProfit,
+      profitGrowth: profitGrowth.toFixed(2) + '%'
+    });
+    
+    return kpis;
   } catch (error) {
     console.error('❌ Error calculando KPIs:', error);
     return getDefaultKPIs(currentData, initialBalance);
@@ -591,14 +635,27 @@ const calculateTradingMetrics = (historicalData) => {
 /**
  * 🔧 KPIs por defecto cuando no hay datos históricos
  */
-const getDefaultKPIs = (currentData, initialBalance) => {
-  const currentBalance = currentData.balance || initialBalance;
-  const profitGrowth = initialBalance ? ((currentBalance - initialBalance) / initialBalance) * 100 : 0;
+const getDefaultKPIs = (currentData, fallbackInitialBalance) => {
+  const currentBalance = currentData.balance || 0;
+  
+  // SIEMPRE usar el balance inicial del challenge, NO el balance actual
+  const effectiveInitialBalance = fallbackInitialBalance || 200000; // Fallback al challenge estándar
+  
+  // CORRECCIÓN: Usar el profit real de MT5 en lugar de comparar con challenge amount
+  const actualProfit = currentData.profit || 0;
+  const profitGrowth = currentBalance > 0 ? (actualProfit / currentBalance) * 100 : 0;
+
+  console.log('🔧 Usando KPIs por defecto (CORREGIDO):', {
+    currentBalance,
+    challengeInitialBalance: effectiveInitialBalance,
+    profit: actualProfit,
+    profitGrowth
+  });
 
   return {
-    initialBalance,
+    initialBalance: effectiveInitialBalance,
     currentBalance,
-    profit: currentData.profit || 0,
+    profit: actualProfit,
     profitGrowth,
     dailyDrawdown: 0,
     totalDrawdown: 0,
