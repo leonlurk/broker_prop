@@ -583,33 +583,41 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
     const currentBalance = accountMt5Info?.balance ?? account.balanceActual ?? initialBalance;
     const createdDate = account.createdAt?.toDate();
     
-    // Calcular días de trading usando historial si está disponible
+    // Nueva lógica para días de trading
     let activeTradingDays = 0;
-    let firstTradeDate = account.firstTradeDate?.toDate() || createdDate;
+    let firstTradeDate = null;
     
-    if (historyData && historyData.length > 0) {
-      // Si hay historial, calcular días únicos de trading
-      const uniqueTradingDays = new Set();
-      historyData.forEach(snapshot => {
-        const snapshotDate = snapshot.timestamp?.toDate?.() || new Date(snapshot.timestamp);
-        const dateKey = snapshotDate.toDateString();
-        uniqueTradingDays.add(dateKey);
-      });
-      activeTradingDays = uniqueTradingDays.size;
-      
-      // Primer día de trading según historial
-      const sortedHistory = [...historyData].sort((a, b) => {
-        const dateA = a.timestamp?.toDate?.() || new Date(a.timestamp);
-        const dateB = b.timestamp?.toDate?.() || new Date(b.timestamp);
-        return dateA - dateB;
-      });
-      if (sortedHistory.length > 0) {
-        firstTradeDate = sortedHistory[0].timestamp?.toDate?.() || new Date(sortedHistory[0].timestamp);
+    if (currentBalance !== initialBalance) {
+      // Buscar el primer día en que el balance cambió
+      let firstChangeDate = null;
+      if (historyData && historyData.length > 0) {
+        // Buscar el primer snapshot donde balance != initialBalance
+        const sortedHistory = [...historyData].sort((a, b) => {
+          const dateA = a.timestamp?.toDate?.() || new Date(a.timestamp);
+          const dateB = b.timestamp?.toDate?.() || new Date(b.timestamp);
+          return dateA - dateB;
+        });
+        for (let i = 0; i < sortedHistory.length; i++) {
+          const snap = sortedHistory[i];
+          if (snap.balance !== initialBalance) {
+            firstChangeDate = snap.timestamp?.toDate?.() || new Date(snap.timestamp);
+            break;
+          }
+        }
       }
+      // Si no hay historial, usar la fecha de creación
+      if (!firstChangeDate) {
+        firstChangeDate = createdDate;
+      }
+      firstTradeDate = firstChangeDate;
+      // Calcular días desde el primer cambio de balance hasta hoy (incluyendo el día de cambio)
+      const today = new Date();
+      const diffTime = today.setHours(0,0,0,0) - firstChangeDate.setHours(0,0,0,0);
+      activeTradingDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
     } else {
-      // Si no hay historial, no podemos determinar días reales de trading
-      // Solo contar como 1 día si hay algún balance actualizado, 0 si no
-      activeTradingDays = (account.balanceActual && account.balanceActual !== initialBalance) ? 1 : 0;
+      // Si el balance nunca cambió, no hay días de trading
+      activeTradingDays = 0;
+      firstTradeDate = null;
     }
     
     const today = new Date();
@@ -1172,15 +1180,6 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
                 }} />
               </div>
               <h3 className="text-base sm:text-lg md:text-xl font-medium mr-auto">{t('tradingDashboard_accountDetailsTitle')}</h3>
-              
-              {/* BOTÓN TEMPORAL DE TEST */}
-              <button 
-                onClick={generateTestProfitChart}
-                className="px-2 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-xs mr-2"
-                title="Test gráfico con ganancia"
-              >
-                🧪 Test Profit
-              </button>
               
               <div className={`${getStatusBadgeClass(account.status)} rounded-full py-1.5 px-4 sm:py-2 sm:px-6 text-xs sm:text-sm text-white whitespace-nowrap`}>
                 {getStatusTranslation(account.status)}
