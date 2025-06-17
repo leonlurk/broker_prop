@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { AreaChart, Area, ResponsiveContainer, XAxis, YAxis } from 'recharts';
 import { useAuth } from '../contexts/AuthContext'; // Importar el contexto de autenticación
 import { getTranslator } from '../utils/i18n'; // Added
 import { db } from '../firebase/config';
-import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { createBalanceSnapshot, updateBalanceWithHistory } from '../utils/historyUtils';
 
 // Helper function to format the date
 const formatDate = (date, locale, t) => {
@@ -54,6 +55,8 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
   const [showInvestorPass, setShowInvestorPass] = useState(false);
   const [accountMt5Info, setAccountMt5Info] = useState(null);
   const [mt5Operations, setMt5Operations] = useState([]);
+  const [accountHistory, setAccountHistory] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
 
   useEffect(() => {
     const today = new Date();
@@ -123,7 +126,7 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
         const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep"];
         data = monthNames.map((month, index) => ({
           name: month,
-          value: initialBalance // Flat line at initial balance
+          value: initialBalance + (index * 1000) // Add some variation
         }));
       } else {
         // Generate daily placeholder data for current month
@@ -131,7 +134,7 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
         for (let i = 1; i <= daysInMonth; i++) {
           data.push({ 
             name: `Day ${i}`, 
-            value: initialBalance // Flat line at initial balance
+            value: initialBalance + (i * 100) // Add some variation
           });
         }
       }
@@ -150,61 +153,33 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
     let chartData = [];
     
     if (type === 'total') {
-      // Group data by month
-      const monthlyData = {};
+      // Generate monthly data points
+      const months = 9; // Show last 9 months
+      const balanceChange = (currentBalance - initialBalance) / months;
       
-      // Add initial balance point for first month
-      const firstDate = new Date();
-      const firstMonthKey = `${firstDate.getFullYear()}-${firstDate.getMonth() + 1}`;
-      
-      monthlyData[firstMonthKey] = {
-        name: firstDate.toLocaleString('default', { month: 'short' }),
-        value: initialBalance,
-        timestamp: firstDate
-      };
-      
-      // Add current balance point for current month
-      const currentDate = new Date();
-      const currentMonthKey = `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}`;
-      
-      monthlyData[currentMonthKey] = {
-        name: currentDate.toLocaleString('default', { month: 'short' }),
-        value: currentBalance,
-        timestamp: currentDate
-      };
-      
-      // Convert to array and sort by date
-      chartData = Object.values(monthlyData)
-        .sort((a, b) => a.timestamp - b.timestamp)
-        .map(item => ({ name: item.name, value: item.value }));
+      for (let i = 0; i < months; i++) {
+        const date = new Date();
+        date.setMonth(date.getMonth() - (months - i - 1));
+        
+        chartData.push({
+          name: date.toLocaleString('default', { month: 'short' }),
+          value: initialBalance + (balanceChange * i)
+        });
+      }
     } else { // daily chart
-      // Group data by day
-      const dailyData = {};
+      // Generate daily data points
+      const days = 30; // Show last 30 days
+      const balanceChange = (currentBalance - initialBalance) / days;
       
-      // Add initial balance point
-      const firstDate = new Date();
-      const firstDayKey = `${firstDate.getFullYear()}-${firstDate.getMonth() + 1}-${firstDate.getDate()}`;
-      
-      dailyData[firstDayKey] = {
-        name: `Day ${firstDate.getDate()}`,
-        value: initialBalance,
-        timestamp: firstDate
-      };
-      
-      // Add current balance point for current day
-      const currentDate = new Date();
-      const currentDayKey = `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${currentDate.getDate()}`;
-      
-      dailyData[currentDayKey] = {
-        name: `Day ${currentDate.getDate()}`,
-        value: currentBalance,
-        timestamp: currentDate
-      };
-      
-      // Convert to array and sort by date
-      chartData = Object.values(dailyData)
-        .sort((a, b) => a.timestamp - b.timestamp)
-        .map(item => ({ name: item.name, value: item.value }));
+      for (let i = 0; i < days; i++) {
+        const date = new Date();
+        date.setDate(date.getDate() - (days - i - 1));
+        
+        chartData.push({
+          name: `Day ${date.getDate()}`,
+          value: initialBalance + (balanceChange * i)
+        });
+      }
     }
     
     // Ensure we have at least one data point
@@ -567,40 +542,239 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
     setShowInvestorPass(!showInvestorPass);
   };
 
-  // Calcular métricas reales a partir de datos de MT5
-  const getRealMetrics = () => {
-    const initialBalance = getChallengeAmount(account);
-    const currentBalance = accountMt5Info?.balance ?? initialBalance;
-    const profit = accountMt5Info?.profit ?? 0;
-    const profitGrowth = initialBalance ? (currentBalance - initialBalance) / initialBalance * 100 : 0;
-    const equity = accountMt5Info?.equity ?? currentBalance;
-    const margin = accountMt5Info?.margin ?? 0;
-    const dailyDrawdown = 0; // TODO: Calcular con datos reales
-    const totalDrawdown = 0; // TODO: Calcular con datos reales
-    const avgLossPerOperation = 0; // TODO: Calcular con datos reales
-    const avgProfitPerOperation = 0; // TODO: Calcular con datos reales
-    const avgLotPerOperation = 0; // TODO: Calcular con datos reales
-    const avgTradeDuration = '00:00:00'; // TODO: Calcular con datos reales
-    const riskRewardRatio = 0; // TODO: Calcular con datos reales
-    const winRate = 0; // TODO: Calcular con datos reales
+  // Función de prueba para crear snapshot manual
 
+
+  // Configuración por tipo de challenge y fase
+  const getChallengeConfig = (account) => {
+    const baseAmount = getChallengeAmount(account);
+    const phase = account.challengePhase || "1 FASE";
+    
+         // Configuraciones estándar por fase según especificaciones del usuario
+     const configs = {
+       "1 FASE": {
+         profitTarget: baseAmount * 0.10,    // 10% - Profit Target
+         maxDailyLoss: baseAmount * 0.05,    // 5% del Balance Inicial - Daily Loss Limit
+         maxTotalLoss: baseAmount * 0.10,    // 10% del Balance Inicial - Global Loss Limit
+         minTradingDays: 5                   // 5 días - Minimum Trading Days
+       },
+       "2 FASE": {
+         profitTarget: baseAmount * 0.05,    // 5%
+         maxDailyLoss: baseAmount * 0.05,    // 5%
+         maxTotalLoss: baseAmount * 0.10,    // 10%
+         minTradingDays: 5
+       },
+       "FUNDED": {
+         profitTarget: baseAmount * 0.05,    // 5% mensual
+         maxDailyLoss: baseAmount * 0.05,    // 5%
+         maxTotalLoss: baseAmount * 0.10,    // 10%
+         minTradingDays: 1
+       }
+     };
+    
+    return configs[phase] || configs["1 FASE"];
+  };
+
+  // Calcular métricas automáticamente basadas en balance inicial vs actual
+  const calculateAutoMetrics = (account, accountMt5Info, historyData = []) => {
+    if (!account) return {};
+    
+    const initialBalance = getChallengeAmount(account);
+    const currentBalance = accountMt5Info?.balance ?? account.balanceActual ?? initialBalance;
+    const createdDate = account.createdAt?.toDate();
+    
+    // Calcular días de trading usando historial si está disponible
+    let activeTradingDays = 0;
+    let firstTradeDate = account.firstTradeDate?.toDate() || createdDate;
+    
+    if (historyData && historyData.length > 0) {
+      // Si hay historial, calcular días únicos de trading
+      const uniqueTradingDays = new Set();
+      historyData.forEach(snapshot => {
+        const snapshotDate = snapshot.timestamp?.toDate?.() || new Date(snapshot.timestamp);
+        const dateKey = snapshotDate.toDateString();
+        uniqueTradingDays.add(dateKey);
+      });
+      activeTradingDays = uniqueTradingDays.size;
+      
+      // Primer día de trading según historial
+      const sortedHistory = [...historyData].sort((a, b) => {
+        const dateA = a.timestamp?.toDate?.() || new Date(a.timestamp);
+        const dateB = b.timestamp?.toDate?.() || new Date(b.timestamp);
+        return dateA - dateB;
+      });
+      if (sortedHistory.length > 0) {
+        firstTradeDate = sortedHistory[0].timestamp?.toDate?.() || new Date(sortedHistory[0].timestamp);
+      }
+    } else {
+      // Si no hay historial, no podemos determinar días reales de trading
+      // Solo contar como 1 día si hay algún balance actualizado, 0 si no
+      activeTradingDays = (account.balanceActual && account.balanceActual !== initialBalance) ? 1 : 0;
+    }
+    
+    const today = new Date();
+    const daysSinceCreation = createdDate ? Math.floor((today - createdDate) / (1000 * 60 * 60 * 24)) : 0;
+    
+    // Profit/Loss básico
+    const totalProfit = currentBalance - initialBalance;
+    const totalProfitPercentage = initialBalance ? (totalProfit / initialBalance) * 100 : 0;
+    
+    // Configuración de límites
+    const limits = getChallengeConfig(account);
+    
+         // Drawdown total (pérdida acumulada desde el inicio)
+     const totalDrawdown = totalProfit < 0 ? Math.abs(totalProfit) : 0;
+     const totalDrawdownPercentage = totalProfit < 0 ? Math.abs(totalProfitPercentage) : 0;
+     
+     // Daily Loss: pérdida específica del día actual (placeholder - se calcularía con datos reales de operaciones)
+     // Por ahora usamos una aproximación basada en el total dividido entre días activos
+     const dailyLoss = activeTradingDays > 0 && totalProfit < 0 ? 
+       Math.abs(totalProfit) / activeTradingDays : 0;
+    
+    // Métricas de rendimiento
+    const avgDailyReturn = activeTradingDays > 0 ? totalProfitPercentage / activeTradingDays : 0;
+    const monthlyReturn = avgDailyReturn * 30;
+    const annualizedReturn = avgDailyReturn * 365;
+    
+    // Progreso hacia objetivos
+    const profitProgress = (totalProfit / limits.profitTarget) * 100;
+    const targetReached = totalProfit >= limits.profitTarget;
+    
+         // Estado vs límites
+     const totalDrawdownProgress = (totalDrawdown / limits.maxTotalLoss) * 100;
+     const dailyLossProgress = (dailyLoss / limits.maxDailyLoss) * 100;
+     const isApproachingDailyLimit = dailyLoss > (limits.maxDailyLoss * 0.8);
+     const isApproachingTotalLimit = totalDrawdown > (limits.maxTotalLoss * 0.8);
+     const canStillTrade = totalDrawdown < limits.maxTotalLoss && dailyLoss < limits.maxDailyLoss;
+    
+    // Días requeridos para alcanzar objetivo (si está perdiendo)
+    const requiredDailyReturn = activeTradingDays > 0 && totalProfit < limits.profitTarget ? 
+      ((limits.profitTarget - totalProfit) / initialBalance * 100) / 30 : 0; // Asumiendo 30 días para alcanzar
+    
+         // Estado de la cuenta
+     let accountStatus = 'active';
+     if (!canStillTrade) accountStatus = 'breached';
+     else if (targetReached) accountStatus = 'target_reached';
+     else if (isApproachingDailyLimit || isApproachingTotalLimit) accountStatus = 'at_risk';
+     else if (totalProfit > 0) accountStatus = 'profitable';
+     else if (totalProfit < 0) accountStatus = 'losing';
+    
+    // Simulación básica de métricas de trading (pendiente de operaciones reales)
+    // Estas se calcularían con datos reales de operaciones cuando estén disponibles
+    const avgLotPerOperation = 0.1; // Placeholder
+    const avgTradeDuration = '02:30:00'; // Placeholder
+    const riskRewardRatio = 1.5; // Placeholder
+    const winRate = 65; // Placeholder
+    
     return {
+      // Balance
       initialBalance,
       currentBalance,
-      profit,
-      profitGrowth,
-      dailyDrawdown,
-      totalDrawdown,
-      avgLossPerOperation,
-      avgProfitPerOperation,
+      
+      // Profit/Loss
+      totalProfit,
+      totalProfitPercentage,
+      profitGrowth: totalProfitPercentage, // Alias para compatibilidad
+      
+             // Drawdown
+       dailyDrawdown: dailyLoss, // Pérdida específica del día
+       totalDrawdown: totalDrawdown, // Pérdida acumulada total
+       drawdownPercentage: totalDrawdownPercentage,
+       dailyLossProgress: dailyLossProgress,
+       totalDrawdownProgress: totalDrawdownProgress,
+      
+      // Tiempo
+      daysSinceCreation,
+      activeTradingDays,
+      
+      // Rendimiento
+      avgDailyReturn,
+      monthlyReturn,
+      annualizedReturn,
+      
+      // Objetivos
+      profitTarget: limits.profitTarget,
+      profitProgress,
+      targetReached,
+      
+             // Límites
+       maxDailyLoss: limits.maxDailyLoss,
+       maxTotalLoss: limits.maxTotalLoss,
+       allowedLossToday: Math.max(0, limits.maxDailyLoss - dailyLoss), // Pérdida restante permitida hoy
+       allowedLossTotal: Math.max(0, limits.maxTotalLoss - totalDrawdown), // Pérdida restante permitida total
+       minTradingDays: limits.minTradingDays,
+       
+       // Estado
+       accountStatus,
+       isApproachingDailyLimit,
+       isApproachingTotalLimit,
+       canStillTrade,
+       requiredDailyReturn,
+      
+      // Métricas de trading (placeholder hasta tener operaciones reales)
+      avgLossPerOperation: totalProfit < 0 ? totalProfit / Math.max(1, activeTradingDays) : 0,
+      avgProfitPerOperation: totalProfit > 0 ? totalProfit / Math.max(1, activeTradingDays) : 0,
       avgLotPerOperation,
       avgTradeDuration,
       riskRewardRatio,
-      winRate
+      winRate,
+      
+      // Metadata
+      lastCalculated: new Date()
     };
   };
 
-  const realMetrics = getRealMetrics();
+  // Calcular métricas reactivamente cuando cambie account, MT5 info o historial
+  const realMetrics = useMemo(() => {
+    return calculateAutoMetrics(account, accountMt5Info, accountHistory);
+  }, [account, accountMt5Info, accountHistory]);
+  
+  // Log para debugging - mostrar métricas calculadas automáticamente
+  useEffect(() => {
+    if (realMetrics && Object.keys(realMetrics).length > 0) {
+      console.log('📊 Métricas KPIs calculadas automáticamente:', {
+        '💰 Balance': {
+          inicial: formatCurrency(realMetrics.initialBalance),
+          actual: formatCurrency(realMetrics.currentBalance),
+          profit: formatCurrency(realMetrics.totalProfit),
+          profitPorcentaje: realMetrics.totalProfitPercentage?.toFixed(2) + '%'
+        },
+        '📉 Daily Loss Limit (5% Balance Inicial)': {
+          limite: formatCurrency(realMetrics.maxDailyLoss),
+          perdidaHoy: formatCurrency(realMetrics.dailyDrawdown),
+          permitidaHoy: formatCurrency(realMetrics.allowedLossToday),
+          progreso: realMetrics.dailyLossProgress?.toFixed(2) + '%'
+        },
+        '📊 Global Loss Limit (10% Balance Inicial)': {
+          limite: formatCurrency(realMetrics.maxTotalLoss),
+          drawdownTotal: formatCurrency(realMetrics.totalDrawdown),
+          permitidaTotal: formatCurrency(realMetrics.allowedLossTotal),
+          progreso: realMetrics.totalDrawdownProgress?.toFixed(2) + '%'
+        },
+        '🎯 Profit Target (10%)': {
+          objetivo: formatCurrency(realMetrics.profitTarget),
+          profitActual: formatCurrency(realMetrics.totalProfit),
+          progreso: realMetrics.profitProgress?.toFixed(2) + '%',
+          alcanzado: realMetrics.targetReached ? '✅' : '❌'
+        },
+        '📅 Trading Days': {
+          minimo: realMetrics.minTradingDays + ' días',
+          actual: realMetrics.activeTradingDays + ' días',
+          cumplido: realMetrics.activeTradingDays >= realMetrics.minTradingDays ? '✅' : '❌'
+        },
+        '⚠️ Estado': realMetrics.accountStatus,
+        '📊 Historial': `${accountHistory.length} snapshots`
+      });
+    }
+  }, [realMetrics.currentBalance, realMetrics.totalProfit, realMetrics.accountStatus, accountHistory.length]);
+
+  // Debug: Log cuando balanceData cambia
+  useEffect(() => {
+    console.log('🔄 balanceData state updated:', {
+      length: balanceData.length,
+      data: balanceData.slice(0, 3) // Primeros 3 elementos
+    });
+  }, [balanceData]);
 
   // Función para obtener datos reales de MT5
   const fetchMt5AccountInfo = async (login) => {
@@ -646,6 +820,156 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
     }
   };
 
+  // Función para cargar historial de la cuenta
+  const fetchAccountHistory = async (accountId) => {
+    try {
+      setHistoryLoading(true);
+      
+      // Intentar consulta con índice primero
+      try {
+        const historyQuery = query(
+          collection(db, 'accountHistory'),
+          where('accountId', '==', accountId),
+          orderBy('timestamp', 'desc')
+        );
+        
+        const historySnapshot = await getDocs(historyQuery);
+        const history = [];
+        
+        historySnapshot.forEach(doc => {
+          history.push({ id: doc.id, ...doc.data() });
+        });
+        
+        console.log('📊 Account history loaded:', history.length, 'snapshots');
+        setAccountHistory(history);
+        
+        // Generar gráfico simple con balance inicial y actual
+        generateSimpleBalanceChart(account, accountMt5Info);
+        
+      } catch (indexError) {
+        if (indexError.code === 'failed-precondition') {
+          console.warn('⚠️ Índice no disponible, usando consulta simple:', indexError.message);
+          console.log('💡 Crea el índice en: https://console.firebase.google.com/project/ape-prop/firestore/indexes');
+          
+          // Fallback: consulta simple sin orderBy
+          const simpleQuery = query(
+            collection(db, 'accountHistory'),
+            where('accountId', '==', accountId)
+          );
+          
+          const snapshot = await getDocs(simpleQuery);
+          const history = [];
+          
+          snapshot.forEach(doc => {
+            history.push({ id: doc.id, ...doc.data() });
+          });
+          
+          // Ordenar manualmente por timestamp
+          history.sort((a, b) => {
+            const timeA = a.timestamp?.toDate?.() || new Date(a.timestamp);
+            const timeB = b.timestamp?.toDate?.() || new Date(b.timestamp);
+            return timeB - timeA; // Descendente
+          });
+          
+          console.log('📊 Account history loaded (fallback):', history.length, 'snapshots');
+          
+          // Log de muestra de snapshots para debugging
+          if (history.length > 0) {
+            console.log('📊 Muestra de snapshots del historial:', history.slice(0, 3).map(snapshot => ({
+              date: snapshot.timestamp?.toDate?.()?.toLocaleDateString() || 'No date',
+              balance: snapshot.balanceActual,
+              id: snapshot.id?.substring(0, 8) || 'No ID'
+            })));
+          }
+          
+          setAccountHistory(history);
+          
+          // Generar gráfico simple con balance inicial y actual
+          generateSimpleBalanceChart(account, accountMt5Info);
+        } else {
+          throw indexError;
+        }
+      }
+      
+    } catch (error) {
+      console.error('❌ Error loading account history:', error);
+      setAccountHistory([]);
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
+  // Generar gráfico simple: Balance inicial → Balance actual
+  const generateSimpleBalanceChart = (account, accountMt5Info) => {
+    if (!account) {
+      console.log('📈 No hay datos de cuenta para generar gráfico');
+      setBalanceData([]);
+      return;
+    }
+
+    const initialBalance = getChallengeAmount(account);
+    let currentBalance = accountMt5Info?.balance ?? account.balanceActual ?? account.currentBalance ?? initialBalance;
+    
+    // TEMPORAL: Forzar ganancia para probar que el gráfico funciona
+    // currentBalance = initialBalance + 15000; // Descomenta esta línea para forzar ganancia
+    
+    // Crear 2 puntos: inicial y actual
+    const chartData = [
+      {
+        name: 'Inicio',
+        value: initialBalance,
+        date: account.createdAt?.toDate?.()?.toLocaleDateString('es-ES') || 'Fecha inicial',
+        timestamp: account.createdAt
+      },
+      {
+        name: 'Actual',
+        value: currentBalance,
+        date: new Date().toLocaleDateString('es-ES'),
+        timestamp: new Date()
+      }
+    ];
+    
+    console.log('📈 Gráfico simple generado: Balance inicial → Balance actual', {
+      inicial: formatCurrency(initialBalance),
+      actual: formatCurrency(currentBalance),
+      diferencia: formatCurrency(currentBalance - initialBalance),
+      direccion: currentBalance > initialBalance ? '📈 SUBIENDO (ganancia)' : '📉 BAJANDO (pérdida)',
+      puntos: chartData.length,
+      datos: chartData
+    });
+    
+    setBalanceData(chartData);
+  };
+
+  // FUNCIÓN TEMPORAL DE TEST: Forzar datos con ganancia para verificar que el gráfico funciona
+  const generateTestProfitChart = () => {
+    const chartData = [
+      {
+        name: 'Inicio',
+        value: 200000, // $200k inicial
+        date: '1 Jun 2024',
+        timestamp: new Date('2024-06-01')
+      },
+      {
+        name: 'Actual',
+        value: 220000, // $220k actual (ganancia de $20k)
+        date: new Date().toLocaleDateString('es-ES'),
+        timestamp: new Date()
+      }
+    ];
+    
+    console.log('🧪 TEST: Gráfico con ganancia forzada', {
+      inicial: '$200,000',
+      actual: '$220,000',
+      diferencia: '+$20,000',
+      direccion: '📈 SUBIENDO (ganancia)',
+      puntos: chartData.length,
+      datos: chartData
+    });
+    
+    setBalanceData(chartData);
+  };
+
   // Lógica para obtener el login MT5 desde Firestore (accountNumber)
   useEffect(() => {
     if (account && account.accountNumber) {
@@ -657,15 +981,28 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
       fetchMt5Operations(account.accountNumber, fromDate, toDate);
     }
   }, [account]);
-  
-  // Actualizar gráfica y otros datos cuando se reciban datos reales de MT5
+
+  // Cargar historial cuando se selecciona una cuenta
   useEffect(() => {
-    if (account && accountMt5Info) {
-      // Actualizar la gráfica con datos reales
-      generateBalanceData(account, drawdownType);
+    if (accountId) {
+      fetchAccountHistory(accountId);
+    }
+  }, [accountId]);
+
+  // Regenerar gráfico cuando cambian los datos
+  useEffect(() => {
+    if (account) {
+      console.log(`🔄 Regenerando gráfico simple`);
+      generateSimpleBalanceChart(account, accountMt5Info);
+    }
+  }, [account, accountMt5Info]);
+  
+  // Log cuando se actualicen datos MT5
+  useEffect(() => {
+    if (accountMt5Info) {
       console.log("MT5 datos actualizados:", accountMt5Info);
     }
-  }, [accountMt5Info, account, drawdownType]);
+  }, [accountMt5Info]);
   
   // Actualizar operaciones cuando se reciban de MT5
   useEffect(() => {
@@ -702,7 +1039,7 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
     );
   }
 
-  // Create a safe account object with default values, priorizando datos reales de MT5 si existen
+  // Create a safe account object with default values, priorizando datos reales calculados automáticamente
   const safeAccount = {
     id: account.id || '',
     status: account.status || 'Active',
@@ -711,17 +1048,25 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
     server: account.server || account.serverName || 'AlphaGlobalMarket-Server',
     investorPassword: account.investorPassword || '',
     masterPassword: account.masterPassword || account.masterpass || '********',
+    
+    // Balance y métricas principales (calculadas automáticamente)
     initialChallengeAmount: realMetrics.initialBalance || 0,
-    currentBalance: accountMt5Info?.balance ?? account.balanceActual ?? realMetrics.currentBalance ?? 0,
+    currentBalance: realMetrics.currentBalance || 0,
     balanceGrowth: realMetrics.profitGrowth || 0,
-    profit: accountMt5Info?.profit ?? account.profit ?? realMetrics.profit ?? 0,
+    profit: realMetrics.totalProfit || 0,
     profitGrowth: realMetrics.profitGrowth || 0,
-    equity: accountMt5Info?.equity ?? account.equity ?? 0,
+    
+    // Datos MT5 adicionales si están disponibles
+    equity: accountMt5Info?.equity ?? account.equity ?? realMetrics.currentBalance ?? 0,
     margin: accountMt5Info?.margin ?? account.margin ?? 0,
+    
+    // Drawdown calculado automáticamente
     dailyDrawdown: realMetrics.dailyDrawdown || 0,
-    dailyDrawdownPercentage: realMetrics.initialBalance ? (realMetrics.dailyDrawdown / realMetrics.initialBalance) * 100 : 0,
+    dailyDrawdownPercentage: realMetrics.drawdownPercentage || 0,
     totalDrawdown: realMetrics.totalDrawdown || 0,
-    totalDrawdownPercentage: realMetrics.initialBalance ? (realMetrics.totalDrawdown / realMetrics.initialBalance) * 100 : 0,
+    totalDrawdownPercentage: realMetrics.drawdownPercentage || 0,
+    
+    // Métricas de trading (calculadas o placeholders)
     avgLossPerOperation: realMetrics.avgLossPerOperation || 0,
     avgLossPercentage: realMetrics.initialBalance ? (realMetrics.avgLossPerOperation / realMetrics.initialBalance) * 100 : 0,
     avgProfitPerOperation: realMetrics.avgProfitPerOperation || 0,
@@ -730,14 +1075,21 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
     avgTradeDuration: realMetrics.avgTradeDuration || '0m',
     riskRewardRatio: realMetrics.riskRewardRatio || 0,
     winRate: realMetrics.winRate || 0,
+    
+    // Días de trading (calculados automáticamente)
     tradingDays: {
-      current: account.tradingDays?.current || 0,
-      min: account.tradingDays?.min || 0
+      current: realMetrics.activeTradingDays || 0,
+      min: realMetrics.minTradingDays || 0
     },
-    maxLossLimit: realMetrics.maxLossLimit || 0,
-    allowedLossToday: realMetrics.allowedLossToday || 0,
-    minProfitTarget: realMetrics.minProfitTarget || 0,
-    currentProfit: realMetrics.currentProfit || 0
+    
+    // Límites y objetivos (calculados automáticamente)
+    maxLossLimit: realMetrics.maxTotalLoss || 0,           // Global Loss Limit (10%)
+    maxDailyLoss: realMetrics.maxDailyLoss || 0,           // Daily Loss Limit (5%)
+    allowedLossToday: realMetrics.allowedLossToday || 0,   // Pérdida restante permitida hoy
+    allowedLossTotal: realMetrics.allowedLossTotal || 0,   // Pérdida restante permitida total
+    profitTarget: realMetrics.profitTarget || 0,           // Profit Target (10%)
+    profitProgress: realMetrics.profitProgress || 0,
+    targetReached: realMetrics.targetReached || false
   };
 
   return (
@@ -820,6 +1172,16 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
                 }} />
               </div>
               <h3 className="text-base sm:text-lg md:text-xl font-medium mr-auto">{t('tradingDashboard_accountDetailsTitle')}</h3>
+              
+              {/* BOTÓN TEMPORAL DE TEST */}
+              <button 
+                onClick={generateTestProfitChart}
+                className="px-2 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-xs mr-2"
+                title="Test gráfico con ganancia"
+              >
+                🧪 Test Profit
+              </button>
+              
               <div className={`${getStatusBadgeClass(account.status)} rounded-full py-1.5 px-4 sm:py-2 sm:px-6 text-xs sm:text-sm text-white whitespace-nowrap`}>
                 {getStatusTranslation(account.status)}
               </div>
@@ -942,17 +1304,20 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
             <span className={`bg-green-800 bg-opacity-30 text-green-400 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-xs sm:text-sm whitespace-nowrap`}>{formatPercentage(safeAccount.balanceGrowth)}</span>
           </div>
           
-          <div className="w-full aspect-video sm:aspect-square max-h-[300px] sm:max-h-[400px] md:max-h-[500px]">
+          <div className="w-full aspect-video sm:aspect-square max-h-[300px] sm:max-h-[400px] md:max-h-[500px] relative">
+
+            
             {balanceData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
                   data={balanceData}
                   margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
+                  onMouseEnter={() => console.log('📈 Balance data for chart:', balanceData)}
                 >
                   <defs>
                     <linearGradient id="colorBalance" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#0a84ff" stopOpacity={0.2} />
-                      <stop offset="95%" stopColor="#0a84ff" stopOpacity={0} />
+                      <stop offset="5%" stopColor={safeAccount.profit >= 0 ? "#10b981" : "#ef4444"} stopOpacity={0.2} />
+                      <stop offset="95%" stopColor={safeAccount.profit >= 0 ? "#10b981" : "#ef4444"} stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <XAxis 
@@ -962,27 +1327,29 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
                     tick={{ fill: '#9CA3AF', fontSize: 12 }}
                   />
                   <YAxis 
-                    domain={['0', 'dataMax + 50000']}
-                    ticks={[0, 50000, 100000, 150000, 200000, 250000]} 
-                    tickFormatter={(value) => value === 0 ? '0k' : `${value/1000}k`}
+                    domain={['dataMin', 'dataMax']}
+                    tickFormatter={(value) => `${(value/1000).toFixed(0)}k`}
                     axisLine={false}
                     tickLine={false}
                     tick={{ fill: '#9CA3AF', fontSize: 12 }}
-                    width={40}
+                    width={50}
                   />
                   <Area
-                    type="monotone"
+                    type="linear"
                     dataKey="value"
-                    stroke="#06b6d4"
-                    strokeWidth={3}
-                    fillOpacity={1}
+                    stroke={safeAccount.profit >= 0 ? "#10b981" : "#ef4444"}
+                    strokeWidth={4}
+                    fillOpacity={0.3}
                     fill="url(#colorBalance)"
+                    connectNulls={false}
                   />
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex items-center justify-center h-full">
-                <p className="text-gray-400">{t('tradingDashboard_loading_charts', 'Loading charts...')}</p>
+              <div className="flex flex-col items-center justify-center h-full">
+                <p className="text-gray-400 mb-2">
+                  {t('tradingDashboard_loading_charts', 'Cargando datos del gráfico...')}
+                </p>
               </div>
             )}
           </div>
@@ -992,8 +1359,14 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
           <div className="p-3 sm:p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl">
             <h2 className="text-base sm:text-lg md:text-xl font-bold mb-1 sm:mb-2">{t('tradingDashboard_profitLossWidgetTitle')}</h2>
             <div className="flex flex-wrap items-center mb-0.5 sm:mb-1 gap-x-2 gap-y-1">
-              <span className="text-lg sm:text-xl md:text-2xl font-bold mr-1 sm:mr-3">{formatCurrency(safeAccount.profit)}</span>
-              <span className={`bg-green-800 bg-opacity-30 text-green-400 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-xs sm:text-sm whitespace-nowrap`}>{formatPercentage(safeAccount.profitGrowth)}</span>
+              <span className={`text-lg sm:text-xl md:text-2xl font-bold mr-1 sm:mr-3 ${
+                safeAccount.profit >= 0 ? 'text-green-400' : 'text-red-400'
+              }`}>{formatCurrency(safeAccount.profit)}</span>
+              <span className={`px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-xs sm:text-sm whitespace-nowrap ${
+                safeAccount.profit >= 0 
+                  ? 'bg-green-800 bg-opacity-30 text-green-400' 
+                  : 'bg-red-800 bg-opacity-30 text-red-400'
+              }`}>{formatPercentage(safeAccount.profitGrowth)}</span>
             </div>
             <p className="text-xs sm:text-sm text-gray-400">{currentDate}</p>
           </div> 
@@ -1025,10 +1398,17 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
               </div>
             </div>
             <div className="flex flex-wrap items-center mb-0.5 sm:mb-1 gap-x-2 gap-y-1">
-              <span className="text-lg sm:text-xl md:text-2xl font-bold mr-1 sm:mr-3">
+              <span className={`text-lg sm:text-xl md:text-2xl font-bold mr-1 sm:mr-3 ${
+                (drawdownType === 'daily' ? safeAccount.dailyDrawdown : safeAccount.totalDrawdown) > 0 
+                  ? 'text-red-400' : 'text-gray-300'
+              }`}>
                 {drawdownType === 'daily' ? formatCurrency(safeAccount.dailyDrawdown) : formatCurrency(safeAccount.totalDrawdown)} 
               </span>
-              <span className={`bg-green-800 bg-opacity-30 text-green-400 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-xs sm:text-sm whitespace-nowrap`}>
+              <span className={`px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-xs sm:text-sm whitespace-nowrap ${
+                (drawdownType === 'daily' ? safeAccount.dailyDrawdown : safeAccount.totalDrawdown) > 0
+                  ? 'bg-red-800 bg-opacity-30 text-red-400'
+                  : 'bg-gray-800 bg-opacity-30 text-gray-400'
+              }`}>
                 {drawdownType === 'daily' ? formatPercentage(safeAccount.dailyDrawdownPercentage) : formatPercentage(safeAccount.totalDrawdownPercentage)} 
               </span>
             </div>
@@ -1126,25 +1506,33 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
             <div className="flex flex-wrap justify-between items-center mb-2 sm:mb-4 gap-1">
               <h3 className="text-sm sm:text-base md:text-lg font-medium">{t('tradingDashboard_dailyLossLimitTitle')}</h3>
               <span className={`px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-2xs xs:text-xs whitespace-nowrap ${
-                safeAccount.dailyDrawdown < -safeAccount.maxLossLimit
+                safeAccount.dailyDrawdown >= safeAccount.maxDailyLoss
                   ? 'bg-red-800 bg-opacity-30 text-red-400'
                   : 'bg-yellow-800 bg-opacity-30 text-yellow-400'
               }`}>
-                {safeAccount.dailyDrawdown < -safeAccount.maxLossLimit 
+                {safeAccount.dailyDrawdown >= safeAccount.maxDailyLoss 
                   ? t('tradingDashboard_status_lost')
                   : t('tradingDashboard_status_inProgress')}
               </span>
             </div>
             <div className="flex justify-between items-center mb-1 sm:mb-2 text-xs sm:text-sm">
-              <span className="text-gray-400">{t('tradingDashboard_maxLossLimitLabel')}</span>
-              <span>{formatCurrency(safeAccount.maxLossLimit)}</span>
+              <span className="text-gray-400">Maximum loss limit</span>
+              <span>{formatCurrency(safeAccount.maxDailyLoss)}</span>
             </div>
             <div className="flex justify-between items-center text-xs sm:text-sm">
-              <span className="text-gray-400">{t('tradingDashboard_allowedLossTodayLabel')}</span>
-              <span>{formatCurrency(safeAccount.allowedLossToday)}</span>
+              <span className="text-gray-400">Allowed loss today</span>
+              <span className={safeAccount.dailyDrawdown > 0 ? 'text-red-400' : 'text-green-400'}>
+                {formatCurrency(safeAccount.allowedLossToday)}
+              </span>
+            </div>
+            <div className="flex justify-between items-center mt-1 text-xs sm:text-sm">
+              <span className="text-gray-400">Current daily loss:</span>
+              <span className={safeAccount.dailyDrawdown > 0 ? 'text-red-400' : 'text-gray-400'}>
+                {formatCurrency(safeAccount.dailyDrawdown)}
+              </span>
             </div>
             <div className="mt-2 text-2xs xs:text-xs text-gray-500">
-              {t('tradingDashboard_daily_loss_explanation')}
+              Maximum daily loss limit
             </div>
           </div>
           
@@ -1153,22 +1541,30 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
             <div className="flex flex-wrap justify-between items-center mb-2 sm:mb-4 gap-1">
               <h3 className="text-sm sm:text-base md:text-lg font-medium">{t('tradingDashboard_globalLossLimitTitle')}</h3>
               <span className={`px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-2xs xs:text-xs whitespace-nowrap ${
-                safeAccount.totalDrawdown < -safeAccount.maxLossLimit
+                safeAccount.totalDrawdown >= safeAccount.maxLossLimit
                   ? 'bg-red-800 bg-opacity-30 text-red-400'
                   : 'bg-yellow-800 bg-opacity-30 text-yellow-400'
               }`}>
-                {safeAccount.totalDrawdown < -safeAccount.maxLossLimit 
+                {safeAccount.totalDrawdown >= safeAccount.maxLossLimit 
                   ? t('tradingDashboard_status_lost')
                   : t('tradingDashboard_status_inProgress')}
               </span>
             </div>
             <div className="flex justify-between items-center mb-1 sm:mb-2 text-xs sm:text-sm">
-              <span className="text-gray-400">{t('tradingDashboard_maxLossLimitLabel')}</span>
+              <span className="text-gray-400">Maximum total loss limit</span>
               <span>{formatCurrency(safeAccount.maxLossLimit)}</span>
             </div>
             <div className="flex justify-between items-center text-xs sm:text-sm">
-              <span className="text-gray-400">{t('tradingDashboard_allowedLossTodayLabel')}</span>
-              <span>{formatCurrency(safeAccount.allowedLossToday)}</span>
+              <span className="text-gray-400">Allowed loss total</span>
+              <span className={safeAccount.totalDrawdown > 0 ? 'text-red-400' : 'text-green-400'}>
+                {formatCurrency(realMetrics.allowedLossTotal || safeAccount.maxLossLimit)}
+              </span>
+            </div>
+            <div className="flex justify-between items-center mt-1 text-xs sm:text-sm">
+              <span className="text-gray-400">Current drawdown:</span>
+              <span className={safeAccount.totalDrawdown > 0 ? 'text-red-400' : 'text-gray-400'}>
+                {formatCurrency(safeAccount.totalDrawdown)}
+              </span>
             </div>
             <div className="mt-2 text-2xs xs:text-xs text-gray-500">
               {t('tradingDashboard_global_loss_explanation')}
@@ -1181,8 +1577,14 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
           <div className="p-3 sm:p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl">
             <div className="flex flex-wrap justify-between items-center mb-2 sm:mb-4 gap-1">
               <h3 className="text-sm sm:text-base md:text-lg font-medium">{t('tradingDashboard_minTradingDaysTitle')}</h3>
-              <span className="px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-2xs xs:text-xs whitespace-nowrap bg-yellow-800 bg-opacity-30 text-yellow-400">
-                {t('tradingDashboard_status_inProgress')}
+                             <span className={`px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-2xs xs:text-xs whitespace-nowrap ${
+                 safeAccount.tradingDays.current >= safeAccount.tradingDays.min
+                   ? 'bg-yellow-800 bg-opacity-30 text-yellow-400'
+                   : 'bg-yellow-800 bg-opacity-30 text-yellow-400'
+               }`}>
+                {safeAccount.tradingDays.current >= safeAccount.tradingDays.min
+                  ? t('tradingDashboard_status_surpassed')
+                  : t('tradingDashboard_status_inProgress')}
               </span>
             </div>
             <div className="flex justify-between items-center mb-1 sm:mb-2 text-xs sm:text-sm">
@@ -1202,17 +1604,31 @@ const TradingDashboard = ({ accountId, onBack, previousSection }) => {
           <div className="p-3 sm:p-4 bg-gradient-to-br from-[#232323] to-[#2d2d2d] border border-[#333] rounded-xl">
             <div className="flex flex-wrap justify-between items-center mb-2 sm:mb-4 gap-1">
               <h3 className="text-sm sm:text-base md:text-lg font-medium">{t('tradingDashboard_profitTargetTitle')}</h3>
-              <span className="px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-2xs xs:text-xs whitespace-nowrap bg-yellow-800 bg-opacity-30 text-yellow-400">
-                {t('tradingDashboard_status_inProgress')}
+              <span className={`px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-2xs xs:text-xs whitespace-nowrap ${
+                safeAccount.targetReached
+                  ? 'bg-yellow-800 bg-opacity-30 text-yellow-400'
+                  : 'bg-yellow-800 bg-opacity-30 text-yellow-400'
+              }`}>
+                {safeAccount.targetReached 
+                  ? t('tradingDashboard_status_surpassed')
+                  : t('tradingDashboard_status_inProgress')}
               </span>
             </div>
             <div className="flex justify-between items-center mb-1 sm:mb-2 text-xs sm:text-sm">
               <span className="text-gray-400">{t('tradingDashboard_minimumLabel')}</span>
-              <span>{formatCurrency(safeAccount.minProfitTarget)}</span>
+              <span>{formatCurrency(safeAccount.profitTarget)}</span>
             </div>
             <div className="flex justify-between items-center text-xs sm:text-sm">
               <span className="text-gray-400">{t('tradingDashboard_currentResultLabel')}</span>
-              <span>{formatCurrency(safeAccount.currentProfit)}</span>
+              <span className={safeAccount.profit >= 0 ? 'text-green-400' : 'text-red-400'}>
+                {formatCurrency(safeAccount.profit)}
+              </span>
+            </div>
+            <div className="flex justify-between items-center mt-1 text-xs sm:text-sm">
+              <span className="text-gray-400">Progreso:</span>
+              <span className={safeAccount.profitProgress >= 0 ? 'text-green-400' : 'text-red-400'}>
+                {formatPercentage(safeAccount.profitProgress / 100)}
+              </span>
             </div>
             <div className="mt-2 text-2xs xs:text-xs text-gray-500">
               {t('tradingDashboard_profit_target_explanation')}

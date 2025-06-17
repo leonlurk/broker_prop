@@ -414,7 +414,7 @@ const Home = ({ onViewDetails, onSettingsClick, setSelectedOption }) => {
                   {/* Balance Amount */}
                   <div className="absolute left-[16px] sm:left-[20px] top-[85px] sm:top-[100px] lg:top-[120px] w-[180px] sm:w-[190px] lg:w-[200px] h-[32px] sm:h-[36px] lg:h-[42px]">
                     <p className="font-['Poppins'] font-normal text-[20px] sm:text-[24px] lg:text-[28px] leading-[26px] sm:text-[30px] lg:leading-[36px] text-white flex items-center">
-                      {formatBalance(amount)}
+                      {formatBalance(account.currentBalance ?? amount)}
                     </p>
                   </div>
 
