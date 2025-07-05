@@ -144,7 +144,7 @@ const Sidebar = ({ selectedOption, setSelectedOption, onLogout }) => {
                 </div>
                 
                 {/* Plataformas button - ahora con flecha y desplegable */}
-                {/*
+                
                 <div className="mx-4">
                     <button
                         onClick={() => handleNavigation("Plataformas")}
@@ -197,7 +197,7 @@ const Sidebar = ({ selectedOption, setSelectedOption, onLogout }) => {
                         </button>
                     </div>
                 </div>
-                */}
+            
                 
                 <div className="h-px w-full bg-gray-700 my-4"></div>
                 

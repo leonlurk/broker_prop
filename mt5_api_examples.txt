@@ -1,14 +1,14 @@
-# MT5 API Examples
-# Base URL: http://localhost:5000/api (o tu URL de producción)
+# MT5 API Examples - ACTUALIZADOS PARA HTTPS
+# Base URL: https://62.171.177.212:8443 (API en producción con SSL)
 # Reemplaza TU_TOKEN_FIREBASE con tu token de autenticación de Firebase
 
 # 1. Verificar estado de la API
-curl -X GET 'http://localhost:5000/api/health' \
+curl -k -X GET 'https://62.171.177.212:8443/health' \
 -H 'Authorization: Bearer TU_TOKEN_FIREBASE' \
 -H 'Content-Type: application/json'
 
 # 2. Crear una cuenta de trading
-curl -X POST 'http://localhost:5000/api/accounts' \
+curl -k -X POST 'https://62.171.177.212:8443/accounts' \
 -H 'Authorization: Bearer TU_TOKEN_FIREBASE' \
 -H 'Content-Type: application/json' \
 -d '{
@@ -23,7 +23,7 @@ curl -X POST 'http://localhost:5000/api/accounts' \
 }'
 
 # 3. Depositar fondos en una cuenta
-curl -X POST 'http://localhost:5000/api/accounts/12345/deposit' \
+curl -k -X POST 'https://62.171.177.212:8443/accounts/12345/deposit' \
 -H 'Authorization: Bearer TU_TOKEN_FIREBASE' \
 -H 'Content-Type: application/json' \
 -d '{
@@ -32,12 +32,12 @@ curl -X POST 'http://localhost:5000/api/accounts/12345/deposit' \
 }'
 
 # 4. Obtener información de una cuenta
-curl -X GET 'http://localhost:5000/api/accounts/12345' \
+curl -k -X GET 'https://62.171.177.212:8443/accounts/12345' \
 -H 'Authorization: Bearer TU_TOKEN_FIREBASE' \
 -H 'Content-Type: application/json'
 
 # 5. Cambiar grupo de una cuenta
-curl -X PUT 'http://localhost:5000/api/accounts/12345/group' \
+curl -k -X PUT 'https://62.171.177.212:8443/accounts/12345/group' \
 -H 'Authorization: Bearer TU_TOKEN_FIREBASE' \
 -H 'Content-Type: application/json' \
 -d '{
@@ -45,10 +45,22 @@ curl -X PUT 'http://localhost:5000/api/accounts/12345/group' \
 }'
 
 # Notas importantes:
+# - HTTPS habilitado: usa https://62.171.177.212:8443
+# - Certificado auto-firmado: usa flag -k con curl
 # - Reemplaza 12345 con el login real de la cuenta
 # - El token de Firebase debe ser válido y no expirado
 # - Los grupos disponibles son:
 #   * challenge\onestep (para desafíos de una fase)
 #   * challenge\twostep (para desafíos de dos fases)
 # - El apalancamiento por defecto es 100
-# - Los montos de depósito deben ser números positivos 
+# - Los montos de depósito deben ser números positivos
+# - Puerto 8443 para API (puerto 443 reservado para MT5 Server)
+
+# Ejemplo de respuesta exitosa del health check:
+# {
+#   "status": "healthy",
+#   "timestamp": "2025-06-21T03:27:10.392630+00:00",
+#   "version": "2.0.0",
+#   "uptime_seconds": 749.2,
+#   "environment": "production"
+# } 

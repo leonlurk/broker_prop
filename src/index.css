@@ -126,3 +126,21 @@ button:focus-visible {
   scrollbar-width: thin; /* "auto" or "thin" */
   scrollbar-color: #4a4a4a #232323; /* thumb color track color */
 }
+
+.dark .custom-select-trigger {
+  background-color: #333;
+  border-color: #555;
+  color: white !important; /* Force white text for dark theme */
+}
+
+.dark .custom-select-trigger:hover,
+.dark .custom-select-trigger:active,
+.dark .custom-select-trigger:focus {
+  border-color: #777;
+  color: white !important; /* Keep text white on hover/active */
+}
+
+.dark .custom-options {
+  background-color: transparent !important;
+  border-color: #555;
+}
